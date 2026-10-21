@@ -1,0 +1,10 @@
+[
+  { "id": "capacitor", "name": "Deep capacitor", "branch": "Disruptor", "description": "+10 maximum energy per rank.", "stat": "energy", "amount": 10, "level": 5, "maxRank": 3 },
+  { "id": "overclock", "name": "Hot circuit", "branch": "Disruptor", "description": "+6% ability damage per rank.", "stat": "damage", "amount": 0.06, "level": 10, "maxRank": 3 },
+  { "id": "plating", "name": "Soft armor", "branch": "Anchor", "description": "+20 maximum health per rank.", "stat": "health", "amount": 20, "level": 5, "maxRank": 3 },
+  { "id": "barrier", "name": "Borrowed inertia", "branch": "Anchor", "description": "+20 kinetic shield capacity per rank.", "stat": "shield", "amount": 20, "level": 15, "maxRank": 3 },
+  { "id": "symbiosis", "name": "Common bloodstream", "branch": "Sustainer", "description": "+15 healing power per rank.", "stat": "healing", "amount": 15, "level": 5, "maxRank": 3 },
+  { "id": "flow", "name": "Second metabolism", "branch": "Sustainer", "description": "+2 energy regeneration per second per rank.", "stat": "regen", "amount": 2, "level": 15, "maxRank": 3 },
+  { "id": "stride", "name": "Frictionless", "branch": "Runner", "description": "+5% movement speed per rank.", "stat": "speed", "amount": 0.05, "level": 5, "maxRank": 3 },
+  { "id": "focus", "name": "Probability lens", "branch": "Runner", "description": "+3 percentage points to critical chance per rank.", "stat": "crit", "amount": 3, "level": 10, "maxRank": 3 }
+]

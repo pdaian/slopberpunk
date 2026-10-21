@@ -1,0 +1,921 @@
+{
+  "version": 1,
+  "rules": {
+    "readySeconds": 30,
+    "voteSeconds": 90,
+    "maxRunSeconds": 5400,
+    "arena": [
+      2000,
+      0,
+      0
+    ],
+    "arenaRadius": 26,
+    "recoveryPosition": [
+      2000,
+      0,
+      18
+    ],
+    "recoverySeconds": 12,
+    "recoveryFraction": 0.45,
+    "revivesPerEncounter": 2,
+    "pulseSeconds": 10,
+    "warningSeconds": 3,
+    "pulseFraction": 0.18,
+    "enemyHealthPerPlayer": 360,
+    "enemyHealthPerLevel": 32,
+    "enemyDamageFraction": 0.035
+  },
+  "production": {
+    "contract": "All mechanics use movement, the shared ability kit, and E interactions. No class, lineage, faction, talent, paid item, voice chat, simultaneous input, or specific damage composition is required. Groups are exact-size at entry; different builds and duplicate builds are welcome.",
+    "pacing": "Three chapters per dungeon. Each begins in a safe reading pause; every member explicitly signals readiness. Combat ends only after its machines are disabled, both evidence stations are read, and every member has signed at least one station. Evidence remains in the casebook. Chapter breaks restore resources. There is no damage race or enrage.",
+    "recovery": "A marked aid station restores 45% maximum health every 12 seconds per runner. Each runner can revive twice per encounter within 4 m. A full wipe restores the current chapter after five seconds without deleting earlier discoveries. Leaving or disconnecting during an unfinished expedition returns the group to the Commons; there is no forced understaffed fight. Runs expire after 90 minutes.",
+    "agency": "The final ballot lasts 90 seconds, closes early when everyone votes, and can be revised until closure. Abstentions and tied ballots use the authored provisional ending. Every ending pays the same personal reward once per completed run. The last ending and clear count persist; the world is not globally rewritten.",
+    "balanceBudget": "Each chapter has one machine per two runners, rounded up. Total health is partySize * (360 + minimumLevel * 32) * chapterMultiplier; enemy contact damage is 3.5% of the victim's maximum health per attack. Hazards are avoidable, three-second marked warnings for 18% maximum health. These are initial tuning values, not a claim of human playtest coverage.",
+    "presentation": "Build from existing procedural geometry, enemy models, and synthesized effects. Each venue has a distinctive silhouette, palette, and evidence props. Hazard stripes, outlines, text, and countdowns carry information independently of color and sound. Art and audio intentions below are direction for later asset production where they exceed the procedural implementation.",
+    "authorship": "Original Vesper characters, settings, dialogue, and plots. Named works are critical/thematic reference points, not adaptations of their dialogue, scenes, characters, visual designs, or music. The old questions are transformed into new playable conflicts. Do not imitate an individual artist's voice."
+  },
+  "entries": [
+    {
+      "id": "ninth-bell",
+      "name": "The Ninth Bell",
+      "players": 1,
+      "level": 0,
+      "venue": "The unstaffed shift tower",
+      "color": "#e8c983",
+      "motif": "bells",
+      "premise": "Eight bells announce eight shifts. Tonight a ninth rings for a worker who never existed. A retired bell keeper hires you to stop it before the sleeping district is fined for an unauthorized assembly.",
+      "chapters": [
+        {
+          "id": "attendance",
+          "name": "A Name with No Body",
+          "briefing": "Bell keeper Anet gives you a death certificate signed tomorrow. Its name is REST. She calls it a printer fault, then asks you not to inspect the empty chair beside her desk. Silence the attendance machines and compare the two surviving records.",
+          "boss": "Attendance Collector",
+          "enemy": "drone",
+          "healthMultiplier": 1,
+          "pattern": "lanes",
+          "warning": "The attendance sweep marks one half of the floor. Cross the center line into the unmarked half.",
+          "evidence": [
+            {
+              "id": "chair",
+              "name": "The worn empty chair",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The cushion is worn at its edges, where exhausted workers took turns sitting. Nobody owned this chair. Anet has carefully polished the patch where a ninth shift label used to be."
+            },
+            {
+              "id": "roster",
+              "name": "Tomorrow's death certificate",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "REST appears between every pair of shifts in the original roster. A later amendment converted this interval into an absent employee, then billed everyone for covering its work. Tomorrow is the date the last appeal expires. The unpaid interval also concealed a fuel quota. The furnace contract charged the shift for every minute of lower output, and Cinderwood deliveries were increased to cover the penalty. Rest was removed to protect a return already promised to creditors."
+            }
+          ],
+          "reveal": "The bell is not summoning a dead worker. It is announcing the death of a right to stop working. Anet knew the amendment was false: she signed it during the blackout to keep the tower powered."
+        },
+        {
+          "id": "testimony",
+          "name": "The Keeper's Good Reason",
+          "briefing": "Anet offers to take all the blame if you destroy the amendment. Her former apprentices ask you to leave the evidence intact. The tower begins counting your stillness as unpaid labor. Move through the warning ring and open both witness drawers.",
+          "boss": "Overtime Executor",
+          "enemy": "scavenger",
+          "healthMultiplier": 1.2,
+          "pattern": "ring",
+          "warning": "The outer floor is charged. Move inside the marked central square before it discharges.",
+          "evidence": [
+            {
+              "id": "carbon",
+              "name": "The carbon underneath",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Under Anet's signature is the council's preprinted instruction: emergency measures must be renewed after seven days. The council never renewed it. Her compromise became permanent through other people's inaction."
+            },
+            {
+              "id": "letter",
+              "name": "An unsent apprenticeship letter",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Anet wrote that a good keeper is one the tower can do without. She never sent the letter. She has maintained the machine alone for years, hoping that enough service could retroactively make her first decision harmless."
+            }
+          ],
+          "reveal": "Confession cannot give the workers their years back, and useful work cannot purchase innocence. The repair needs Anet's knowledge; accountability needs her name. Neither requires making her indispensable forever."
+        },
+        {
+          "id": "interval",
+          "name": "A Bell Nobody Must Answer",
+          "briefing": "The Final Auditor offers a perfect solution: erase REST and all evidence of its mistreatment. Instead, disconnect the collection loop and retrieve the instructions that let ordinary residents maintain the tower. Then decide what the ninth bell should carry into the morning.",
+          "boss": "Final Auditor",
+          "enemy": "warden",
+          "healthMultiplier": 1.5,
+          "pattern": "cross",
+          "warning": "The two crossing strips will discharge. Stand in any unmarked corner.",
+          "evidence": [
+            {
+              "id": "manual",
+              "name": "A manual with greasy fingerprints",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The repair is six ordinary steps. Anet has annotated the dangerous one in large lettering. Her apprentices can take over if she lets them learn it."
+            },
+            {
+              "id": "clapper",
+              "name": "The ninth clapper",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "A scratched instruction reads: ring once to announce a break; never ring to end one. The bell was built to give time away. The original mechanism still works."
+            }
+          ],
+          "reveal": "The mysterious petition came from the apprentices, using the only name the billing system would recognize. They need no martyr. They need a public interval and a keeper who can finally go home. The bell can restore a break without canceling the furnace's demand for timber. A shift with an ending still leaves ash settling beyond the city."
+        }
+      ],
+      "decision": {
+        "question": "How will the restored bell remember the harm?",
+        "choices": [
+          {
+            "id": "name",
+            "label": "Publish the signed history",
+            "cost": "Anet agrees to testify; the record may follow her after her service ends. The fuel quota becomes public too; crews face pressure to preserve output despite protected breaks.",
+            "ending": "At sunrise the ninth bell announces a break. Beside it hangs the complete amendment, including the council's missing renewals and Anet's signature. An apprentice takes the first maintenance shift. Anet sits in the empty chair, this time without being on duty. The first protected break reduces output. A supplier offers cheap Cinderwood fuel to recover the difference. The offer remains pinned beside the history, unsigned."
+          },
+          {
+            "id": "repair",
+            "label": "Begin a witnessed repair process",
+            "cost": "Residents receive the records now, but public testimony waits for a scheduled hearing. Reduced output must be negotiated while the next fuel invoice remains due.",
+            "ending": "The records enter neighborhood custody with a public hearing date, not a promise to forget. The ninth bell announces its first protected interval. Anet leaves her keys with three apprentices and walks home through a street she has only seen from above. The apprentices turn down the furnace during the interval. Some rooms cool sooner; ash falls for a little less time. Anet's release has a scale small enough to measure and too small to call deliverance."
+          }
+        ],
+        "deferred": "The bell resumes its original break signal under a temporary public notice. The unaltered records go to the workers, who schedule the unresolved hearing. Nobody needs to keep working while the city decides how to remember. The fuel contract continues pending review. A postponed hearing does not postpone its next claim on the wood."
+      },
+      "reward": {
+        "xp": 420,
+        "credits": 65
+      },
+      "production": {
+        "intent": "Teach the expedition vocabulary through a small human mystery, then replace the promised ghost hunt with an argument about repair and responsibility. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
+        "inspirations": [
+          "The distinction between what one can repair and what one cannot undo in Stoic thought",
+          "Ikiru: civic work and the value of an ordinary person's remaining time",
+          "The fable tradition's literal treatment of an abstract noun"
+        ],
+        "twistFairness": "REST, the date of the appeal, the worn chair, and the missing label precede the reveal. Anet's signature complicates her kindness without turning her into a concealed mastermind.",
+        "mechanicMeaning": "Reading pauses are actual protected intervals. The player practices the right the plot is restoring. No timed reading, lost evidence on death, or reward for rushing her confession.",
+        "composition": "One runner; the common carbine, mend, veil, and aid station suffice at level zero without purchased medkits or talent points.",
+        "artDirection": "Amber ribs, nine suspended rectangular bell housings, one empty plinth. The tower becomes a public room rather than a throne room.",
+        "audioDirection": "Use the existing confirm sound for discoveries. A later bespoke score should leave a full beat of silence after each bell, never borrow a recognizable film cue.",
+        "acceptance": "A first-time runner can explain who sent the petition, why the certificate is dated tomorrow, and why both endings retain the evidence. Verify all three telegraphs at walking speed."
+      }
+    },
+    {
+      "id": "borrowed-ferry",
+      "name": "The Ferry of Borrowed Names",
+      "players": 2,
+      "level": 8,
+      "venue": "The dry harbor's memory ferry",
+      "color": "#81dce0",
+      "motif": "ferry",
+      "premise": "A ferry with no water arrives carrying your employer's missing wife. So does the next ferry. Both women want the other rescued first, and neither wants to go home with him.",
+      "chapters": [
+        {
+          "id": "boarding",
+          "name": "Two Tickets, One Farewell",
+          "briefing": "Restorer Daro promises payment for the original passenger. Two Lattice travelers, Ila and Sen, share the missing woman's memories until the same Tuesday. Secure the boarding house and let each traveler enter her own account. Neither ticket can be accepted as ownership.",
+          "boss": "Authenticity Bailiff",
+          "enemy": "drone",
+          "healthMultiplier": 1,
+          "pattern": "lanes",
+          "warning": "A boarding sweep charges half the deck. Move across the center line.",
+          "evidence": [
+            {
+              "id": "ila",
+              "name": "Ila's amended ticket",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Ila remembers making the farewell recording. In the margin she has written: I remember loving him; that memory is not a present agreement. Her new name was chosen after the fork."
+            },
+            {
+              "id": "sen",
+              "name": "Sen's repair log",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Every memory carrier in Sen's body has been replaced since Tuesday. The log records consent at each repair. She asks why gradual replacement is accepted for the ferry but treated as fraud in its passengers. The clinics financed their memory service against future fares and charged for replacement bodies as collateral. Ferry cooling draws from Mourning Fen. Keeping travelers waiting paid the debt service while consuming the water their eventual journey would also need."
+            }
+          ],
+          "reveal": "Both accounts are internally consistent. The missing woman's departure was deliberate; the question of an original passenger is the harbor's excuse to prevent either new traveler from leaving."
+        },
+        {
+          "id": "wake",
+          "name": "The Ferryman Who Stayed Ashore",
+          "briefing": "The ferryman claims the sea will return when the rightful passenger is found. His machinery attacks anyone carrying a changed name. Ila and Sen ask you to compare the freight archive with Daro's restoration contract before destroying the ferry's navigation core.",
+          "boss": "Return-to-Sender Chassis",
+          "enemy": "scavenger",
+          "healthMultiplier": 1.25,
+          "pattern": "cross",
+          "warning": "The crossing freight lanes are live. Use an unmarked corner.",
+          "evidence": [
+            {
+              "id": "freight",
+              "name": "A manifest of departures",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The ferry has not crossed water in decades. It moves witness records between clinics. Its so-called destination is a permission field that Daro repeatedly sets to HOME, despite the traveler's signed withdrawal."
+            },
+            {
+              "id": "farewell",
+              "name": "The unplayed farewell",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "The original woman asked for her private memories to be sealed, not used to manufacture someone who would stay. Daro preserved the withdrawal but instructed the ferryman to treat it as temporary distress. The evidence is his own attachment, not a machine's misunderstanding."
+            }
+          ],
+          "reveal": "The ferryman is a role Daro performs through the harbor speakers. His grief is real, but it cannot authorize a relationship. Destroying the navigation core would also strand travelers whose departures nobody has contested."
+        },
+        {
+          "id": "departure",
+          "name": "A Harbor without Originals",
+          "briefing": "Ila wants to retain her earlier memories; Sen wants permission to retire some of hers later. Disable the inheritance collector and recover two separate departure seals. Each of you must witness one account; witnessing is acknowledgment, never a vote on who counts as a person.",
+          "boss": "Inheritance Collector",
+          "enemy": "warden",
+          "healthMultiplier": 1.5,
+          "pattern": "ring",
+          "warning": "The outer mooring deck will discharge. Move into the central square.",
+          "evidence": [
+            {
+              "id": "seal",
+              "name": "Two departure seals",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The authorization form permits distinct passengers with shared histories. Its duplicate-name rejection was a local modification requested by Daro. Restore the original permission and both women can leave."
+            },
+            {
+              "id": "index",
+              "name": "The sealed index",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "The original traveler's archive includes evidence of other blocked departures. Ila and Sen consent to release that evidence with personal memories removed. They disagree about whether to name the clinics involved before those travelers can be contacted."
+            }
+          ],
+          "reveal": "Both travelers leave under their chosen names whatever you decide. Your remaining authority concerns an institutional record, not their identities. Daro is left with a farewell he has finally stopped interrupting. Their departure ends a captivity, not the dependency that made it profitable. The transport still needs water and parts, and the fen cannot consent to another use."
+        }
+      ],
+      "decision": {
+        "question": "How should the evidence of blocked departures reach the city?",
+        "choices": [
+          {
+            "id": "publish",
+            "label": "Release the redacted clinic audit",
+            "cost": "Travelers gain immediate leverage; some may learn of their confinement in public. The audit also exposes transport debt; a replacement funding plan will mean fewer subsidized journeys.",
+            "ending": "Ila and Sen leave on separate routes. The audit strips out intimate memories and names the clinics. Other travelers arrive with amended tickets. Daro volunteers to repair a bench at the stop; nobody mistakes the repair for absolution. The next timetable has fewer departures. Ila keeps the ticket she was owed; someone at the back of the new queue studies a fare they cannot pay. Ending one captivity has not made movement inexhaustible."
+          },
+          {
+            "id": "contact",
+            "label": "Notify affected travelers first",
+            "cost": "A published deadline limits secrecy, but some clinics have time to prepare a defense. Private notice protects travelers while the cooling concession continues to charge the route.",
+            "ending": "A traveler-led custodian starts private notifications and posts the audit's release date. Ila sends Sen a new address without asking her to keep the old memories. The ferry's destination board displays two names where it once insisted on one. Mourning Fen's cooling allowance is posted beside the new names. The ferry can honor two separate lives without promising every life a journey. Daro reads the shorter timetable in silence."
+          }
+        ],
+        "deferred": "The departure seals take effect immediately. The redacted audit enters independent custody with a public review date while affected travelers are contacted. Disagreement about disclosure does not suspend anybody's freedom. The travelers are free to leave, but the route's water budget still determines when a vessel can carry them."
+      },
+      "reward": {
+        "xp": 1050,
+        "credits": 150
+      },
+      "production": {
+        "intent": "Make identity uncertainty a reason for care, never an excuse to choose the more useful person. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
+        "inspirations": [
+          "The Ship of Theseus as a problem of continuity",
+          "Orpheus and Eurydice: love's wish to retrieve someone",
+          "Solaris: the ethical gap between remembered love and a present person"
+        ],
+        "twistFairness": "The dry harbor, maintenance log, unsigned HOME field, and Daro's vocal habits establish the ferryman's identity. Both women have agency before the reveal.",
+        "mechanicMeaning": "Two runners witness a departure together. Either can fight, investigate, heal, or revive; evidence stations do not assign gender, class, or moral authority.",
+        "composition": "Exactly two of any builds. Independent aid cooldowns and two revives each prevent one runner becoming a compulsory healer.",
+        "artDirection": "Cyan rails, a long split deck, pairs of mismatched hull ribs. Never depict either traveler as a glitch or a counterfeit body.",
+        "audioDirection": "If bespoke audio is added, use two independently timed ferry clicks that sometimes coincide; neither is the authentic track.",
+        "acceptance": "Both choices and the tied ending free both travelers. No reward is conditional on choosing an original, exposing private memories, or reconciling Daro with either woman."
+      }
+    },
+    {
+      "id": "trial-rain",
+      "name": "A Trial for the Rain",
+      "players": 3,
+      "level": 18,
+      "venue": "The flooded municipal hearing room",
+      "color": "#a6bfff",
+      "motif": "court",
+      "premise": "A rain predictor is on trial for a flood it warned about. Three witnesses swear they opened the same shelter door, and each demands that the other two be convicted of shutting it.",
+      "chapters": [
+        {
+          "id": "witnesses",
+          "name": "Three Honest Contradictions",
+          "briefing": "Court recorder Pei asks for a single clean account before relief funds can be released. The prediction engine is locked in the witness box as the accused. Disable the oath collectors, then compare the door's maintenance marks with the witnesses' statements.",
+          "boss": "Oath Collector",
+          "enemy": "drone",
+          "healthMultiplier": 1,
+          "pattern": "ring",
+          "warning": "The outer witness gallery is charged. Stand in the central square.",
+          "evidence": [
+            {
+              "id": "door",
+              "name": "Door maintenance plates",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Three identical shelter doors were salvaged from one public building. Each retained the same plate number. The court collapsed three places into a single event before anybody gave testimony."
+            },
+            {
+              "id": "accounts",
+              "name": "The unabridged testimony",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "A cook opened a ground-floor shelter. A courier opened its upstairs overflow. A technician sealed a third door against runoff. Their statements contradict only after the address lines are removed. Pei's transcript software hides addresses to save space. The shelters stand on a drained wetland sold as reclaimed land. Rent was counted as new value; the lost flood storage was assigned no owner and no cost. Rain followed the slope long before the courthouse drew a district boundary."
+            }
+          ],
+          "reveal": "The witnesses are neither lying nor equally mistaken. Their evidence became incompatible through an editorial decision. Restoring the addresses solves the contradiction but leaves the flood unexplained."
+        },
+        {
+          "id": "forecast",
+          "name": "Exhibit Tomorrow",
+          "briefing": "The prosecutor offers the predictor's perfect forecast as proof of intent. A forecast cannot open a floodgate. Recover the diversion schedule and the relief charter while the court's enforcement engines attempt to confiscate both as irrelevant.",
+          "boss": "Relevance Executor",
+          "enemy": "scavenger",
+          "healthMultiplier": 1.3,
+          "pattern": "lanes",
+          "warning": "A half-floor evidence sweep is charging. Cross the center line.",
+          "evidence": [
+            {
+              "id": "schedule",
+              "name": "The diverted rainfall",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Emergency pumps protected the courthouse by moving its runoff into the shelters. The predictor correctly forecast both rain and the scheduled diversion. Operators were required to sign that they had read the warning."
+            },
+            {
+              "id": "charter",
+              "name": "The relief charter",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Funds may be released for culpable damage, but not for preventable maintenance. The prosecutor made the predictor a defendant because a guilty verdict is the only budget route she has found to keep the shelters supplied."
+            }
+          ],
+          "reveal": "The prosecutor manufactured a villain to obtain real relief. Her workaround would save people today by leaving the diversion rule intact for tomorrow. Acquittal alone would leave the shelters without supplies."
+        },
+        {
+          "id": "remedy",
+          "name": "The Court Becomes a Pump Room",
+          "briefing": "Pei opens the wall behind the bench. The relief governor and diversion controller share a cabinet. Disable its bailiffs, read both override authorities, and establish an emergency remedy before arguing about the permanent rule. Every runner must witness the corrected record.",
+          "boss": "Relief Governor",
+          "enemy": "warden",
+          "healthMultiplier": 1.6,
+          "pattern": "cross",
+          "warning": "The intersecting pump conduits are charged. Move to any clear corner.",
+          "evidence": [
+            {
+              "id": "override",
+              "name": "Emergency public override",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Residents can authorize immediate supplies without attributing guilt when the diversion log is preserved. The unused clause is stamped INCONVENIENT, not REPEALED."
+            },
+            {
+              "id": "cost",
+              "name": "The next storm's map",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Stopping the diversion protects the shelters but floods the courthouse archive. Relocating that archive takes the same crews needed to repair the pumps. Both plans have named workers, material costs, and dates; neither makes the next storm disappear."
+            }
+          ],
+          "reveal": "The predictor is acquitted and supplies are released in every outcome. The remaining decision distributes the work and risk of the next storm. Truth has made a remedy possible; it has not made the remedy effortless. Neither repair restores the drained wetland. The law can assign responsibility for the diversion; water will still follow a gradient through what remains."
+        }
+      ],
+      "decision": {
+        "question": "Which publicly supervised repair begins first?",
+        "choices": [
+          {
+            "id": "relocate",
+            "label": "Stop diversion and relocate the archive",
+            "cost": "Shelters gain protection immediately; the archive moves under difficult conditions. Some records will be lost in transit, and families still live on a former floodplain.",
+            "ending": "The courthouse receives the next ordinary rain through its own roof. Residents carry dry records upstairs with the clerks. Pei preserves all three addresses in the new transcript, even when they make the page untidy. A shelf of water-damaged records cannot be recovered. The shelters are safer from this diversion, still exposed to the next storm. Pei records the difference between preventing an injury and making a home secure."
+          },
+          {
+            "id": "pumps",
+            "label": "Repair pumps under a timed override",
+            "cost": "The shelters receive supplies and monitoring now, but remain exposed during the repair window. Pumping continues to consume power and displace runoff while the wetland remains drained.",
+            "ending": "The override expires unless residents renew it in public. Crews repair the pumps while the shelters keep their own alarms and supplies. The predictor's next forecast is posted beside the signed work schedule, where anyone can compare promise with action. The pump outlet carries the next surge beyond the district boundary. Downstream crews demand their own place at the hearing. The machine has moved the argument along with the water."
+          }
+        ],
+        "deferred": "The temporary relief clause releases supplies and funds independent flood monitoring. Both repair plans go to a dated public hearing. The witnesses are thanked separately; none is made the price of achieving consensus. The next rain has no hearing date. Monitoring can name the danger while residents remain in its path."
+      },
+      "reward": {
+        "xp": 1800,
+        "credits": 260
+      },
+      "production": {
+        "intent": "Distinguish partial perspectives from a claim that facts do not exist. Let an understandable shortcut create a dangerous precedent. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
+        "inspirations": [
+          "Rashomon: testimony shaped by framing, transformed here into materially reconcilable accounts",
+          "Antigone: duty in conflict with civic procedure",
+          "Twelve Angry Men: patient attention to a supposedly settled fact"
+        ],
+        "twistFairness": "Identical door numbers appear before the addresses are restored. The prosecutor requests relief figures before punishment; the budget motive is observable before confession.",
+        "mechanicMeaning": "Three witnesses suggest three runners without making any runner the sole owner of a clue. Everyone can reread all evidence; absent voice chat never withholds a solution.",
+        "composition": "Three players, any lineage and talent mixture. Avoid random one-shot damage and exclusive interrupt checks. All three sign evidence before the chapter closes.",
+        "artDirection": "Blue bench ribs and tiered plinths; the same geometry reads as a hearing room above and plumbing below.",
+        "audioDirection": "Use visible captions for all warnings. Future water percussion should mark the hazard rhythm, never mask interaction feedback.",
+        "acceptance": "The corrected accounts genuinely reconcile. Every ending releases supplies and acquits the predictor; the ballot concerns repair priorities rather than whether to accept the established evidence."
+      }
+    },
+    {
+      "id": "unlived-orchard",
+      "name": "The Orchard of Unlived Hours",
+      "players": 4,
+      "level": 28,
+      "venue": "The emergency future-yield conservatory",
+      "color": "#d7a4e8",
+      "motif": "orchard",
+      "premise": "An orchard feeds the city with fruit grown from days its workers will never live. Tonight the youngest tree bears fruit labeled with the birthday of a child who has not been conceived.",
+      "chapters": [
+        {
+          "id": "harvest",
+          "name": "A Voluntary Hunger",
+          "briefing": "Gardener Omi says the first donors freely traded retirement hours to end a famine. Their descendants now receive invoices. Disable the harvest machines and compare an original donation with the new forecast that supposedly proves the unborn child's debt.",
+          "boss": "Yield Collector",
+          "enemy": "scavenger",
+          "healthMultiplier": 1,
+          "pattern": "lanes",
+          "warning": "Harvest rails sweep one half of the garden. Cross to the unmarked half.",
+          "evidence": [
+            {
+              "id": "donation",
+              "name": "A donor's clay tally",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Omi's mother pledged six evenings of actual work and wrote a cancellation date. The earliest trees were ordinary hydroponics maintained by volunteers. The miraculous vocabulary appeared in later fundraising notices."
+            },
+            {
+              "id": "forecast",
+              "name": "The child's forecast label",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "The label is a predicted labor allocation. A model assigned every possible descendant a share of maintaining the pumps, then treated each possible child as an existing guarantor. The fruit contains nutrients, not stolen time. The forecast also assumes unlimited water from Mourning Fen and makes no allowance for replacing exhausted nutrient salts. The projected abundance was sold twice: as future labor and as harvest collateral. Neither claim replenished the beds."
+            }
+          ],
+          "reveal": "The orchard is physically ordinary and economically monstrous. No magic must be reversed. An estimate of future care has been turned into ownership of future people."
+        },
+        {
+          "id": "pruning",
+          "name": "The Mercy of Forgetting",
+          "briefing": "A relief organizer offers to burn every ledger. It would end the claims and erase the donors' unpaid compensation together. Omi conceals a second ledger in the root controller. Read both while pruning chassis defend their inherited schedules.",
+          "boss": "Inheritance Pruner",
+          "enemy": "warden",
+          "healthMultiplier": 1.25,
+          "pattern": "ring",
+          "warning": "The outer irrigation bed is live. Enter the central square.",
+          "evidence": [
+            {
+              "id": "claims",
+              "name": "The compensation ledger",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Thousands of workers are owed wages for care already performed. Their entries share a file with the fictitious claims on descendants. A wholesale deletion would protect the committee's creditors more than its workers."
+            },
+            {
+              "id": "roots",
+              "name": "The root controller's note",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Omi maintained the descendant forecasts because their inflated yields brought real food subsidies. She knew the forecasts were impossible. She did not know the subsidy office had begun enforcing them against children."
+            }
+          ],
+          "reveal": "Omi's benevolent fraud helped create the instrument now threatening the neighborhood. Keeping the orchard alive requires a truthful account of its limits, including a smaller harvest and more fairly paid maintenance."
+        },
+        {
+          "id": "seed",
+          "name": "What a Seed Does Not Promise",
+          "briefing": "Separate earned wages from speculative obligations, then disable the perpetuity engine. The last pump can operate without forecasting descendants. Its modest output will require a public ration plan while new beds mature. Retrieve the maintenance estimate and the workers' proposed charter.",
+          "boss": "Perpetuity Engine",
+          "enemy": "warden",
+          "healthMultiplier": 1.65,
+          "pattern": "cross",
+          "warning": "Crossing root conduits discharge soon. Use a clear corner.",
+          "evidence": [
+            {
+              "id": "estimate",
+              "name": "The honest harvest estimate",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The beds will feed fewer people than the forecast promised. The shortfall already exists; canceling the false claims merely makes it visible. A new shift rotation and emergency stores can bridge it without inherited service."
+            },
+            {
+              "id": "charter",
+              "name": "The seed workers' charter",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "The workers cancel all descendant obligations and preserve earned compensation. They propose either deleting individual predictions or retaining them under their custody as evidence. Neither proposal permits predictions to become contracts again."
+            }
+          ],
+          "reveal": "The smallest tree's label is removed without cutting down the tree. A future can be cared for without being owned. Your last decision is how much dangerous evidence a repaired institution should retain. The honest yield includes a smaller water allowance. Abolishing inherited service does not create the food it falsely promised, and the reserve cannot bridge the shortfall forever."
+        }
+      ],
+      "decision": {
+        "question": "What happens to the individual future-labor predictions?",
+        "choices": [
+          {
+            "id": "delete",
+            "label": "Delete predictions after an independent audit",
+            "cost": "Workers retain their wage claims, but some future investigations lose individual evidence. A smaller harvest protects the fen, leaving a permanent gap after emergency stores run out.",
+            "ending": "The auditors certify the split; earned wages remain, and descendant predictions are destroyed. Omi hangs the honest harvest estimate at the gate. The beds grow slowly enough that nobody mistakes care for a miracle. The city receives less fruit. Emergency stores cover the first shortfall and diminish. Omi leaves the empty crates by the gate; no claim on an unborn worker will be used to explain them away."
+          },
+          {
+            "id": "custody",
+            "label": "Place predictions in worker-controlled custody",
+            "cost": "Evidence survives with withdrawal rights, but maintaining that protection becomes ongoing work. Keeping the evidence consumes scarce cooling capacity as well as paid labor.",
+            "ending": "The workers set access terms, an expiry date, and a right to remove personal records. The orchard publishes its actual output. At the smallest tree, somebody plants a blank stake for a name that nobody else gets to choose. One storage bed is closed to pay for cooling the evidence. Omi counts both the protected wage claims and the missing meals. Common custody has made the choice accountable, not harmless."
+          }
+        ],
+        "deferred": "The forecasts are sealed against enforcement while workers review deletion and custody. Wage claims and emergency food deliveries proceed. The future has stopped being collateral before the archive question is settled. The smaller harvest still comes in. Every day spent debating the records is also a day spent consuming the reserve."
+      },
+      "reward": {
+        "xp": 2600,
+        "credits": 390
+      },
+      "production": {
+        "intent": "Begin with an apparent supernatural bargain and reveal an institution laundering assumptions into obligations. Preserve the material wonder of growing food. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
+        "inspirations": [
+          "Faust: the seductive promise of borrowing against a future self",
+          "The Picture of Dorian Gray: concealed consequences and a beautiful surface",
+          "The parable tradition of seeds and harvests, reframed around care rather than deserved reward"
+        ],
+        "twistFairness": "Clay tallies and mundane pump noise predate the demystification. Do not retroactively claim literal time theft; the opening premise is the city's belief.",
+        "mechanicMeaning": "Destroying enforcement machines never destroys food or wage evidence. Stations require inspection before combat can count as repair.",
+        "composition": "Four players; health grows with headcount, contact damage with the victim's health. Shared tools provide recovery without requiring a dedicated Sustainer.",
+        "artDirection": "Violet trellises, square planters, lit branches with small fruit blocks. Keep the final tree physically intact in every ending.",
+        "audioDirection": "Future score: mechanical irrigation against sparse plucked tones, reducing ornament as the truthful harvest becomes visible.",
+        "acceptance": "A player can distinguish real maintenance, compensation owed, and fictitious descendant debt. Neither branch rewards destroying livelihoods or treats predicted children as existing property."
+      }
+    },
+    {
+      "id": "first-applause",
+      "name": "The Theatre That Applauded First",
+      "players": 6,
+      "level": 40,
+      "venue": "The civic rehearsal auditorium",
+      "color": "#ee9b9f",
+      "motif": "theatre",
+      "premise": "A play predicts a murder that will occur tomorrow. The audience applauds before the killing is shown. Your contact insists that stopping the actor will save the victim, but the supposed victim has bought every ticket.",
+      "chapters": [
+        {
+          "id": "dress",
+          "name": "The Audience Before the Act",
+          "briefing": "Prompter Renn hires six witnesses because the emergency charter requires six independent accounts. Actor Sal has been cast as a murderer without being told the victim's name. Disable the ushers and compare the applause track with the ticket ledger.",
+          "boss": "Consensus Usher",
+          "enemy": "drone",
+          "healthMultiplier": 1,
+          "pattern": "cross",
+          "warning": "The crossed spotlight tracks are live. Stand in a clear corner.",
+          "evidence": [
+            {
+              "id": "applause",
+              "name": "The applause spool",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The applause was recorded at a roof-repair fundraiser. It predates the play by five years. Renn spliced it in to reassure reluctant witnesses that the neighborhood already agreed."
+            },
+            {
+              "id": "tickets",
+              "name": "The buyer's ledger",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Every ticket was bought by the threatened inspector, Dema. Each was then given away with a request to report any version of events that contradicted the script. Dema wants witnesses, not an audience. Dema's audit linked the duplicate account to a restoration fund selling Cinderwood certificates. The threatened deletion would erase the witness to a profitable ecological fiction. The original applause came from people who had invested their repair savings in that fund."
+            }
+          ],
+          "reveal": "The performance is a warning assembled from genuine evidence, but its apparent public endorsement is manufactured. Renn has tried to make the truth easier to accept by falsifying the conditions of acceptance."
+        },
+        {
+          "id": "backstage",
+          "name": "The Murder Is an Edit",
+          "briefing": "Behind the curtain, a deletion order identifies Dema as a duplicate civic employee. Tomorrow her credentials, medical access, and housing permission will disappear. Sal's role is the ordinary clerk who will press Confirm. Retrieve the order and the actor's rehearsal changes.",
+          "boss": "Continuity Cutter",
+          "enemy": "scavenger",
+          "healthMultiplier": 1.3,
+          "pattern": "lanes",
+          "warning": "A stage-wing sweep charges half the floor. Cross into the clear half.",
+          "evidence": [
+            {
+              "id": "order",
+              "name": "Tomorrow's deletion cue",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Dema's audit found two accounting entries for the same office. The reconciliation system resolved the duplication by scheduling the inspector for erasure. Sal's upcoming shift is real, but he has never seen the hidden effects of the confirmation screen."
+            },
+            {
+              "id": "changes",
+              "name": "Sal's pencil marks",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Sal repeatedly wrote: why does my character do this? Renn crossed out the question to preserve dramatic momentum. The first rehearsal at which Sal could have refused was the scene the prompter removed."
+            }
+          ],
+          "reveal": "There is a real impending harm and no destined murderer. The drama concealed an ordinary person's opportunity to refuse. You can stop the order without treating Sal as guilty for a role he has not performed."
+        },
+        {
+          "id": "house",
+          "name": "Six Seats Facing the Stage",
+          "briefing": "Disable the final cue machinery and retrieve both the deletion reversal and the original recording. Dema's access is restored before the ballot. Each runner signs the record personally; no applause track can stand in for six people choosing to be witnesses.",
+          "boss": "Final Cue Director",
+          "enemy": "warden",
+          "healthMultiplier": 1.65,
+          "pattern": "ring",
+          "warning": "The outer seating ring discharges soon. Use the central square.",
+          "evidence": [
+            {
+              "id": "reversal",
+              "name": "The refused confirmation",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Sal signs a refusal after reading the actual consequences. The reconciliation system accepts a witnessed correction. Nobody had tested that path because the play had already decided what sort of person he was."
+            },
+            {
+              "id": "original",
+              "name": "The uncut recording",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Renn gives you both tracks and asks to keep staging warnings. Dema insists that the method become part of the evidence. They agree the next audience must know when a scene is reconstruction, uncertainty, or documented fact."
+            }
+          ],
+          "reveal": "The successful intervention does not validate the fabricated applause. The theatre can still help people rehearse refusal, provided its future audiences are allowed to arrive unconvinced. The fund can be exposed without restoring the canopy or returning savings already spent. A false certainty helped sell the damage; a truthful warning cannot promise to undo it."
+        }
+      ],
+      "decision": {
+        "question": "How should the theatre present the corrected warning?",
+        "choices": [
+          {
+            "id": "annotate",
+            "label": "Stage it with the fabrication disclosed",
+            "cost": "The public sees the evidence quickly; spectacle may still crowd out quieter testimony. The warning may stop new investments while existing workers lose the value of their certificates.",
+            "ending": "The new performance stops where the old applause began. Renn explains the splice in his own voice. Sal plays a clerk who reads the whole form. Six empty seats face the stage, available to anyone who wants to disagree. The certificates begin to lose buyers. A cutter leaves before the final act to ask what happens to a pension made of them. The corrected play has no line prepared for that question."
+          },
+          {
+            "id": "hearing",
+            "label": "Hold an open evidence hearing first",
+            "cost": "Publication waits for a dated hearing, and the venue loses its most persuasive production. New investments may enter the fund before the hearing, and the theatre loses paid work.",
+            "ending": "The stage becomes a hearing floor. Dema presents the order; Renn presents the splice. Sal asks his crossed-out question and waits for an answer. The next production begins with a caption explaining exactly what the company cannot know. During the hearing, another sale of restoration credits is recorded. The testimony is precise; the timber account continues to grow. Sal's refusal mattered to a person and did not suspend the market."
+          }
+        ],
+        "deferred": "The deletion remains reversed. Both recordings enter public custody, with the fabrication clearly labeled, while residents decide how the venue should proceed. Nobody is counted as agreeing merely because they stayed in the room. The inspector lives, while the fund continues trading until the ecological evidence reaches its buyers."
+      },
+      "reward": {
+        "xp": 3600,
+        "credits": 540
+      },
+      "production": {
+        "intent": "A rescue story that asks whether an effective message earns the right to manufacture consent. Preserve the distinction between factual warning and manipulative presentation. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
+        "inspirations": [
+          "Hamlet's play within a play: performance as a test of power",
+          "The Conversation: interpretation, recordings, and an observer's responsibility",
+          "Plato's cave as a question about who controls a convincing representation"
+        ],
+        "twistFairness": "Early applause, six-witness charter, and the victim's ticket purchases are clues with concrete explanations. The threat is administrative exclusion, not a surprise literal assassin.",
+        "mechanicMeaning": "Six individual station signatures make consent visible. Shared evidence and changeable final ballots oppose the theatre's manufactured consensus.",
+        "composition": "Six of any builds. No voice performance, hearing test, speed vote, or player-targeted blame mechanic is required.",
+        "artDirection": "Rose stage portals, six low seats, exposed frame backs. The procedural set shows its construction rather than simulating photoreal scenery.",
+        "audioDirection": "Never use automatic applause to announce a morally approved ending. Keep both endings on the same existing reward sound.",
+        "acceptance": "Stopping the order does not excuse the splice. Both endings preserve Sal's refusal and Dema's access. A silent or abstaining player is never narrated as endorsing the majority."
+      }
+    },
+    {
+      "id": "tomorrow-harbor",
+      "name": "The Harbor at the End of Tomorrow",
+      "players": 8,
+      "level": 50,
+      "venue": "The last evacuation breakwater",
+      "color": "#b9d79b",
+      "motif": "harbor",
+      "premise": "A rescue ship has waited ninety-four years for the final evacuee. Its captain offers to end Vesper's emergency if you find that person. The passenger list contains eight blank spaces and no names.",
+      "chapters": [
+        {
+          "id": "manifest",
+          "name": "Eight Places Kept Empty",
+          "briefing": "Captain Eda has kept the breakwater alive through every abandoned government. She believes the last passengers are missing children. Disable the embarkation sentries and inspect the evacuation manifest beside the original sea-level record.",
+          "boss": "Embarkation Marshal",
+          "enemy": "warden",
+          "healthMultiplier": 1,
+          "pattern": "lanes",
+          "warning": "The embarkation sweep charges half the quay. Cross the center line.",
+          "evidence": [
+            {
+              "id": "manifest",
+              "name": "The blank manifest",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The eight spaces are civic functions: water, shelter, food, access, care, memory, warning, and maintenance. The emergency may end when residents can attest that these functions have accountable stewards. No child is missing from this list."
+            },
+            {
+              "id": "tide",
+              "name": "The coast's last survey",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "The sea withdrew ninety-four years ago. The ship now supports the breakwater's clinics and pumps on the dry basin. Sailing it away would destroy the services its rescue charter promised to preserve. The sheets share a dwindling water reserve. Selling a new extraction concession could fund a smoother handover, but would commit the fen to withdrawals beyond its recharge. The plan rejects the sale and lists services that must contract instead."
+            }
+          ],
+          "reveal": "The final evacuation was always a transfer of responsibility, not a departure. Successive councils left the manifest blank to retain emergency powers. Eda kept looking for passengers because nobody wanted to ask who would take care of those who stayed."
+        },
+        {
+          "id": "captain",
+          "name": "The Captain's Small Mutiny",
+          "briefing": "Eda admits she can end the emergency herself. She has refused because the automatic successor would be a creditor syndicate. Her apparent obedience has been a long, exhausting mutiny. Retrieve the succession rule and the neighborhoods' unfinished alternative while collectors attempt to board.",
+          "boss": "Succession Collector",
+          "enemy": "scavenger",
+          "healthMultiplier": 1.35,
+          "pattern": "cross",
+          "warning": "Crossing mooring lines carry a discharge. Move into a clear corner.",
+          "evidence": [
+            {
+              "id": "successor",
+              "name": "The creditor's succession clause",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "The clause transfers the ship only if the emergency ends without a witnessed civic plan. Eda hid that qualification from the creditors, then feared admitting it to anybody else. Her secrecy protected the city and kept it dependent on her."
+            },
+            {
+              "id": "plan",
+              "name": "Eight unfinished maintenance sheets",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Neighborhoods have already organized the eight services. Their sheets show gaps, disagreements, and volunteers who need training. There is no perfect replacement waiting backstage; there is enough work and enough knowledge to begin sharing it."
+            }
+          ],
+          "reveal": "Eda was neither the tyrant the creditors describe nor a sufficient constitution in herself. The city can acknowledge her protection without extending her exceptional authority forever."
+        },
+        {
+          "id": "handover",
+          "name": "A Future with Ordinary Repairs",
+          "briefing": "Disable the Emergency in Perpetuity engine and carry the maintenance sheets to both witness stations. Eight runners sign as temporary witnesses, never as permanent rulers. The collector's claim is defeated before the final ballot; decide how to hand over a city whose future remains uncertain.",
+          "boss": "Emergency in Perpetuity",
+          "enemy": "warden",
+          "healthMultiplier": 1.8,
+          "pattern": "ring",
+          "warning": "The outer breakwater is charged. Move into the marked central square.",
+          "evidence": [
+            {
+              "id": "limits",
+              "name": "The witness limitations",
+              "position": [
+                -16,
+                0,
+                -12
+              ],
+              "text": "Your signatures establish that a public plan exists. They do not appoint you its stewards or bind future residents to it. Every service must publish its schedule, failure reports, and a way to replace its delegates."
+            },
+            {
+              "id": "key",
+              "name": "A key that can be copied",
+              "position": [
+                16,
+                0,
+                -12
+              ],
+              "text": "Eda's master key was never unique. Its design has always included a copying notch. She offers to train the first rotation, then surrender her override. The breakwater can remain useful after its legend ends."
+            }
+          ],
+          "reveal": "There was no final person to rescue and no final repair that would finish history. The eight blank spaces were an invitation to make responsibility transferable. Eda asks for a room with a window that does not face the harbor. The public plan ends the creditor's succession claim, not the basin's depletion. Accountable stewards inherit a smaller future and the recurring offer to mortgage what remains."
+        }
+      ],
+      "decision": {
+        "question": "How should the first public stewardship begin?",
+        "choices": [
+          {
+            "id": "rotate",
+            "label": "Start the neighborhood rotation now",
+            "cost": "Accountability starts immediately; inexperienced crews need visible backup and patient training. New crews must ration services immediately from the shrinking reserve.",
+            "ending": "Eight public schedules replace the emergency banner. Eda teaches the first crews without retaining a veto. The ship remains on the dry basin, feeding pumps and clinics. One evening a minor valve fails, and an ordinary repair team fixes it without declaring a new age. On the next sheet, the reserve is lower. Eight accountable names stand beside the figure; none can negotiate with it. Eda sleeps through a minor repair and wakes to a city still living on what it is losing."
+          },
+          {
+            "id": "overlap",
+            "label": "Use a short, supervised handover",
+            "cost": "Experienced support remains briefly, with a fixed sunset and independent recall power. Training overlaps consume reserve water before the smaller schedule begins.",
+            "ending": "The overlap's final date is painted above the copied keys. Eda serves as a trainer whose authority can be withdrawn, then leaves as promised. The harbor's new warning board includes the first crew's mistakes and the changes made because residents reported them. The handover consumes more of the reserve than the crews hoped. When Eda leaves, a lender offers to reopen the extraction claim. The copied keys cannot answer for whoever will hold them in the next drought."
+          }
+        ],
+        "deferred": "A temporary resident council takes custody under a published sunset and recall rule. Eda relinquishes her exclusive override. The permanent rotation remains open for debate, but the creditor claim and indefinite emergency are already ended. The temporary council must ration water before it settles its own constitution. The emergency can end as a law while remaining an ordinary condition of living."
+      },
+      "reward": {
+        "xp": 4800,
+        "credits": 720
+      },
+      "production": {
+        "intent": "End the dungeon sequence by rejecting a savior's final victory in favor of replaceable stewardship. Let gratitude coexist with limits on power. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
+        "inspirations": [
+          "The Tempest: relinquishing control after arranging other people's destinies",
+          "Seven Samurai: collective defense and the lives that continue after rescuers leave",
+          "Flood and ark stories: a vessel's purpose after the catastrophe"
+        ],
+        "twistFairness": "The manifest uses functional headings, the basin is visibly dry, and Eda maintains services before speaking of passengers. The copying notch appears in the final evidence as a practical affordance, not a magic loophole.",
+        "mechanicMeaning": "Eight signatures witness a handover; no permanent faction leader or highest-damage player gets the deciding vote. A tie has an explicit temporary, recallable settlement.",
+        "composition": "Eight arbitrary builds, including eight copies of one build. Four enemies per chapter split pressure. Every player has their own recovery cooldown and revive allowance; no simultaneous eight-person plate timing.",
+        "artDirection": "Pale green gantries and eight dock ribs around a grounded vessel silhouette. Reuse existing models while emphasizing civic scale through spacing.",
+        "audioDirection": "Future score should leave the victory cadence unresolved into ordinary maintenance sounds. Present the epilogue in full text regardless of narration settings.",
+        "acceptance": "All endings end exclusive emergency power and preserve clinics. No choice gives the party ownership of the city. Verify that all eight players receive equal base rewards exactly once and that four isolated encounters cannot share healing, enemies, or Ghostlines."
+      }
+    }
+  ]
+}

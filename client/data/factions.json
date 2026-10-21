@@ -1,0 +1,42 @@
+[
+  {
+    "id": "relay",
+    "name": "The Relay",
+    "shortName": "RELAY",
+    "color": "#47e5e2",
+    "motto": "A route belongs to everyone who needs it.",
+    "description": "Couriers and lift stewards fight hereditary tolls and private route keys. Their public roads carry medicine and drilling rigs across the same wounded basin. Iri seeks access without ownership, knowing that opening a route can accelerate the destruction of the place it reaches.",
+    "giver": "iri",
+    "role": "Mobility, rescue, and shared infrastructure"
+  },
+  {
+    "id": "covenant",
+    "name": "Glass Covenant",
+    "shortName": "COVENANT",
+    "color": "#be9aff",
+    "motto": "A memory is a person before it is a record.",
+    "description": "Keepers of memory and consent, the Covenant refuses to turn a life into a saleable record. Its cooling vaults still draw water from dying wetlands, and its patrons buy restoration credits in forests already gone. Sera must decide what truth can survive when preservation itself consumes the world it describes.",
+    "giver": "sera",
+    "role": "Control, protection, and memory stewardship"
+  },
+  {
+    "id": "foundry",
+    "name": "Ash Foundry",
+    "shortName": "FOUNDRY",
+    "color": "#ffad66",
+    "motto": "No hand is fuel.",
+    "description": "Welders and heat engineers fight the machinery that makes every emergency another unpaid shift. Bram wants common ownership and a smaller furnace, but fewer cuts in Cinderwood also mean fewer wages and colder rooms. A worker's freedom cannot be made conditional on endless output; a city accustomed to that output will resist the limit.",
+    "giver": "bram",
+    "role": "Frontline defense, fabrication, and recovery"
+  },
+  {
+    "id": "choir",
+    "name": "Null Choir",
+    "shortName": "CHOIR",
+    "color": "#c0ef72",
+    "motto": "Listening begins where compulsion ends.",
+    "description": "Interpreters and acoustic workers defend chosen speech, quiet, and withdrawal. They oppose the sale of every listening hour, then confront a basin where silence also records extinction. Ves can give people an exit from a broadcast, but no exit from the material consequences of staying alive.",
+    "giver": "ves",
+    "role": "Disruption, concealment, and coordinated support"
+  }
+]

@@ -1,0 +1,184 @@
+// Authenticated in-game community terminal. User text is always escaped.
+import { api } from './network.js';
+import { escapeHtml as esc } from './icons.js';
+import { tabardPreview } from './tabard.js';
+
+const tabs = [['chat','CHAT'],['dm','MESSAGES'],['guild','GUILD'],['party','PARTY'],['auctions','AUCTION HOUSE'],['forum','FORUM'],['people','PEOPLE'],['deliveries','DELIVERIES']];
+const stamp = seconds => new Date(seconds * 1000).toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+const button = (label, action, fields = '') => `<button type="button" class="small-button" data-social="${action}" ${fields}>${esc(label)}</button>`;
+const field = (label, name, options = '') => `<label class="community-field">${label}<input name="${name}" ${options} required></label>`;
+const compose = (action, hidden = '', title = '') => `<form data-community-form="${action}" class="community-form">${hidden}${title}<label class="community-field">${action === 'dm' ? 'PRIVATE MESSAGE' : 'MESSAGE'}<textarea name="body" maxlength="${action === 'thread' || action === 'reply' ? 2000 : 1000}" rows="3" required></textarea></label><button class="button primary" type="submit">${action === 'thread' ? 'CREATE THREAD' : 'SEND'} ↗</button></form>`;
+const hidden = (name, value) => `<input type="hidden" name="${name}" value="${esc(value)}">`;
+const numeric = new Set(['group','auction','delivery','thread','quantity','minimum','buyout','hours','amount']);
+
+export class Community {
+  constructor({ character, online, showPanel, isOpen, toast, races, now = () => Date.now() }) {
+    Object.assign(this, { character, online, showPanel, isOpen, toast, races, now });
+    this.view = 'chat'; this.query = {}; this.summary = null; this.epoch = 0; this.busy = false; this.pending = null; this.owner = null;
+    const root = document.querySelector('#dialog-content');
+    root.addEventListener('click', e => { const b = e.target.closest('[data-social]'); if (b) this.click(b).catch(error => this.toast(error.message)); });
+    root.addEventListener('submit', e => { if (e.target.dataset.communityForm) { e.preventDefault(); this.submit(e.target).catch(error => this.toast(error.message)); } });
+    root.addEventListener('input', e => {
+      if (e.target.form?.dataset.communityForm !== 'guild_tabard') return;
+      const values = Object.fromEntries(new FormData(e.target.form));
+      const preview = document.querySelector('#tabard-live'); if (preview) preview.innerHTML = tabardPreview(values);
+    });
+    this.timer = setInterval(() => this.poll(), 5000);
+  }
+  reset() { this.summary = null; this.query = {}; this.epoch++; }
+  path() { return `/characters/${encodeURIComponent(this.character().id)}/social`; }
+  async browse(query) { return (await api(`${this.path()}?${new URLSearchParams(Object.entries(query).filter(([,v]) => v !== undefined && v !== null))}`)).data; }
+  async open(view = this.view, query = {}) {
+    if (!this.online()) {
+      this.showPanel('The city’s community.', '<p>Sign in and enter with a server character to join guilds and parties, trade, use persistent chat and messages, and browse the forum. Your local character remains available in this browser.</p>', 'COMMUNITY / ACCOUNT REQUIRED', 'community'); return;
+    }
+    const id = this.character().id;
+    if (this.owner !== id) { this.owner = id; this.summary = null; this.pending = null; this.view = 'chat'; }
+    const epoch = ++this.epoch; this.view = view; this.query = query;
+    this.showPanel('Stay connected.', '<p role="status">Opening the community terminal…</p>', 'VESPER / COMMUNITY', 'community');
+    try { this.summary = await this.browse({ view: 'summary' }); }
+    catch (error) { if (epoch === this.epoch && this.isOpen()) this.showPanel('Community unavailable.', `<p role="alert">${esc(error.message)}</p>${button('TRY AGAIN','tab','data-view="chat"')}`, 'VESPER / COMMUNITY', 'community'); return; }
+    if (epoch !== this.epoch || !this.isOpen()) return;
+    this.render(); await this.refresh(epoch);
+  }
+  channelName(channel) {
+    if (channel.startsWith('race:')) return `${this.races.find(r => r.id === channel.slice(5))?.name || 'Lineage'} hall`;
+    if (channel.startsWith('guild:')) return 'Guild'; if (channel.startsWith('party:')) return 'Party'; return channel === 'general' ? 'General' : channel === 'trade' ? 'Trade' : 'World';
+  }
+  choices(channels, key, selected) { return `<div class="tabs community-channels">${channels.map(c => button(this.channelName(c),'channel',`data-key="${key}" data-channel="${esc(c)}" aria-pressed="${c === selected}"`)).join('')}</div>`; }
+  render() {
+    const s = this.summary, c = this.character(), view = this.view;
+    let html = `<div class="tabs community-tabs">${tabs.map(([id,label]) => `<button data-social="tab" data-view="${id}" class="${id === view ? 'selected' : ''}">${label}</button>`).join('')}</div><div class="community-status"><span id="community-status">${s.deliveries} deliveries · ${s.inbox.reduce((n,i) => n+i.unread,0)} unread messages</span>${button('REFRESH','refresh')}</div><div id="community-retry" ${this.pending ? '' : 'hidden'}><p>An action needs a response. Retry it with the same request ID.</p>${button('RETRY ACTION','retry')}</div>`;
+    const pager = `<div class="settings-actions">${button('LATEST','latest')}<button type="button" id="community-older" class="small-button" data-social="older" hidden>OLDER →</button></div>`;
+    if (view === 'chat') {
+      if (!s.channels.includes(this.query.channel)) this.query.channel = 'world';
+      html += this.choices(s.channels,'channel',this.query.channel)+`<p class="muted">Persistent history · ${esc(this.channelName(this.query.channel))}</p><div id="community-stream" class="community-stream" aria-live="polite"></div>${pager}`+compose('chat',hidden('channel',this.query.channel));
+    } else if (view === 'dm') {
+      html += '<p class="muted">Messages reach offline characters. Use People to start a conversation.</p><div class="community-inbox">'+s.inbox.map(i => button(`${i.profile?.name || i.id.slice(0,8)}${i.unread ? ` (${i.unread} new)` : ''}`,'message',`data-target="${esc(i.id)}"`)).join('')+'</div>';
+      if (this.query.target) html += `<p>Conversation with <code>${esc(this.query.target)}</code></p><div id="community-stream" class="community-stream" aria-live="polite"></div>${pager}`+compose('dm',hidden('target',this.query.target));
+      else html += '<p>Select a conversation or find someone in People.</p>';
+    } else if (view === 'guild' || view === 'party') {
+      html += this.groupView(view);
+    } else if (view === 'forum') {
+      const sections = ['general',...s.channels.filter(ch => ch !== 'world')];
+      if (!sections.includes(this.query.section)) this.query.section = 'general';
+      html += this.choices(sections,'section',this.query.section);
+      if (this.query.thread) html += `<h3 id="community-thread-title">Thread</h3>${button('BACK TO THREADS','channel',`data-key="section" data-channel="${esc(this.query.section)}"`)}<div id="community-stream" class="community-stream"></div>${pager}`+compose('reply',hidden('thread',this.query.thread));
+      else html += `<div id="community-stream" class="community-stream"></div>${pager}`+compose('thread',hidden('section',this.query.section),field('THREAD TITLE','title','minlength="3" maxlength="100"'));
+    } else if (view === 'auctions') {
+      html += `<p>Trade field medkits for credits. Items and bids enter escrow immediately. Auctions last 1–48 real hours; sellers pay a 5% fee on a sale. Purchases, proceeds, and refunds arrive in Deliveries.</p><p>Wallet: ${c.credits} ¤ · Pack: ${c.medkits} medkits</p><div id="community-stream" class="community-stream"></div>${pager}<h3>List medkits</h3><form data-community-form="auction_list" class="community-form community-grid">${field('QUANTITY','quantity',`type="number" min="1" max="${Math.max(1,c.medkits)}" value="1"`)}${field('STARTING BID ¤','minimum','type="number" min="1" max="1000000" value="10"')}${field('BUYOUT ¤','buyout','type="number" min="1" max="1000000" value="18"')}${field('DURATION / HOURS','hours','type="number" min="1" max="48" value="24"')}<button class="button primary">LIST IN ESCROW</button></form>`;
+    } else if (view === 'deliveries') {
+      html += `<p>Claim auction purchases, refunds, gifts, and lineage supplies. Partial claims leave the rest safely stored until you have space.</p><div id="community-stream" class="community-stream"></div>${pager}`;
+    } else if (view === 'people') {
+      html += `<p>Your character ID: <code>${esc(c.id)}</code></p><form data-community-form="search" class="community-form">${field('FIND A PLAYER / NAME OR ID','search',`maxlength="128" value="${esc(this.query.search || '')}"`)}<button class="small-button">SEARCH</button></form><div id="community-stream" class="community-stream"></div>${pager}<h3>Contacts & invitations</h3>`;
+      html += s.contacts.map(f => `<article class="community-entry"><strong>${esc(f.profile?.name || f.id)}</strong><small>${f.online ? 'ONLINE' : 'OFFLINE'} · ${f.accepted ? 'FRIEND' : f.incoming ? 'INVITATION RECEIVED' : 'INVITATION SENT'}</small>${button('MESSAGE','message',`data-target="${esc(f.id)}"`)}${!f.accepted && f.incoming ? button('ACCEPT','mutate',`data-action="friend_accept" data-target="${esc(f.id)}"`) : ''}${button(f.accepted ? 'REMOVE' : 'DECLINE / CANCEL','mutate',`data-action="friend_remove" data-target="${esc(f.id)}"`)}</article>`).join('');
+      html += (s.blocked || []).map(id => `<p>Blocked: <code>${esc(id)}</code> ${button('UNBLOCK','mutate',`data-action="unblock" data-target="${esc(id)}"`)}</p>`).join('');
+    }
+    this.showPanel('Stay connected.',html,'VESPER / COMMUNITY','community');
+  }
+  groupView(kind) {
+    const c = this.character(), s = this.summary, g = s[kind], invitations = s[`${kind}Invites`];
+    let html = invitations.map(g => `<article class="community-entry">Invitation: ${esc(g.name)} ${button('JOIN','mutate',`data-action="${kind}_join" data-group="${g.id}"`)} ${button('DECLINE','mutate',`data-action="${kind}_decline" data-group="${g.id}"`)}</article>`).join('');
+    if (!g) html += `<h3>Create a ${kind}</h3><form data-community-form="${kind}_create" class="community-form">${field('NAME','name','minlength="3" maxlength="32"')}<label><input type="checkbox" name="raceOnly"> Reserve membership for ${esc(this.races.find(r=>r.id===c.race)?.name)} characters</label><button class="button primary">CREATE ${kind.toUpperCase()}</button></form>`;
+    else {
+      const leader = g.owner === c.id, officer = leader || g.members[c.id] === 'officer';
+      html += `<h3>${esc(g.name)}</h3><p>${g.race ? `${esc(this.races.find(r=>r.id===g.race)?.name)} charter` : 'All lineages welcome'} · ${Object.keys(g.members).length} members</p>${kind === 'guild' ? tabardPreview(g.tabard) : '<p>Party chat works across shards. World encounters are shared only with players in the same shard.</p>'}`;
+      html += Object.entries(g.members).map(([id,role]) => {
+        const m = s.members.find(p => p.id === id);
+        return `<article class="community-entry"><strong>${esc(m?.profile?.name || id.slice(0,8))}</strong><small>${esc(role)} · ${m?.online ? 'ONLINE' : 'OFFLINE'}</small>${id !== c.id ? button('MESSAGE','message',`data-target="${esc(id)}"`) : ''}${officer && id !== g.owner ? button('REMOVE','mutate',`data-action="${kind}_kick" data-group="${g.id}" data-target="${esc(id)}"`) : ''}${leader && id !== c.id ? button(role === 'officer' ? 'MAKE MEMBER' : 'MAKE OFFICER','mutate',`data-action="${kind}_promote" data-group="${g.id}" data-target="${esc(id)}" data-role="${role === 'officer' ? 'member' : 'officer'}"`)+button('TRANSFER LEADERSHIP','mutate',`data-action="${kind}_transfer" data-group="${g.id}" data-target="${esc(id)}"`) : ''}</article>`;
+      }).join('');
+      if (officer) html += `<form data-community-form="${kind}_invite" class="community-form">${hidden('group',g.id)}${field('INVITE / CHARACTER ID (FIND IN PEOPLE)','target','minlength="64" maxlength="64"')}<button class="small-button">INVITE</button></form>`;
+      if (kind === 'guild' && officer) html += `<form data-community-form="guild_tabard" class="community-form community-grid">${hidden('group',g.id)}${field('CLOTH','base',`type="color" value="${esc(g.tabard.base)}"`)}${field('TRIM','trim',`type="color" value="${esc(g.tabard.trim)}"`)}<label class="community-field">PATTERN<select name="pattern">${['stripe','cross','split'].map(v=>`<option ${v===g.tabard.pattern?'selected':''}>${v}</option>`).join('')}</select></label><label class="community-field">EMBLEM<select name="emblem">${['signal','star','tower'].map(v=>`<option ${v===g.tabard.emblem?'selected':''}>${v}</option>`).join('')}</select></label><div id="tabard-live">${tabardPreview(g.tabard)}</div><button class="button primary">SAVE TABARD</button></form>`;
+      html += button('LEAVE '+kind.toUpperCase(),'mutate',`data-action="${kind}_leave" data-group="${g.id}"`);
+    }
+    if (kind === 'guild') html += `<article class="info-card"><h3>Your lineage hall</h3><p>Complete your first lineage chapter to unlock one daily medkit. A guild with your lineage’s charter grants two. Supplies reset at 00:00 UTC and wait safely in Deliveries. Your lineage has its own private chat and forum section.</p><button class="small-button" data-social="mutate" data-action="lineage_reward" ${s.lineageClaimed ? 'disabled' : ''}>${s.lineageClaimed ? 'CLAIMED TODAY' : 'CLAIM DAILY SUPPLY'}</button></article><h3>Guild directory</h3><div id="community-stream" class="community-stream"></div><div class="settings-actions">${button('FIRST PAGE','latest')}<button type="button" id="community-older" class="small-button" data-social="older" hidden>MORE GUILDS →</button></div>`;
+    return html;
+  }
+  async refresh(epoch = this.epoch) {
+    if (!this.isOpen() || !this.summary || !document.querySelector('#community-stream')) return;
+    const id = this.character().id, query = { ...this.query, view: this.view === 'guild' ? 'guilds' : this.view };
+    const result = await this.browse(query);
+    if (epoch !== this.epoch || this.character()?.id !== id || !this.isOpen()) return;
+    this.next = result.before;
+    const stream = document.querySelector('#community-stream'); if (!stream) return;
+    const nearBottom = stream.scrollHeight-stream.scrollTop-stream.clientHeight < 50;
+    const html=this.rows(result);if(stream.innerHTML!==html)stream.innerHTML=html;
+    if (nearBottom && !this.query.before && ['chat','dm'].includes(this.view)) stream.scrollTop = stream.scrollHeight;
+    const older = document.querySelector('#community-older'); if (older) older.hidden = result.before == null;
+    const title = document.querySelector('#community-thread-title'); if (title && result.thread) title.textContent = result.thread.title;
+    if (this.view === 'dm' && !this.query.before && !this.busy && !this.pending) {
+      const through = Math.max(0,...result.items.filter(p=>p.recipient===id).map(p=>p.id));
+      const incoming = this.summary.inbox.find(i=>i.id===query.target);
+      if (through && incoming?.unread) await this.mutate({action:'dm_read',target:query.target,through},false);
+    }
+  }
+  rows(result) {
+    const c = this.character(), view = this.view;
+    if (!result.items.length) return '<p class="muted">Nothing here yet.</p>';
+    if (view === 'chat' || view === 'dm' || (view === 'forum' && this.query.thread)) return [...result.items].reverse().map(p=>`<article class="community-entry"><strong>${esc(p.name)}</strong><small>${stamp(p.created)}</small><p class="community-body">${esc(p.body)}</p></article>`).join('');
+    if (view === 'forum') return result.items.map(t=>`<article class="community-entry">${button(t.title,'thread',`data-thread="${t.id}"`)}<small>${esc(t.name)} · ${stamp(t.created)}</small></article>`).join('');
+    if (view === 'guild') return result.items.map(g=>`<article class="community-entry">${tabardPreview(g.tabard)}<strong>${esc(g.name)}</strong><small>${g.members} members · ${g.race ? esc(this.races.find(r=>r.id===g.race)?.name) : 'All lineages'}</small>${button('MESSAGE LEADER','message',`data-target="${esc(g.leader)}"`)}</article>`).join('');
+    if (view === 'auctions') return result.items.map(a=>`<article class="community-entry"><strong>${a.quantity} field medkit${a.quantity===1?'':'s'} · ${esc(a.status)}</strong><small>#${a.id} · Ends ${stamp(a.expires)} · ${a.seller===c.id?'YOUR LISTING':a.bidder===c.id?'YOUR BID':'MARKET'}</small><p>Bid ${a.bid || a.minimum} ¤ · Buyout ${a.buyout} ¤</p>${a.status==='open' && a.expires>this.now()/1000 ? a.seller===c.id ? (!a.bidder?button('CANCEL LISTING','mutate',`data-action="auction_cancel" data-auction="${a.id}"`):'Bid held in escrow') : `<form data-community-form="auction_bid" class="community-form">${hidden('auction',a.id)}${field('BID ¤','amount',`type="number" min="${Math.max(a.minimum,a.bid+1)}" max="${a.buyout}" value="${Math.max(a.minimum,a.bid+1)}"`)}<button class="small-button">BID</button></form>${button('BUYOUT / '+a.buyout+' ¤','mutate',`data-action="auction_buy" data-auction="${a.id}"`)}` : ''}</article>`).join('');
+    if (view === 'deliveries') return result.items.map(d=>`<article class="community-entry"><strong>${esc(d.reason)}</strong><p>${d.credits} ¤ · ${d.medkits} medkits</p>${button('CLAIM','mutate',`data-action="claim" data-delivery="${d.id}"`)}</article>`).join('');
+    if (view === 'people') return result.items.map(p=>`<article class="community-entry"><strong>${esc(p.name)}</strong><small>${esc(this.races.find(r=>r.id===p.race)?.name)} · ${p.online?'ONLINE':'OFFLINE'}</small><code>${esc(p.id)}</code>${p.id!==c.id?`<div class="settings-actions">${button('MESSAGE','message',`data-target="${esc(p.id)}"`)}${button('ADD FRIEND','mutate',`data-action="friend_request" data-target="${esc(p.id)}"`)}${button('BLOCK','mutate',`data-action="block" data-target="${esc(p.id)}"`)}</div><form data-community-form="gift" class="community-form">${hidden('target',p.id)}${field('GIFT CREDITS','amount','type="number" min="1" max="1000000"')}<button class="small-button">SEND GIFT</button></form>`:''}</article>`).join('');
+    return '';
+  }
+  async mutate(request, reopen = true) {
+    if (this.busy) return;
+    if (this.pending && request !== this.pending) throw new Error('Retry the pending action before sending another.');
+    this.pending ||= {...request,version:2,requestId:crypto.randomUUID()}; this.busy = true;
+    const id = this.character().id;
+    try {
+      const result = await api(this.path(),this.pending); this.pending = null;
+      if (this.character()?.id !== id) return;
+      if (reopen && this.isOpen()) await this.open(this.view,{...this.query,before:undefined});
+      else if (this.summary && request.action==='dm_read') { const conversation=this.summary.inbox.find(i=>i.id===request.target);if(conversation)conversation.unread=0; }
+      return result;
+    } catch (error) {
+      if (error.status && error.status<500) this.pending = null;
+      const retry = document.querySelector('#community-retry'); if (retry) retry.hidden = !this.pending;
+      throw error;
+    } finally { this.busy = false; }
+  }
+  async click(b) {
+    const d = b.dataset;
+    if (d.social==='tab') return this.open(d.view);
+    if (d.social==='message') return this.open('dm',{target:d.target});
+    if (d.social==='channel') return this.open(this.view,{[d.key]:d.channel});
+    if (d.social==='thread') return this.open('forum',{section:this.query.section,thread:Number(d.thread)});
+    if (d.social==='refresh') return this.refresh();
+    if (d.social==='older') { this.query.before=this.next;return this.refresh(++this.epoch); }
+    if (d.social==='latest') { delete this.query.before;return this.refresh(++this.epoch); }
+    if (d.social==='retry' && this.pending) return this.mutate(this.pending);
+    if (d.social==='mutate') {
+      const request = {action:d.action};for (const key of ['target','group','auction','delivery','role']) if(d[key]!==undefined)request[key]=numeric.has(key)?Number(d[key]):d[key];
+      b.disabled=true;try { await this.mutate(request); } finally { b.disabled=false; }
+    }
+  }
+  async submit(form) {
+    if (this.busy) return;
+    const action = form.dataset.communityForm, values = Object.fromEntries(new FormData(form));
+    if (action==='search') return this.open('people',{search:values.search});
+    const request = {action,...values};
+    for (const key of numeric) if(request[key]!==undefined)request[key]=Number(request[key]);
+    if (action.endsWith('_create')) request.raceOnly=values.raceOnly==='on';
+    if (action==='guild_tabard') request.tabard={base:values.base,trim:values.trim,pattern:values.pattern,emblem:values.emblem};
+    const submit = form.querySelector('[type="submit"],button');submit.disabled=true;
+    try { await this.mutate(request); } finally { submit.disabled=false; }
+  }
+  async poll() {
+    if (!this.online() || !this.character() || this.busy || this.polling || document.hidden) return;
+    this.polling=true;
+    const id = this.character().id, epoch = this.epoch;
+    try {
+      const summary = await this.browse({view:'summary'});
+      if (this.character()?.id!==id || !this.online() || epoch!==this.epoch) return;
+      this.summary=summary;
+      const unread=summary.inbox.reduce((n,i)=>n+i.unread,0), badge=document.querySelector('#community-badge');if(badge)badge.textContent=unread?String(unread):'';
+      const status=document.querySelector('#community-status');if(status)status.textContent=`${summary.deliveries} deliveries · ${unread} unread messages`;
+      // Never replace a composing form, an auction bid, or a page of historical messages.
+      if (this.isOpen() && !this.query.before && ['chat','dm','forum','deliveries'].includes(this.view) && epoch===this.epoch) await this.refresh(epoch);
+    } catch { /* Explicit refresh reports connection errors; background polling preserves drafts. */ }
+    finally { this.polling=false; }
+  }
+}

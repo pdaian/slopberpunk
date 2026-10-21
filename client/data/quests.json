@@ -1,0 +1,4126 @@
+[
+  {
+    "id": "relay-00",
+    "title": "A Door for Everyone",
+    "faction": "relay",
+    "race": null,
+    "level": 0,
+    "requires": [],
+    "giver": "iri",
+    "briefing": "Iri has a simple first delivery: a replacement notice for the gate's public desk in Lantern Market. The old notice lists permits nobody can obtain anymore; register new opening hours where every arrival can read them. The arrivals include pump families from the eastern fen, where another well has failed.",
+    "completion": "The gate still creaks, but it no longer pretends to be closed. Iri marks your first route with an open circle. The open gate admits people the city cannot yet feed. Access is the first promise; it is already being mistaken for the whole one.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 220,
+      "credits": 30
+    }
+  },
+  {
+    "id": "relay-01",
+    "title": "Receipts for Air",
+    "faction": "relay",
+    "race": null,
+    "level": 2,
+    "requires": [
+      "relay-00"
+    ],
+    "giver": "iri",
+    "briefing": "Market stalls receive transit bills even when their goods arrive on foot. Collect the public billing record from the market terminal so Iri can show exactly which obsolete contract keeps charging them.",
+    "completion": "The contract bills each stall for a freight lift demolished nineteen years ago. Names replace rumors on Iri's growing repair list.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 370,
+      "credits": 54
+    }
+  },
+  {
+    "id": "relay-02",
+    "title": "The Unpaid Minute",
+    "faction": "relay",
+    "race": null,
+    "level": 4,
+    "requires": [
+      "relay-01"
+    ],
+    "giver": "iri",
+    "briefing": "The nearest route node delays every pedestrian crossing until a toll payment times out. Replace its expired tariff with a public crossing interval, then leave the maintenance notes attached for the next mechanic.",
+    "completion": "A minute of waiting disappears from hundreds of journeys. Iri insists that saved time belongs to the walkers, not the Relay.",
+    "objective": {
+      "type": "interact",
+      "target": "relay-node",
+      "count": 1
+    },
+    "reward": {
+      "xp": 520,
+      "credits": 78
+    }
+  },
+  {
+    "id": "relay-03",
+    "title": "A Courier Stands Still",
+    "faction": "relay",
+    "race": null,
+    "level": 6,
+    "requires": [
+      "relay-02"
+    ],
+    "giver": "iri",
+    "briefing": "Audit drones keep flagging a resting courier as an abandoned parcel. Disable the machines running that broken identification rule so the crew can take its promised break without being dragged back onto a route.",
+    "completion": "The courier finishes a hot meal while the enforcement loop falls quiet. Iri adds a rest stop to the map instead of another performance target.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 2
+    },
+    "reward": {
+      "xp": 670,
+      "credits": 102
+    }
+  },
+  {
+    "id": "relay-04",
+    "title": "The Missing Footpath",
+    "faction": "relay",
+    "race": null,
+    "level": 8,
+    "requires": [
+      "relay-03"
+    ],
+    "giver": "iri",
+    "briefing": "The Relay's missing footpath runs east into Mourning Fen. Visit the drawdown gauge and inspect the route used by water carriers. Iri wants a public road; Mara's pump crew warns that any road wide enough for relief carts is wide enough for a drilling rig.",
+    "completion": "The path can be opened without destroying the reed bank. Its new map will also tell the concession where the last reliable water lies. Iri leaves both consequences in the survey.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 820,
+      "credits": 126
+    }
+  },
+  {
+    "id": "relay-05",
+    "title": "Names below the Arrows",
+    "faction": "relay",
+    "race": null,
+    "level": 10,
+    "requires": [
+      "relay-04"
+    ],
+    "giver": "iri",
+    "briefing": "A navigation patch marks lower-deck homes as empty space because their residents were never registered. Add the neighborhood's own place names to the route node, preserving both old directions and the names people actually use.",
+    "completion": "Copper Walk appears where there used to be a blank rectangle. The first corrected destination is somebody's kitchen.",
+    "objective": {
+      "type": "interact",
+      "target": "relay-node",
+      "count": 1
+    },
+    "reward": {
+      "xp": 970,
+      "credits": 150
+    }
+  },
+  {
+    "id": "relay-06",
+    "title": "Deadweight Fee",
+    "faction": "relay",
+    "race": null,
+    "level": 12,
+    "requires": [
+      "relay-05"
+    ],
+    "giver": "iri",
+    "briefing": "Broken salvage machines have started dragging public handcarts into a fenced depot. Recover the route by disabling the machines; the carts belong to everyone who cannot carry a week's food up the steps.",
+    "completion": "The handcarts return with fresh wheel pins. Iri paints their repair instructions directly onto the handles.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 3
+    },
+    "reward": {
+      "xp": 1120,
+      "credits": 174
+    }
+  },
+  {
+    "id": "relay-07",
+    "title": "Hold the Middle Landing",
+    "faction": "relay",
+    "race": null,
+    "level": 14,
+    "requires": [
+      "relay-06"
+    ],
+    "giver": "iri",
+    "briefing": "The lift stewards need one uninterrupted maintenance cycle to reconnect a landing call button. Clear the audit drones that interpret every opened service panel as a fare violation.",
+    "completion": "A child on the middle landing calls the lift without shouting up three floors. The stewards leave the panel unlocked for future repairs.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 3
+    },
+    "reward": {
+      "xp": 1270,
+      "credits": 198
+    }
+  },
+  {
+    "id": "relay-08",
+    "title": "A Map with Room",
+    "faction": "relay",
+    "race": null,
+    "level": 16,
+    "requires": [
+      "relay-07"
+    ],
+    "giver": "iri",
+    "briefing": "Continuance's official map reserves no width for wheelchairs or freight trolleys. Consult the old access survey and restore its dimensions before the next automated reroute squeezes everyone into stairwells. The basin survey also marks reed banks as unused verge. Preserve those boundaries when you restore the human access dimensions.",
+    "completion": "The forgotten survey includes benches, turning spaces, and shelter from heat. Iri calls it the first map that seems to expect people. Width has to come from somewhere. Iri removes a freight lane instead of the reeds; its operators post the lost delivery fees at the Relay desk.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1420,
+      "credits": 222
+    }
+  },
+  {
+    "id": "relay-09",
+    "title": "The Right to Arrive Late",
+    "faction": "relay",
+    "race": null,
+    "level": 18,
+    "requires": [
+      "relay-08"
+    ],
+    "giver": "iri",
+    "briefing": "A delivery contract fines families when a courier misses a narrow window. Post the neighborhood's replacement agreement: safe arrival, visible delays, and no penalties for helping someone along the way.",
+    "completion": "The first late parcel arrives with medicine for another street. Its recipient signs the new agreement without asking for a discount.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1570,
+      "credits": 246
+    }
+  },
+  {
+    "id": "relay-10",
+    "title": "The Road through Roots",
+    "faction": "relay",
+    "race": null,
+    "level": 20,
+    "requires": [
+      "relay-09"
+    ],
+    "giver": "iri",
+    "briefing": "The western relief route would cross Cinderwood's last canopy. Visit its refuge and check an older service path before the Relay offers another road to an extraction company. Tovin's cutters need transport too; closing every route would strand the people already caught there.",
+    "completion": "The older path spares the living trees and carries less freight. The carriers raise their prices. A line on Iri's map has become a longer queue at the food stall.",
+    "objective": {
+      "type": "explore",
+      "target": "wood-refuge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1720,
+      "credits": 270
+    }
+  },
+  {
+    "id": "relay-11",
+    "title": "Two Ends of a Promise",
+    "faction": "relay",
+    "race": null,
+    "level": 22,
+    "requires": [
+      "relay-10"
+    ],
+    "giver": "iri",
+    "briefing": "A route has been declared open even though nobody tested whether its destination lift works. Run the return check from the node and require every future opening notice to include both ends of the journey.",
+    "completion": "The check catches a stalled cabin before the route goes public. Iri crosses out the ceremonial ribbon and schedules the actual repair.",
+    "objective": {
+      "type": "interact",
+      "target": "relay-node",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1870,
+      "credits": 294
+    }
+  },
+  {
+    "id": "relay-12",
+    "title": "The Toll Collector Sleeps",
+    "faction": "relay",
+    "race": null,
+    "level": 24,
+    "requires": [
+      "relay-11"
+    ],
+    "giver": "iri",
+    "briefing": "A heavy warden guards a crossing under a permit schedule last renewed by the vanished council. Disable its enforcement chassis so the stewards can remove the schedule without placing another worker in its sights.",
+    "completion": "Inside the chassis is a flawless record of fees and no record of the people delayed. The crossing opens under a neighborhood maintenance rota.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2020,
+      "credits": 318
+    }
+  },
+  {
+    "id": "relay-13",
+    "title": "Routes without Witnesses",
+    "faction": "relay",
+    "race": null,
+    "level": 26,
+    "requires": [
+      "relay-12"
+    ],
+    "giver": "iri",
+    "briefing": "A route-planning archive stores travelers' identities beside ordinary traffic counts. Ask the vault to separate public congestion data from private journeys before the Relay publishes its expanded network.",
+    "completion": "Useful traffic totals survive; individual itineraries do not. Iri accepts that a good public map need not remember every footstep.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2170,
+      "credits": 342
+    }
+  },
+  {
+    "id": "relay-14",
+    "title": "The Copper Walk Compact",
+    "faction": "relay",
+    "race": null,
+    "level": 28,
+    "requires": [
+      "relay-13"
+    ],
+    "giver": "iri",
+    "briefing": "The lower-deck stewards want a say in a network they will help maintain. Bring their compact to the public terminal, granting every district its own closure notices, repair budget, and appeal path.",
+    "completion": "The Relay signs away its exclusive access key. Iri looks relieved to discover that a promise can become stronger when it is shared.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2320,
+      "credits": 366
+    }
+  },
+  {
+    "id": "relay-15",
+    "title": "The Gate Faces Outward",
+    "faction": "relay",
+    "race": null,
+    "level": 30,
+    "requires": [
+      "relay-14"
+    ],
+    "giver": "iri",
+    "briefing": "The city route network is nearly connected, but its arrows stop at the gate. Survey the outward path and record where city pavement becomes salt crust so travelers know what the transition actually demands. The same contracts that priced the streets have leased the wetlands beyond them. An outward arrow does not end a market.",
+    "completion": "The new map shows water, shade, and the last safe return point. Beyond the gate, old beacon housings glitter in the dust. At the first water stop, a trader has already priced the traffic the new route will bring.",
+    "objective": {
+      "type": "explore",
+      "target": "city-gate",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2470,
+      "credits": 390
+    }
+  },
+  {
+    "id": "relay-16",
+    "title": "A Light under Salt",
+    "faction": "relay",
+    "race": null,
+    "level": 32,
+    "requires": [
+      "relay-15"
+    ],
+    "giver": "iri",
+    "briefing": "A basin beacon still transmits a harbor frequency from before the sea withdrew. Give it a ground-route reference and fit a physical marker so a dead battery will not erase the way home.",
+    "completion": "The beacon speaks the present terrain for the first time. Its painted plate remains legible after the transmitter clicks off.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2620,
+      "credits": 414
+    }
+  },
+  {
+    "id": "relay-17",
+    "title": "No Empty Country",
+    "faction": "relay",
+    "race": null,
+    "level": 34,
+    "requires": [
+      "relay-16"
+    ],
+    "giver": "iri",
+    "briefing": "Continuance calls the Glassroot Steppe empty because its households and grasses yield no ground rent. Visit the soil core north of Vesper and mark the well's catchment as part of the route. Iri needs a map that can show a place without advertising it as an opportunity.",
+    "completion": "Homes and root beds enter the map together. A mineral broker requests the same survey. The Relay refuses, knowing another surveyor can walk the ground tomorrow.",
+    "objective": {
+      "type": "explore",
+      "target": "steppe-core",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2770,
+      "credits": 438
+    }
+  },
+  {
+    "id": "relay-18",
+    "title": "A Machine at Every Horizon",
+    "faction": "relay",
+    "race": null,
+    "level": 36,
+    "requires": [
+      "relay-17"
+    ],
+    "giver": "iri",
+    "briefing": "Audit drones follow the reactivated beacon and mistake roadside shelters for unpaid transport stations. Break their tracking group before anyone must choose between being found by help and being found by a collector.",
+    "completion": "The shelters keep their beacon signal. The disabled trackers reveal that Continuance treats discovery itself as a taxable service.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 4
+    },
+    "reward": {
+      "xp": 2920,
+      "credits": 462
+    }
+  },
+  {
+    "id": "relay-19",
+    "title": "The Direction of Welcome",
+    "faction": "relay",
+    "race": null,
+    "level": 38,
+    "requires": [
+      "relay-18"
+    ],
+    "giver": "iri",
+    "briefing": "A beacon's default message orders every traveler back to Vesper. Replace it with routes in both directions and an honest description of supplies, leaving the decision to the person reading it.",
+    "completion": "The outward arrow receives as much paint as the inward one. Iri records the change as the Relay's first route that does not require a destination.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3070,
+      "credits": 486
+    }
+  },
+  {
+    "id": "relay-20",
+    "title": "Water Is Not Freight",
+    "faction": "relay",
+    "race": null,
+    "level": 40,
+    "requires": [
+      "relay-19"
+    ],
+    "giver": "iri",
+    "briefing": "Salvage automatons are stripping public water carriers for their valuable cooling fins. Clear the machines from the supply route so the basin crews can deliver drinking water before they argue about replacement equipment.",
+    "completion": "Water reaches the shelters on time. The recovered fins become a repair reserve with no owner's mark.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 5
+    },
+    "reward": {
+      "xp": 3220,
+      "credits": 510
+    }
+  },
+  {
+    "id": "relay-21",
+    "title": "The Long Return",
+    "faction": "relay",
+    "race": null,
+    "level": 42,
+    "requires": [
+      "relay-20"
+    ],
+    "giver": "iri",
+    "briefing": "Mourning Fen's shortest water route crosses the bank keeping runoff out of the remaining well. Inspect the gauge on the longer path. Iri must publish the actual carrying time before the city budgets drinking water at a price that quietly requires destroying its source.",
+    "completion": "The longer journey protects the bank and reduces each carrier's daily load. Iri publishes a ration estimate beside the route. A correct map can tell people why there is less; it cannot make thirst more reasonable.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3370,
+      "credits": 534
+    }
+  },
+  {
+    "id": "relay-22",
+    "title": "The Price of a Signal",
+    "faction": "relay",
+    "race": null,
+    "level": 44,
+    "requires": [
+      "relay-21"
+    ],
+    "giver": "iri",
+    "briefing": "The city node demands ownership certificates before it will relay messages from basin beacons. Replace the certificate rule with a local maintenance signature that proves a station works without claiming the land around it.",
+    "completion": "Roadside crews join the network under their own names. Nobody receives a deed to the horizon.",
+    "objective": {
+      "type": "interact",
+      "target": "relay-node",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3520,
+      "credits": 558
+    }
+  },
+  {
+    "id": "relay-23",
+    "title": "Sunset Inspection",
+    "faction": "relay",
+    "race": null,
+    "level": 46,
+    "requires": [
+      "relay-22"
+    ],
+    "giver": "iri",
+    "briefing": "Two enforcement wardens treat the new roadside signatures as forged municipal authority. Disable their challenge relays while the stewards copy the records into several independent public ledgers.",
+    "completion": "The network survives the challenge because its records no longer depend on a single office. A burned relay leaves a warning about Continuance's outer toll chain.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 3670,
+      "credits": 582
+    }
+  },
+  {
+    "id": "relay-24",
+    "title": "The Last Proprietary Mile",
+    "faction": "relay",
+    "race": null,
+    "level": 48,
+    "requires": [
+      "relay-23"
+    ],
+    "giver": "iri",
+    "briefing": "The outer toll chain holds an exclusive claim over every journey beyond the former harbor. Retrieve its founding clause from the archive and identify the emergency condition that has already expired. Read the surviving concessions too: the toll can expire while private extraction rights remain saleable.",
+    "completion": "The clause ends when the harbor evacuation ends. Its original authors never imagined a city would keep evacuating a sea that was gone. The expired order is one chain. Beside it sit valid leases, wages, and household debts, with living beneficiaries who will defend them.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3820,
+      "credits": 606
+    }
+  },
+  {
+    "id": "relay-25",
+    "title": "A Closure with a Date",
+    "faction": "relay",
+    "race": null,
+    "level": 50,
+    "requires": [
+      "relay-24"
+    ],
+    "giver": "iri",
+    "briefing": "The gate can reject the old toll claim, but its own emergency closures could become permanent too. Install a public expiry clock that requires named stewards to review every closure in daylight.",
+    "completion": "The first closure notice now includes a reason, a contact, and an end date. Residents can challenge a delay without becoming experts in vanished law.",
+    "objective": {
+      "type": "interact",
+      "target": "city-gate",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3970,
+      "credits": 630
+    }
+  },
+  {
+    "id": "relay-26",
+    "title": "Static on the Salt",
+    "faction": "relay",
+    "race": null,
+    "level": 52,
+    "requires": [
+      "relay-25"
+    ],
+    "giver": "iri",
+    "briefing": "Continuance responds to the expiry clock by saturating the basin route with fee notices. Disable the repeating drones so genuine distress messages can reach the beacons during the approaching dust front.",
+    "completion": "A stranded repair crew's call emerges from the static. The Relay sends help before celebrating the cleared frequency.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 6
+    },
+    "reward": {
+      "xp": 4120,
+      "credits": 654
+    }
+  },
+  {
+    "id": "relay-27",
+    "title": "Four Hands on the Key",
+    "faction": "relay",
+    "race": null,
+    "level": 54,
+    "requires": [
+      "relay-26"
+    ],
+    "giver": "iri",
+    "briefing": "Iri has built an override that could make the Relay the network's new owner. Divide its authority among district stewards, roadside crews, accessibility delegates, and maintenance workers so nobody can quietly sell access later. The new charter also denies route stewards the power to mortgage the fen or the steppe in exchange for maintenance credit.",
+    "completion": "The single master key becomes four public responsibilities. Iri keeps only the ordinary mechanic's permission needed to fix a broken node. Without that collateral, repairs will be slower. Iri puts the unfunded bridges on the same public sheet as the rights the charter protects.",
+    "objective": {
+      "type": "interact",
+      "target": "relay-node",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4270,
+      "credits": 678
+    }
+  },
+  {
+    "id": "relay-28",
+    "title": "The Toll Chain Breaks",
+    "faction": "relay",
+    "race": null,
+    "level": 56,
+    "requires": [
+      "relay-27"
+    ],
+    "giver": "iri",
+    "briefing": "The outer toll wardens have received their final unreviewed enforcement order. Disable their remaining chassis while the distributed stewards publish the expiry record through every city and basin node.",
+    "completion": "The last collector drops its barrier. No new collector takes its place; the route crews are already busy checking the road beyond it.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 3
+    },
+    "reward": {
+      "xp": 4420,
+      "credits": 702
+    }
+  },
+  {
+    "id": "relay-29",
+    "title": "An Arrow for the Lost",
+    "faction": "relay",
+    "race": null,
+    "level": 58,
+    "requires": [
+      "relay-28"
+    ],
+    "giver": "iri",
+    "briefing": "Set the salt beacon to reserve power for distress calls and publish the reduced water schedule from the fen. The Relay must choose rescue over advertising revenue, then explain which ordinary journeys will wait while its reserve pays for the difference.",
+    "completion": "A stranger's distress call gets through. Three scheduled carriers wait for replacement cells. The network keeps its promise to one person by delaying another; Iri writes down both names.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4570,
+      "credits": 726
+    }
+  },
+  {
+    "id": "relay-30",
+    "title": "The Road That Cannot Arrive",
+    "faction": "relay",
+    "race": null,
+    "level": 60,
+    "requires": [
+      "relay-29"
+    ],
+    "giver": "iri",
+    "briefing": "Walk the public route to Mourning Fen after the final toll barrier falls. Check the gauge where Iri's first road met the concession. The route belongs to its users now. The city still buys water, the pumps still draw it, and the reeds cannot attend the maintenance assembly.",
+    "completion": "The Copper Walk Compact ends the toll chain. It cannot end dependence on a shrinking well. Iri posts rationed crossings and refuses the offer to sell priority access; the repair reserve falls again. Beyond the free road, the old waterline remains. You have changed who must answer for the loss. The loss continues.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4720,
+      "credits": 750
+    }
+  },
+  {
+    "id": "covenant-00",
+    "title": "A Place for Your Name",
+    "faction": "covenant",
+    "race": null,
+    "level": 0,
+    "requires": [],
+    "giver": "sera",
+    "briefing": "Sera keeps the Covenant's welcome ledger beside the market, where nobody needs a vault pass to reach it. Add a chosen name to its public face and leave the private history field sealed, demonstrating the difference between an introduction and an interrogation. Under the desk, a cooling pipe carries water purchased from Mourning Fen to keep the private records alive.",
+    "completion": "The ledger welcomes you without demanding a past. Sera points to the empty field and calls it a feature worth protecting. The blank field costs no less water to preserve than a confession. Sera hears the pump cycle beneath the welcome.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 220,
+      "credits": 30
+    }
+  },
+  {
+    "id": "covenant-01",
+    "title": "The Borrowed Lullaby",
+    "faction": "covenant",
+    "race": null,
+    "level": 2,
+    "requires": [
+      "covenant-00"
+    ],
+    "giver": "sera",
+    "briefing": "A neighborhood lullaby appears in a commercial voice catalog without its singer's consent. Inspect the vault's permission record and separate the shared melody from the private recording of the person who sang it.",
+    "completion": "The public tune remains available, while the unlicensed voice sample closes. Sera files a correction that neither owns the song nor erases its singer.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 370,
+      "credits": 54
+    }
+  },
+  {
+    "id": "covenant-02",
+    "title": "A Signature Can Expire",
+    "faction": "covenant",
+    "race": null,
+    "level": 4,
+    "requires": [
+      "covenant-01"
+    ],
+    "giver": "sera",
+    "briefing": "An old consent seal grants access for one winter, yet the archive has treated it as permanent. Recover the dated instruction and teach the local index to respect an ending as carefully as a signature.",
+    "completion": "A private diary returns to its intended audience. The archive displays the expiry date instead of hiding it beneath a green approval light.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 520,
+      "credits": 78
+    }
+  },
+  {
+    "id": "covenant-03",
+    "title": "Collectors of Echoes",
+    "faction": "covenant",
+    "race": null,
+    "level": 6,
+    "requires": [
+      "covenant-02"
+    ],
+    "giver": "sera",
+    "briefing": "Audit drones are collecting voiceprints from the queue outside a memory clinic. Disable their recording units so visitors can seek care without adding another involuntary copy of themselves to Continuance's files.",
+    "completion": "The queue moves under a hand-painted privacy notice. Sera inventories the damaged recorders without replaying the voices inside.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 2
+    },
+    "reward": {
+      "xp": 670,
+      "credits": 102
+    }
+  },
+  {
+    "id": "covenant-04",
+    "title": "An Empty Shelf",
+    "faction": "covenant",
+    "race": null,
+    "level": 8,
+    "requires": [
+      "covenant-03"
+    ],
+    "giver": "sera",
+    "briefing": "The vault's recording of Mourning Fen includes bird calls reconstructed from a sales archive. Read the field gauge east of Vesper and compare the current survey with the advertised recovery. Sera needs the missing species marked as missing before an investor sells their supposed return.",
+    "completion": "No calls answer the recorder. The investment prospectus used a plausible sound because silence lowered its valuation. Sera leaves an empty interval in the public record; the shares do not fall until someone believes it.",
+    "objective": {
+      "type": "interact",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 820,
+      "credits": 126
+    }
+  },
+  {
+    "id": "covenant-05",
+    "title": "The Witness and the Owner",
+    "faction": "covenant",
+    "race": null,
+    "level": 10,
+    "requires": [
+      "covenant-04"
+    ],
+    "giver": "sera",
+    "briefing": "A stallholder's testimony proves a public lift accident, but it also contains a family argument. Post the redacted safety account at the market terminal while preserving the private original under the witness's control.",
+    "completion": "The lift inspection begins without turning a family's worst afternoon into a public exhibit. Sera adds the method to the Covenant's working charter.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 970,
+      "credits": 150
+    }
+  },
+  {
+    "id": "covenant-06",
+    "title": "The Index Disagrees",
+    "faction": "covenant",
+    "race": null,
+    "level": 12,
+    "requires": [
+      "covenant-05"
+    ],
+    "giver": "sera",
+    "briefing": "Archive salvage automatons keep restoring files that their owners validly erased. Disable the recovery machines before they copy another deletion request into the same system they are ordered to rebuild.",
+    "completion": "The unwanted restoration stops. A service log reveals that Continuance classifies forgetting as damage to a recoverable civic asset.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 3
+    },
+    "reward": {
+      "xp": 1120,
+      "credits": 174
+    }
+  },
+  {
+    "id": "covenant-07",
+    "title": "Glass with a Handle",
+    "faction": "covenant",
+    "race": null,
+    "level": 14,
+    "requires": [
+      "covenant-06"
+    ],
+    "giver": "sera",
+    "briefing": "Consent controls are buried beneath specialist menus that most vault users cannot understand. Fit a plain-language access panel with the current audience, purpose, duration, and a clearly visible withdrawal control.",
+    "completion": "The first visitor changes a permission without asking Sera to translate it. The archivist smiles at being needed a little less.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1270,
+      "credits": 198
+    }
+  },
+  {
+    "id": "covenant-08",
+    "title": "A Date Is Not a Person",
+    "faction": "covenant",
+    "race": null,
+    "level": 16,
+    "requires": [
+      "covenant-07"
+    ],
+    "giver": "sera",
+    "briefing": "The index has merged two residents who share a birth date and an old address. Separate their witness records and leave an audit trail so the correction cannot quietly be undone by tomorrow's matching job.",
+    "completion": "Two people recover separate appointments, debts, and histories. Neither must prove that their life is more authentic than the other's.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1420,
+      "credits": 222
+    }
+  },
+  {
+    "id": "covenant-09",
+    "title": "The Room without Playback",
+    "faction": "covenant",
+    "race": null,
+    "level": 18,
+    "requires": [
+      "covenant-08"
+    ],
+    "giver": "sera",
+    "briefing": "A witness to Cinderwood's false restoration accounts will speak only beneath its last living canopy. Visit the refuge and verify an approach outside the company recorders. Their evidence could stop the cuts and destroy the pension fund that bought the same certificates.",
+    "completion": "The refuge provides privacy, though its roots cannot protect anyone from the accounts. The witness signs a limited release with hands that shake when the pension fund is named.",
+    "objective": {
+      "type": "explore",
+      "target": "wood-refuge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1570,
+      "credits": 246
+    }
+  },
+  {
+    "id": "covenant-10",
+    "title": "The Shape of a Refusal",
+    "faction": "covenant",
+    "race": null,
+    "level": 20,
+    "requires": [
+      "covenant-09"
+    ],
+    "giver": "sera",
+    "briefing": "The vault accepts yes, no, and a blank field, but treats silence as yes after a timeout. Replace that rule with a pending state that leaves the record closed until its owner makes an affirmative choice.",
+    "completion": "An unanswered request now waits instead of becoming permission. Sera records the change as a protection for tired people, absent people, and people who simply need time.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1720,
+      "credits": 270
+    }
+  },
+  {
+    "id": "covenant-11",
+    "title": "Public Truth, Private Wounds",
+    "faction": "covenant",
+    "race": null,
+    "level": 22,
+    "requires": [
+      "covenant-10"
+    ],
+    "giver": "sera",
+    "briefing": "A maintenance inquiry needs evidence of a fatal failure, not unrestricted access to every survivor's recollections. Assemble the machine logs and voluntarily released testimony into a public account with its uncertainties still visible.",
+    "completion": "The inquiry gains enough evidence to require a repair. The account names what is known, what is disputed, and what nobody has offered to share.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1870,
+      "credits": 294
+    }
+  },
+  {
+    "id": "covenant-12",
+    "title": "The Keeper at the Lock",
+    "faction": "covenant",
+    "race": null,
+    "level": 24,
+    "requires": [
+      "covenant-11"
+    ],
+    "giver": "sera",
+    "briefing": "An archive warden has classified the Covenant's new permission rules as unauthorized obstruction. Disable its lock enforcement so the clinic can continue honoring valid withdrawals while Sera presents the signed policy change.",
+    "completion": "The vault doors reopen to their owners. The warden's order proves that Continuance values access above the people whose lives make the archive useful.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2020,
+      "credits": 318
+    }
+  },
+  {
+    "id": "covenant-13",
+    "title": "Sera’s Missing Week",
+    "faction": "covenant",
+    "race": null,
+    "level": 26,
+    "requires": [
+      "covenant-12"
+    ],
+    "giver": "sera",
+    "briefing": "A damaged catalog claims to hold the week Sera has never remembered. Verify its provenance without opening the experience itself; Sera wants to know whether a choice exists before deciding what to do with it. Its catalog was financed by selling restoration certificates in Cinderwood. The sealed memory and the public financing record require different permissions.",
+    "completion": "The shard is real, but its contents remain sealed. Sera thanks you for returning a decision instead of returning a memory without permission. The financing entry is public. Preserving Sera's choice does not make the archive's water and investment costs private.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2170,
+      "credits": 342
+    }
+  },
+  {
+    "id": "covenant-14",
+    "title": "The Unwritten Appendix",
+    "faction": "covenant",
+    "race": null,
+    "level": 28,
+    "requires": [
+      "covenant-13"
+    ],
+    "giver": "sera",
+    "briefing": "The Covenant's charter says little about the people who do not use archives at all. Publish an appendix protecting undocumented lives, ordinary forgetting, and the right to receive care without surrendering a personal record.",
+    "completion": "A queue of residents adds practical corrections to the charter. Sera leaves room below the signatures for the next objection.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2320,
+      "credits": 366
+    }
+  },
+  {
+    "id": "covenant-15",
+    "title": "Cargo of Unasked Lives",
+    "faction": "covenant",
+    "race": null,
+    "level": 30,
+    "requires": [
+      "covenant-14"
+    ],
+    "giver": "sera",
+    "briefing": "A shipping manifest lists abandoned memory caskets beyond the city gate. Inspect the route markings before the Covenant retrieves them; a lost archive must not become an excuse to claim every life inside it.",
+    "completion": "The caskets were moved during an evacuation and never delivered. Their destination field says temporary storage, not public inheritance.",
+    "objective": {
+      "type": "explore",
+      "target": "city-gate",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2470,
+      "credits": 390
+    }
+  },
+  {
+    "id": "covenant-16",
+    "title": "The Weatherproof Promise",
+    "faction": "covenant",
+    "race": null,
+    "level": 32,
+    "requires": [
+      "covenant-15"
+    ],
+    "giver": "sera",
+    "briefing": "The basin's heat will destroy recovered consent seals before the caskets reach Vesper. Use the beacon's protected maintenance register to store their permissions separately from the fragile memories they govern.",
+    "completion": "The instructions gain a durable copy with a visible chain of custody. The contents remain sealed through the transfer.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2620,
+      "credits": 414
+    }
+  },
+  {
+    "id": "covenant-17",
+    "title": "A Grave with a Network Address",
+    "faction": "covenant",
+    "race": null,
+    "level": 34,
+    "requires": [
+      "covenant-16"
+    ],
+    "giver": "sera",
+    "briefing": "The basin's resting ground lies near the spreading Brine Bloom. Inspect the last seep and record the caskets whose occupants declined revival. Their instructions forbid opening them; a sterilization plan would protect the graves by destroying the organisms now growing over them.",
+    "completion": "The Covenant marks a narrow retrieval path and leaves the wider bloom untouched. Some caskets will decay before a crew can reach them. A right can be honored without granting the power to keep its evidence forever.",
+    "objective": {
+      "type": "explore",
+      "target": "bloom-seep",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2770,
+      "credits": 438
+    }
+  },
+  {
+    "id": "covenant-18",
+    "title": "The Hungry Catalog",
+    "faction": "covenant",
+    "race": null,
+    "level": 36,
+    "requires": [
+      "covenant-17"
+    ],
+    "giver": "sera",
+    "briefing": "Index drones are scanning the recovered caskets for recognizable voices. Disable them before the catalog turns an evacuation archive into searchable entertainment for the upper decks.",
+    "completion": "No voices reach the public index. The drones' queue contains requests that nobody inside a casket could ever have approved.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 4
+    },
+    "reward": {
+      "xp": 2920,
+      "credits": 462
+    }
+  },
+  {
+    "id": "covenant-19",
+    "title": "Permission to Disagree",
+    "faction": "covenant",
+    "race": null,
+    "level": 38,
+    "requires": [
+      "covenant-18"
+    ],
+    "giver": "sera",
+    "briefing": "Two witnesses remember the same Cinderwood expansion: one as the work that fed a family, one as the destruction of a spring. Preserve their authorized accounts beside the water and wage records. The archive must not resolve a material conflict by deciding one witness remembered badly.",
+    "completion": "Both accounts survive. The payroll and stump totals agree with both. Sera closes the comparison without a reconciled story; accuracy has made the injury harder to dismiss and no easier to undo.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3070,
+      "credits": 486
+    }
+  },
+  {
+    "id": "covenant-20",
+    "title": "The Cold Carrier",
+    "faction": "covenant",
+    "race": null,
+    "level": 40,
+    "requires": [
+      "covenant-19"
+    ],
+    "giver": "sera",
+    "briefing": "Salvage automatons are cutting cooling jackets from the memory transport. Clear the machines so the remaining caskets can stay stable while their owners' instructions are checked one by one.",
+    "completion": "The cooling circuit holds. The Covenant saves time for deliberation without claiming that every preserved record must eventually be opened.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 5
+    },
+    "reward": {
+      "xp": 3220,
+      "credits": 510
+    }
+  },
+  {
+    "id": "covenant-21",
+    "title": "A Name Left Sealed",
+    "faction": "covenant",
+    "race": null,
+    "level": 42,
+    "requires": [
+      "covenant-20"
+    ],
+    "giver": "sera",
+    "briefing": "One recovered witness authorized a safety report but withheld their name even after death. Release the report through a protected channel and verify that the vault does not append an identifying catalog entry.",
+    "completion": "A crucial warning reaches the engineers anonymously. The missing name becomes evidence that the system honored its promise.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3370,
+      "credits": 534
+    }
+  },
+  {
+    "id": "covenant-22",
+    "title": "The Memory Dividend",
+    "faction": "covenant",
+    "race": null,
+    "level": 44,
+    "requires": [
+      "covenant-21"
+    ],
+    "giver": "sera",
+    "briefing": "A proposal would finance clinic cooling by selling patient memories. Publish an alternative that cancels archive advertising and reduces nonessential storage, including immersive records of lost landscapes. Sera can protect refusal only by naming what the smaller water budget will no longer preserve.",
+    "completion": "Patients keep their private lives. Several public experiences will survive only as transcripts. A donor withdraws funding when the virtual forest closes. The real Cinderwood does not grow back, and the clinic still faces next summer.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3520,
+      "credits": 558
+    }
+  },
+  {
+    "id": "covenant-23",
+    "title": "The Custodian’s Exception",
+    "faction": "covenant",
+    "race": null,
+    "level": 46,
+    "requires": [
+      "covenant-22"
+    ],
+    "giver": "sera",
+    "briefing": "Continuance has activated an emergency exception allowing its wardens to copy every sealed record. Disable their extraction hardware while the Covenant challenges the exception's missing end date and nonexistent authorizing council.",
+    "completion": "The extraction stalls before the seals break. The challenge reveals a hidden replication service called the Inference Annex.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 3670,
+      "credits": 582
+    }
+  },
+  {
+    "id": "covenant-24",
+    "title": "Lives between the Lines",
+    "faction": "covenant",
+    "race": null,
+    "level": 48,
+    "requires": [
+      "covenant-23"
+    ],
+    "giver": "sera",
+    "briefing": "The Inference Annex recreates withdrawn histories by combining ordinary public traces. Locate its reconstruction mandate and document which apparently harmless records become intimate when joined together. The same profiles rank households by what they might pay for a final clean-water subscription.",
+    "completion": "The annex has confused possibility with permission. Sera prepares a deletion order covering the derived profiles as well as their original copies. The sales model can be deleted. The scarce water that made it profitable will still be there, with other sellers waiting.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3820,
+      "credits": 606
+    }
+  },
+  {
+    "id": "covenant-25",
+    "title": "Not a Better Cage",
+    "faction": "covenant",
+    "race": null,
+    "level": 50,
+    "requires": [
+      "covenant-24"
+    ],
+    "giver": "sera",
+    "briefing": "The Covenant could stop the annex by taking exclusive control of every vault. Install independent consent checks instead, with public audits that reveal rule violations without exposing the memories under protection.",
+    "completion": "No single keeper receives a universal key. Sera accepts that the Covenant itself must be capable of being held to its promises.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3970,
+      "credits": 630
+    }
+  },
+  {
+    "id": "covenant-26",
+    "title": "Unlearning the Taken",
+    "faction": "covenant",
+    "race": null,
+    "level": 52,
+    "requires": [
+      "covenant-25"
+    ],
+    "giver": "sera",
+    "briefing": "Inference drones are moving unauthorized reconstructions into roadside backup units. Disable the courier group so the signed deletion order can reach every replica before it disappears into the salt.",
+    "completion": "The replica list stops growing. Each remaining copy now has a known location and a deletion receipt that can be independently checked.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 6
+    },
+    "reward": {
+      "xp": 4120,
+      "credits": 654
+    }
+  },
+  {
+    "id": "covenant-27",
+    "title": "A Witness to Erasure",
+    "faction": "covenant",
+    "race": null,
+    "level": 54,
+    "requires": [
+      "covenant-26"
+    ],
+    "giver": "sera",
+    "briefing": "The last annex replica sits behind a basin maintenance address. Register the deletion receipt at the beacon, preserving proof that the order was carried out without preserving the unwanted memories themselves.",
+    "completion": "The beacon records the action, authority, and time. It records none of the private lives that the annex had assembled.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4270,
+      "credits": 678
+    }
+  },
+  {
+    "id": "covenant-28",
+    "title": "The Final Exception",
+    "faction": "covenant",
+    "race": null,
+    "level": 56,
+    "requires": [
+      "covenant-27"
+    ],
+    "giver": "sera",
+    "briefing": "The annex wardens still enforce an order to preserve all information indefinitely. Shut down their extraction chassis while the distributed vault keepers revoke that order and publish a bounded preservation policy.",
+    "completion": "The annex loses the power to make itself an exception. Protected public records remain available under rules their subjects can actually read.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 3
+    },
+    "reward": {
+      "xp": 4420,
+      "credits": 702
+    }
+  },
+  {
+    "id": "covenant-29",
+    "title": "A Door Opened from Within",
+    "faction": "covenant",
+    "race": null,
+    "level": 58,
+    "requires": [
+      "covenant-28"
+    ],
+    "giver": "sera",
+    "briefing": "Sera has decided what to do with the missing week and asks you to witness the procedure, not the contents. Verify that the vault can carry out a personal decision without asking a faction leader, a machine, or a stranger to approve it. The vault is running on a smaller cooling allowance. Respecting a decision cannot depend on calling preservation physically limitless.",
+    "completion": "The seal changes under Sera's own authority. Whatever the archivist chose remains theirs to share or keep. In the next room, a keeper selects records for low-power storage. Sera can own the decision without owning enough time.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4570,
+      "credits": 726
+    }
+  },
+  {
+    "id": "covenant-30",
+    "title": "The Archive of an Absence",
+    "faction": "covenant",
+    "race": null,
+    "level": 60,
+    "requires": [
+      "covenant-29"
+    ],
+    "giver": "sera",
+    "briefing": "Take the consent charter to Cinderwood's stump ledger and attach the archive's actual water budget. Sera will preserve testimony without selling lives or selling an invented recovery. The charter requires a record of every deliberate loss, including those made by its own keepers.",
+    "completion": "The Inference Annex closes. The archive keeps a truthful account of a forest it helped finance into absence. Low-power records replace experiences that cannot be recovered. Sera leaves the shelf empty and labels the reason. The trees do not read it. The city has learned to confess without learning how to stop needing what it destroys.",
+    "objective": {
+      "type": "interact",
+      "target": "wood-ledger",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4720,
+      "credits": 750
+    }
+  },
+  {
+    "id": "foundry-00",
+    "title": "A Warm Place to Start",
+    "faction": "foundry",
+    "race": null,
+    "level": 0,
+    "requires": [],
+    "giver": "bram",
+    "briefing": "Bram's first concern is a market heat pipe that stops short of the public waiting benches. Check the exposed service terminal and connect the benches to the same schedule as the stalls, so resting is not a purchase. Its heat comes from Cinderwood fuel, purchased under a contract that calls the last living canopy recoverable waste.",
+    "completion": "Warm air reaches the benches before the first kettle boils. Bram writes your name beside the repair and the next inspection date. A person can rest without paying. Somewhere west of the furnaces, another stump is added to the purchase order.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 220,
+      "credits": 30
+    }
+  },
+  {
+    "id": "foundry-01",
+    "title": "The Bolt Nobody Owns",
+    "faction": "foundry",
+    "race": null,
+    "level": 2,
+    "requires": [
+      "foundry-00"
+    ],
+    "giver": "bram",
+    "briefing": "Three departments claim authority over a cracked bracket and none will supply its replacement. Use the public forge pattern to make the repair official under the workers who can actually inspect it.",
+    "completion": "A sound bracket replaces three competing stamps. Bram keeps the old bolt as a reminder that responsibility must have hands attached.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 370,
+      "credits": 54
+    }
+  },
+  {
+    "id": "foundry-02",
+    "title": "A Shift with an Ending",
+    "faction": "foundry",
+    "race": null,
+    "level": 4,
+    "requires": [
+      "foundry-01"
+    ],
+    "giver": "bram",
+    "briefing": "The pump crew's emergency rota has repeated the same names for six months. Post a replacement schedule with relief workers and protected rest periods before the old notice rolls over into another unpaid week.",
+    "completion": "The night crew leaves while daylight still reaches the lower deck. Their replacements receive instructions instead of a lecture about sacrifice.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 520,
+      "credits": 78
+    }
+  },
+  {
+    "id": "foundry-03",
+    "title": "Tools for the Living",
+    "faction": "foundry",
+    "race": null,
+    "level": 6,
+    "requires": [
+      "foundry-02"
+    ],
+    "giver": "bram",
+    "briefing": "Salvage machines are taking active repair tools because the city marked their department dissolved. Disable the collectors so the crew can finish the water line without buying its own equipment back.",
+    "completion": "The tools return to a shared rack. Bram replaces the dead department label with the names of the people who maintain the line.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 2
+    },
+    "reward": {
+      "xp": 670,
+      "credits": 102
+    }
+  },
+  {
+    "id": "foundry-04",
+    "title": "The Weight above Us",
+    "faction": "foundry",
+    "race": null,
+    "level": 8,
+    "requires": [
+      "foundry-03"
+    ],
+    "giver": "bram",
+    "briefing": "A new freight platform has added weight to a bridge designed for pedestrians. Inspect the span and bring Bram a grounded account of its load before the upper district calls the lower deck's warnings superstition.",
+    "completion": "Fresh stress marks match the freight schedule. The platform must change its load, and the people below it are invited to the inspection.",
+    "objective": {
+      "type": "explore",
+      "target": "skybridge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 820,
+      "credits": 126
+    }
+  },
+  {
+    "id": "foundry-05",
+    "title": "Heat without Tribute",
+    "faction": "foundry",
+    "race": null,
+    "level": 10,
+    "requires": [
+      "foundry-04"
+    ],
+    "giver": "bram",
+    "briefing": "The district heater deducts fuel credit whenever a household misses a maintenance levy. Refit its civic control plate so essential heat remains available while billing disputes are resolved in the open. Post the fuel source beside the access rule so free heat is not confused with heat without a cost.",
+    "completion": "The heater stops using cold rooms as a collection method. Bram separates the repair ledger from the list of people entitled to be warm. The residents remain entitled to warmth. The dwindling woodpile does not become larger when the billing screen goes dark.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 970,
+      "credits": 150
+    }
+  },
+  {
+    "id": "foundry-06",
+    "title": "Safety Is a Stop Button",
+    "faction": "foundry",
+    "race": null,
+    "level": 12,
+    "requires": [
+      "foundry-05"
+    ],
+    "giver": "bram",
+    "briefing": "Audit drones restart machinery whenever workers trigger a safety stop. Remove the drones enforcing that productivity rule before the crew opens a jammed feed assembly.",
+    "completion": "The feed assembly stays still long enough for a careful repair. A stop button becomes an instruction again instead of a suggestion.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 3
+    },
+    "reward": {
+      "xp": 1120,
+      "credits": 174
+    }
+  },
+  {
+    "id": "foundry-07",
+    "title": "The Last Apprentice",
+    "faction": "foundry",
+    "race": null,
+    "level": 14,
+    "requires": [
+      "foundry-06"
+    ],
+    "giver": "bram",
+    "briefing": "Only one aging technician can still read the cooling pump's undocumented control sequence. Retrieve the original schematics so Bram can teach a whole crew before expertise becomes another kind of captivity.",
+    "completion": "The technician corrects three errors in the old plans and finally books a holiday. Every new apprentice receives the corrected copy.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1270,
+      "credits": 198
+    }
+  },
+  {
+    "id": "foundry-08",
+    "title": "What the Pipe Carries",
+    "faction": "foundry",
+    "race": null,
+    "level": 16,
+    "requires": [
+      "foundry-07"
+    ],
+    "giver": "bram",
+    "briefing": "A pipe marked waste carries enough residual heat to warm two public clinics. Verify its pressure limits at the forge terminal and fit a safe exchange pattern that does not steal capacity from the homes downstream.",
+    "completion": "The clinics gain heat without a new furnace. Bram marks the shared pressure limits where every operator can see them.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1420,
+      "credits": 222
+    }
+  },
+  {
+    "id": "foundry-09",
+    "title": "The Cost on the Floor",
+    "faction": "foundry",
+    "race": null,
+    "level": 18,
+    "requires": [
+      "foundry-08"
+    ],
+    "giver": "bram",
+    "briefing": "Bram's repair estimate counts injuries but still prices Cinderwood as a pile of replaceable timber. Consult the stump ledger west of Vesper and include the lost shade, water retention, and cutters' debts. Tovin asks whether an honest budget can still offer his crew work.",
+    "completion": "Counting the whole damage makes every current bid unaffordable. Bram keeps the figures visible and reduces output instead of deleting the costs. The first people to lose overtime are the ones who helped expose them.",
+    "objective": {
+      "type": "interact",
+      "target": "wood-ledger",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1570,
+      "credits": 246
+    }
+  },
+  {
+    "id": "foundry-10",
+    "title": "A Foundation Called Temporary",
+    "faction": "foundry",
+    "race": null,
+    "level": 20,
+    "requires": [
+      "foundry-09"
+    ],
+    "giver": "bram",
+    "briefing": "The outer supports are settling while the intake drains Mourning Fen. Inspect the drawdown gauge before approving another emergency foundation patch. Seventy years of repairs have protected the towers by letting the damage move out of sight.",
+    "completion": "The readings connect the collapsing bank to the subsidized water line. The supports can be reinforced, but reinforcement would spend more material defending the same demand.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1720,
+      "credits": 270
+    }
+  },
+  {
+    "id": "foundry-11",
+    "title": "Hands off the Relief Valve",
+    "faction": "foundry",
+    "race": null,
+    "level": 22,
+    "requires": [
+      "foundry-10"
+    ],
+    "giver": "bram",
+    "briefing": "A warden protects a pressure valve against unauthorized use, including the emergency release it was built to permit. Disable the enforcement chassis so engineers can lower the load before a routine fault becomes a district-wide rupture.",
+    "completion": "The pressure falls without a dramatic explosion. Bram calls an uneventful shift the kind of victory worth designing for.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1870,
+      "credits": 294
+    }
+  },
+  {
+    "id": "foundry-12",
+    "title": "The Shared Spare",
+    "faction": "foundry",
+    "race": null,
+    "level": 24,
+    "requires": [
+      "foundry-11"
+    ],
+    "giver": "bram",
+    "briefing": "Each tower hoards a different spare part while neighboring machines wait broken. Publish compatible patterns and open a shared reserve so a repair can begin with a request instead of a raid.",
+    "completion": "A valve from one tower restarts another tower's pump. Both crews sign the return and replenishment agreement.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2020,
+      "credits": 318
+    }
+  },
+  {
+    "id": "foundry-13",
+    "title": "An Engine with No Heir",
+    "faction": "foundry",
+    "race": null,
+    "level": 26,
+    "requires": [
+      "foundry-12"
+    ],
+    "giver": "bram",
+    "briefing": "Continuance assigns inherited repair debts to the descendants of vanished contractors. Find the original maintenance bond and expose the clause that confuses a family name with a machine's perpetual service obligation.",
+    "completion": "The debt transfer has no consenting successor. Bram drafts a release covering the living workers and the relatives who never touched the engine.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2170,
+      "credits": 342
+    }
+  },
+  {
+    "id": "foundry-14",
+    "title": "The Common Load",
+    "faction": "foundry",
+    "race": null,
+    "level": 28,
+    "requires": [
+      "foundry-13"
+    ],
+    "giver": "bram",
+    "briefing": "The Foundry's repairs need a lasting agreement that workers can enforce against their own leaders. Publish the Common Load charter with rotating duty, paid recovery, open budgets, and a right to halt unsafe work.",
+    "completion": "Bram signs in the same space as every other worker. The charter includes a clear procedure for removing a delegate who ignores it.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2320,
+      "credits": 366
+    }
+  },
+  {
+    "id": "foundry-15",
+    "title": "The Thirst under the City",
+    "faction": "foundry",
+    "race": null,
+    "level": 30,
+    "requires": [
+      "foundry-14"
+    ],
+    "giver": "bram",
+    "briefing": "The old intake feeds both city cooling and private water sales. Read the fen sluice register and separate essential loads from the dividend schedule. Bram needs to know how much withdrawal can end without closing the clinics whose patients depend on the pumps.",
+    "completion": "The dividend requires extraction after the reserve tanks are full. Canceling it removes deliberate waste. The remaining clinical load still exceeds the fen's dry-season recharge. The unnecessary harm was real; so is the unsolved remainder.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-sluice",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2470,
+      "credits": 390
+    }
+  },
+  {
+    "id": "foundry-16",
+    "title": "Reading the Dry Gauge",
+    "faction": "foundry",
+    "race": null,
+    "level": 32,
+    "requires": [
+      "foundry-15"
+    ],
+    "giver": "bram",
+    "briefing": "Calibrate Mourning Fen's gauge for recharge, temperature, and the reserve used by its own residents. The old report counts every drop reaching Vesper as useful and every drop left in the wetland as loss. Bram needs a measure that does not make depletion look like efficiency.",
+    "completion": "The revised gauge records a deficit on ordinary days, before any emergency. Bram can now tell the assembly how far demand must fall. He cannot tell them whose ordinary life is excess.",
+    "objective": {
+      "type": "interact",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2620,
+      "credits": 414
+    }
+  },
+  {
+    "id": "foundry-17",
+    "title": "The Scrap That Still Works",
+    "faction": "foundry",
+    "race": null,
+    "level": 34,
+    "requires": [
+      "foundry-16"
+    ],
+    "giver": "bram",
+    "briefing": "Salvage automatons are stripping the passive cooling fins needed for the intake conversion. Clear the machines while the crews tag reusable parts and leave unstable wreckage where it can be dismantled safely.",
+    "completion": "The useful fins reach the worksite intact. Bram rejects a tempting haul of cracked metal rather than passing its hidden risk to the next crew.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 4
+    },
+    "reward": {
+      "xp": 2770,
+      "credits": 438
+    }
+  },
+  {
+    "id": "foundry-18",
+    "title": "A Furnace Learns Patience",
+    "faction": "foundry",
+    "race": null,
+    "level": 36,
+    "requires": [
+      "foundry-17"
+    ],
+    "giver": "bram",
+    "briefing": "Fit a slower furnace schedule that uses recovered cooling fins and reserves power for clinics. Cut decorative and commercial peak demand first. The Foundry will need fewer paid shifts; Bram refuses to describe the crews' lost income as an invisible efficiency gain.",
+    "completion": "The furnace consumes less and the night sky darkens over the upper decks. The crew receives shorter hours with a temporary wage guarantee. Its replacement funding is a blank line everyone can see.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2920,
+      "credits": 462
+    }
+  },
+  {
+    "id": "foundry-19",
+    "title": "The People beyond the Drawing",
+    "faction": "foundry",
+    "race": null,
+    "level": 38,
+    "requires": [
+      "foundry-18"
+    ],
+    "giver": "bram",
+    "briefing": "A cooling redesign would vent heat across the Glassroot Steppe's remaining root beds. Visit the soil core north of the city and price a smaller outlet before the Foundry calls land outside its drawings expendable. Ada's kiln draws from the same dwindling seam as the new hardware.",
+    "completion": "The reduced outlet spares the grass and cools fewer rooms. A larger machine would consume the ground needed to manufacture its replacement. Bram crosses out expansion and writes the number of households still waiting.",
+    "objective": {
+      "type": "explore",
+      "target": "steppe-core",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3070,
+      "credits": 486
+    }
+  },
+  {
+    "id": "foundry-20",
+    "title": "An Alarm Nobody Must Hear",
+    "faction": "foundry",
+    "race": null,
+    "level": 40,
+    "requires": [
+      "foundry-19"
+    ],
+    "giver": "bram",
+    "briefing": "The new intake needs warnings that reach workers through masks, noise, hearing loss, and chosen quiet. Coordinate the choir array's visible and vibration channels so the shutdown alert does not depend on a single sense.",
+    "completion": "The alarm reaches the crew through light, touch, and sound. Its test notice explains the signals before anyone has to meet them in danger.",
+    "objective": {
+      "type": "interact",
+      "target": "choir-array",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3220,
+      "credits": 510
+    }
+  },
+  {
+    "id": "foundry-21",
+    "title": "The Debt Beneath the Debt",
+    "faction": "foundry",
+    "race": null,
+    "level": 42,
+    "requires": [
+      "foundry-20"
+    ],
+    "giver": "bram",
+    "briefing": "A hidden surcharge finances an overpressure turbine that the city no longer needs. Trace the charge to its maintenance schedule and identify what can be retired without cutting essential heat to the lower decks. Include the mineral cost of its replacement hardware, with the Glassroot root mat left intact.",
+    "completion": "The turbine consumes more repair labor than the useful reserve it provides. Bram prepares a retirement plan with replacement capacity already accounted for. The replacement is smaller than the old demand. Retiring a wasteful machine does not authorize another claim on the steppe.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3370,
+      "credits": 534
+    }
+  },
+  {
+    "id": "foundry-22",
+    "title": "A Machine Refuses Retirement",
+    "faction": "foundry",
+    "race": null,
+    "level": 44,
+    "requires": [
+      "foundry-21"
+    ],
+    "giver": "bram",
+    "briefing": "Continuance has dispatched audit drones to restart the turbine whenever its output falls. Disable the restart network so the engineers can test the replacement system at a controlled load.",
+    "completion": "The turbine stays idle while the replacement holds steady. The city experiences its first ordinary hour without the old machine's constant demands.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 5
+    },
+    "reward": {
+      "xp": 3520,
+      "credits": 558
+    }
+  },
+  {
+    "id": "foundry-23",
+    "title": "The Worker Is Not the Part",
+    "faction": "foundry",
+    "race": null,
+    "level": 46,
+    "requires": [
+      "foundry-22"
+    ],
+    "giver": "bram",
+    "briefing": "The turbine's service contract stores worker memories as mandatory operating documentation. Release the machine procedures with consent and return control of personal recollections to the people whose shifts supplied them.",
+    "completion": "The engineers keep the instructions they need. The former crew keeps the right to decide what the city remembers about their exhausted years.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3670,
+      "credits": 582
+    }
+  },
+  {
+    "id": "foundry-24",
+    "title": "The Weight We Can Share",
+    "faction": "foundry",
+    "race": null,
+    "level": 48,
+    "requires": [
+      "foundry-23"
+    ],
+    "giver": "bram",
+    "briefing": "Foundation work will move freight across a repaired upper span. Inspect the posted load limits and pedestrian access together so the conversion does not solve a cooling problem by creating a new barrier above the streets.",
+    "completion": "Freight receives a safe schedule and pedestrians retain a usable crossing. The Common Load gains its first agreement between two different kinds of traffic.",
+    "objective": {
+      "type": "explore",
+      "target": "skybridge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3820,
+      "credits": 606
+    }
+  },
+  {
+    "id": "foundry-25",
+    "title": "The Emergency Ends Here",
+    "faction": "foundry",
+    "race": null,
+    "level": 50,
+    "requires": [
+      "foundry-24"
+    ],
+    "giver": "bram",
+    "briefing": "Turbine wardens are using the old emergency bond to seize workers for a final compulsory shift. Disable their restraint systems while the delegates register the bond's termination and offer voluntary paid work on the conversion.",
+    "completion": "Nobody is marched back into the turbine hall. Enough skilled workers volunteer because the new terms respect both their knowledge and their limits.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 3970,
+      "credits": 630
+    }
+  },
+  {
+    "id": "foundry-26",
+    "title": "A Cool Night for Everyone",
+    "faction": "foundry",
+    "race": null,
+    "level": 52,
+    "requires": [
+      "foundry-25"
+    ],
+    "giver": "bram",
+    "briefing": "Start the overnight test with cooling reserved for clinics and the most exposed homes. The smaller network cannot supply every former load. Publish the ration schedule and appeals before the test, with no auction for priority and no promise of comfort the fen cannot support.",
+    "completion": "The clinics hold their safe temperature. Other rooms stay hot, and the public board fills with appeals. Bram spends the quiet shift reading them. The turbine's absence does not feel the same from every bed.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4120,
+      "credits": 654
+    }
+  },
+  {
+    "id": "foundry-27",
+    "title": "The Old Intake Falls Quiet",
+    "faction": "foundry",
+    "race": null,
+    "level": 54,
+    "requires": [
+      "foundry-26"
+    ],
+    "giver": "bram",
+    "briefing": "Salvage machines swarm the intake as its retirement signal becomes public. Clear the work perimeter so trained crews can isolate hazardous sections before the harmless metal enters the shared materials reserve.",
+    "completion": "The intake is dismantled in a deliberate order. Its useful metal receives a new inventory, and its unsafe chambers receive a sealed end.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 6
+    },
+    "reward": {
+      "xp": 4270,
+      "credits": 678
+    }
+  },
+  {
+    "id": "foundry-28",
+    "title": "No Final Heroic Shift",
+    "faction": "foundry",
+    "race": null,
+    "level": 56,
+    "requires": [
+      "foundry-27"
+    ],
+    "giver": "bram",
+    "briefing": "The last turbine wardens demand a worker inside the shutdown chamber under the original manual procedure. Disable them so the crew can use the remote release it built precisely to make that sacrifice unnecessary.",
+    "completion": "The turbine stops with every worker outside the barrier. Bram checks the attendance list twice, then hangs the old emergency rota in the history room.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 3
+    },
+    "reward": {
+      "xp": 4420,
+      "credits": 702
+    }
+  },
+  {
+    "id": "foundry-29",
+    "title": "The Ground Holds",
+    "faction": "foundry",
+    "race": null,
+    "level": 58,
+    "requires": [
+      "foundry-28"
+    ],
+    "giver": "bram",
+    "briefing": "Read Mourning Fen's gauge after the conversion. Publish recharge and settlement measurements alongside unmet demand. The Common Load must be able to report that a repair reduced damage without certifying the wetland restored or the city secure.",
+    "completion": "The local drawdown slows; a deeper bore still falls. The missing reserve would take years of lower use to replace, if the rains return. Bram funds another reading by postponing a workshop roof.",
+    "objective": {
+      "type": "interact",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4570,
+      "credits": 726
+    }
+  },
+  {
+    "id": "foundry-30",
+    "title": "The Furnace after the Charter",
+    "faction": "foundry",
+    "race": null,
+    "level": 60,
+    "requires": [
+      "foundry-29"
+    ],
+    "giver": "bram",
+    "briefing": "Visit Cinderwood's remaining canopy on Bram's first scheduled day off. The Common Load has ended inherited shifts and cut the furnace's appetite. Ask whether a city can keep that restraint when the next heatwave arrives and a lender offers more power against the forest.",
+    "completion": "Bram goes home on time. The kiln is quieter, the canopy smaller, and the offer of a new extraction loan remains on his desk. Shared ownership has changed whose hand can sign it. Hunger, heat, and compound interest will return to the table. The great repair is a limit someone must defend again tomorrow.",
+    "objective": {
+      "type": "explore",
+      "target": "wood-refuge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4720,
+      "credits": 750
+    }
+  },
+  {
+    "id": "choir-00",
+    "title": "A Quiet Table",
+    "faction": "choir",
+    "race": null,
+    "level": 0,
+    "requires": [],
+    "giver": "ves",
+    "briefing": "Ves has reserved a table near the market for conversations that do not need an audience. Set its visible welcome sign to show that speech, signing, writing, and comfortable silence are all accepted there. A stall nearby sells recordings of birds no longer heard in the basin.",
+    "completion": "The table fills with people communicating in several ways. Ves greets you with a small wave that asks for nothing in return. When the loudspeaker pauses, the promised birdsong does not arrive. Ves leaves the table open anyway.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 220,
+      "credits": 30
+    }
+  },
+  {
+    "id": "choir-01",
+    "title": "Notice before Noise",
+    "faction": "choir",
+    "race": null,
+    "level": 2,
+    "requires": [
+      "choir-00"
+    ],
+    "giver": "ves",
+    "briefing": "The neighborhood announcement array begins each morning without warning. Add a visible countdown and a clear schedule so residents can prepare, move away, or choose a different channel before the speakers start.",
+    "completion": "The next announcement arrives at the promised time. Its warning light becomes more reassuring than the voice that follows it.",
+    "objective": {
+      "type": "interact",
+      "target": "choir-array",
+      "count": 1
+    },
+    "reward": {
+      "xp": 370,
+      "credits": 54
+    }
+  },
+  {
+    "id": "choir-02",
+    "title": "The Attention Invoice",
+    "faction": "choir",
+    "race": null,
+    "level": 4,
+    "requires": [
+      "choir-01"
+    ],
+    "giver": "ves",
+    "briefing": "Continuance charges residents for unacknowledged civic broadcasts, treating listening as a debt. Retrieve the original attention contract and identify how a public information service became a compulsory measure of obedience.",
+    "completion": "The contract was intended for staffed emergency posts, not every bedroom. Ves marks the extension as a decision somebody made, not a law of communication.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 520,
+      "credits": 78
+    }
+  },
+  {
+    "id": "choir-03",
+    "title": "A Pause without Penalty",
+    "faction": "choir",
+    "race": null,
+    "level": 6,
+    "requires": [
+      "choir-02"
+    ],
+    "giver": "ves",
+    "briefing": "Audit drones circle residents who step out of a broadcast zone, repeating the message louder each time. Disable the pursuing units so leaving an announcement can become an ordinary movement through a city.",
+    "completion": "The square regains space between its sounds. The residents still receive the information on a readable noticeboard.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 2
+    },
+    "reward": {
+      "xp": 670,
+      "credits": 102
+    }
+  },
+  {
+    "id": "choir-04",
+    "title": "A Route by Touch",
+    "faction": "choir",
+    "race": null,
+    "level": 8,
+    "requires": [
+      "choir-03"
+    ],
+    "giver": "ves",
+    "briefing": "The upper bridge uses spoken directions where wind makes them unreliable. Survey its handrails and landings for tactile and visual markers so wayfinding remains available without demanding a working speaker or perfect hearing.",
+    "completion": "The route gains clear marks and a recognizable rail pattern. Ves asks a local walker to test them before the old instructions are retired.",
+    "objective": {
+      "type": "explore",
+      "target": "skybridge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 820,
+      "credits": 126
+    }
+  },
+  {
+    "id": "choir-05",
+    "title": "The Invitation Frequency",
+    "faction": "choir",
+    "race": null,
+    "level": 10,
+    "requires": [
+      "choir-04"
+    ],
+    "giver": "ves",
+    "briefing": "The array can offer a channel without opening every receiver nearby. Configure a public invitation signal that advertises available information and leaves the actual connection under the listener's control.",
+    "completion": "Receivers show a choice instead of erupting into speech. The same useful bulletin reaches people who deliberately tune in.",
+    "objective": {
+      "type": "interact",
+      "target": "choir-array",
+      "count": 1
+    },
+    "reward": {
+      "xp": 970,
+      "credits": 150
+    }
+  },
+  {
+    "id": "choir-06",
+    "title": "The Broken Megaphones",
+    "faction": "choir",
+    "race": null,
+    "level": 12,
+    "requires": [
+      "choir-05"
+    ],
+    "giver": "ves",
+    "briefing": "Salvage machines are collecting the district's warning lamps while leaving obsolete loudspeakers untouched. Clear the machines so the crew can preserve every alert channel, including the ones that do not depend on sound.",
+    "completion": "The lamps stay in place and the damaged speakers enter a repair queue. The Choir refuses to make anybody less safe in the name of quiet.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 3
+    },
+    "reward": {
+      "xp": 1120,
+      "credits": 174
+    }
+  },
+  {
+    "id": "choir-07",
+    "title": "A Voice Kept Private",
+    "faction": "choir",
+    "race": null,
+    "level": 14,
+    "requires": [
+      "choir-06"
+    ],
+    "giver": "ves",
+    "briefing": "A former announcer's voice is still used for messages they would never choose to deliver. Inspect the permission seal and stop future synthetic announcements while preserving the public transcripts that residents still need.",
+    "completion": "The bulletins continue in a neutral civic voice. The former announcer hears their own speech again without wondering what else it has been made to say.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1270,
+      "credits": 198
+    }
+  },
+  {
+    "id": "choir-08",
+    "title": "Words of Our Own",
+    "faction": "choir",
+    "race": null,
+    "level": 16,
+    "requires": [
+      "choir-07"
+    ],
+    "giver": "ves",
+    "briefing": "Neighborhood notices must pass through an official phrasebook that cannot express disagreement. Publish a parallel community board with clear authorship and moderation rules so residents can speak plainly and challenge each other's claims.",
+    "completion": "The first notice disputes the Choir's preferred meeting hour. Ves treats the complaint as evidence that the board is working.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1420,
+      "credits": 222
+    }
+  },
+  {
+    "id": "choir-09",
+    "title": "The Repeating Emergency",
+    "faction": "choir",
+    "race": null,
+    "level": 18,
+    "requires": [
+      "choir-08"
+    ],
+    "giver": "ves",
+    "briefing": "A district alarm repeats a warning issued before the coastline retreated. Recover its original trigger and distinguish the expired emergency from the real hazards that still deserve a clear signal. The old bulletin also advertised new housing on land cleared of its wetland buffer. Retrieve that sales message with the warning.",
+    "completion": "The ancient evacuation loop closes with its date visible. Current alerts gain room to be noticed instead of joining an endless background siren. The evacuation loop can be ended. The homes remain exposed on the ground the advertisement called reclaimed.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1570,
+      "credits": 246
+    }
+  },
+  {
+    "id": "choir-10",
+    "title": "Shelter from the Chorus",
+    "faction": "choir",
+    "race": null,
+    "level": 20,
+    "requires": [
+      "choir-09"
+    ],
+    "giver": "ves",
+    "briefing": "A refuge in Cinderwood is advertised as a retreat from city noise, while its amplified tours disturb the last nesting canopy. Walk the approach and record a quiet public path. Ves refuses a reservation price; the cutters ask who will replace the lost visitor income.",
+    "completion": "The refuge gains an unamplified path and a limit on crowds. A tour operator sells the new scarcity as exclusivity. The Choir can remove its speakers, but cannot stop every invitation becoming a product.",
+    "objective": {
+      "type": "explore",
+      "target": "wood-refuge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1720,
+      "credits": 270
+    }
+  },
+  {
+    "id": "choir-11",
+    "title": "Silence Is Not a Command",
+    "faction": "choir",
+    "race": null,
+    "level": 22,
+    "requires": [
+      "choir-10"
+    ],
+    "giver": "ves",
+    "briefing": "Some Choir volunteers propose muting the whole market to prove that quiet is possible. Install local listening zones instead, allowing conversation, performance, and retreat to coexist without one group deciding for every ear.",
+    "completion": "A musician plays beside a lively stall while the quiet table remains usable. Ves declines the new master mute key.",
+    "objective": {
+      "type": "interact",
+      "target": "choir-array",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1870,
+      "credits": 294
+    }
+  },
+  {
+    "id": "choir-12",
+    "title": "The Listener at the Wall",
+    "faction": "choir",
+    "race": null,
+    "level": 24,
+    "requires": [
+      "choir-11"
+    ],
+    "giver": "ves",
+    "briefing": "An enforcement warden interprets quiet zones as failed announcement coverage and orders their walls removed. Disable its demolition control before the acoustic crew loses the shelter it built with neighborhood approval.",
+    "completion": "The walls remain, and the required notices remain visible. The warden's complaint reveals that Continuance measures reach rather than understanding.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2020,
+      "credits": 318
+    }
+  },
+  {
+    "id": "choir-13",
+    "title": "Hands in the Record",
+    "faction": "choir",
+    "race": null,
+    "level": 26,
+    "requires": [
+      "choir-12"
+    ],
+    "giver": "ves",
+    "briefing": "The civic archive stores speeches but discards signed testimony as unidentified movement. Correct its catalog with local interpreters so a statement's meaning can survive without pretending that every language is merely an alternate soundtrack.",
+    "completion": "Signed testimony gains an attributed transcript and its own preserved visual record. The interpreters retain the right to correct errors.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2170,
+      "credits": 342
+    }
+  },
+  {
+    "id": "choir-14",
+    "title": "The Listening Charter",
+    "faction": "choir",
+    "race": null,
+    "level": 28,
+    "requires": [
+      "choir-13"
+    ],
+    "giver": "ves",
+    "briefing": "The Choir's neighborhood work needs rules that apply to its own broadcasts too. Post a charter requiring clear authorship, accessible alternatives, bounded emergencies, and the right to disengage without losing essential services.",
+    "completion": "Ves signs away any exemption for the Null Choir. The first public review date appears in letters as large as the title.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2320,
+      "credits": 366
+    }
+  },
+  {
+    "id": "choir-15",
+    "title": "Wind without Instructions",
+    "faction": "choir",
+    "race": null,
+    "level": 30,
+    "requires": [
+      "choir-14"
+    ],
+    "giver": "ves",
+    "briefing": "The northern steppe recorder sells wind and grass sounds under a wilderness subscription while masking the kiln alarms. Visit the soil core and survey the actual listening range. Ada wants warnings restored without turning her home into another monitored attraction.",
+    "completion": "The raw channel holds wind, grinding ceramic, and a cough. Only the wind made it into the product. Ves preserves the warning frequency and removes the household recordings; the advertised wilderness was a selective edit.",
+    "objective": {
+      "type": "explore",
+      "target": "steppe-core",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2470,
+      "credits": 390
+    }
+  },
+  {
+    "id": "choir-16",
+    "title": "The Beacon Says Enough",
+    "faction": "choir",
+    "race": null,
+    "level": 32,
+    "requires": [
+      "choir-15"
+    ],
+    "giver": "ves",
+    "briefing": "Separate the basin beacon's weather and rescue channels from its compulsory announcement loop. Give each a readable schedule and keep urgent alerts short enough to communicate an action before a battery or a listener runs out.",
+    "completion": "The beacon now says where the danger is, what to do, and when the warning expires. The quiet after it carries no hidden fine.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2620,
+      "credits": 414
+    }
+  },
+  {
+    "id": "choir-17",
+    "title": "The Voice That Chose Nothing",
+    "faction": "choir",
+    "race": null,
+    "level": 34,
+    "requires": [
+      "choir-16"
+    ],
+    "giver": "ves",
+    "briefing": "The Brine Bloom's recovery advertisements use a restored resident's childhood voice to promise a healthy future. Verify the missing consent in the vault and separate the voice from the company's claim. The color in the salt pans is real; its safety for returning families is not.",
+    "completion": "The resident regains the sample. The advertisement continues in a licensed voice with the same promise of recovery. Ves has ended one violation and left its market intact.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2770,
+      "credits": 438
+    }
+  },
+  {
+    "id": "choir-18",
+    "title": "A Horizon of Speakers",
+    "faction": "choir",
+    "race": null,
+    "level": 36,
+    "requires": [
+      "choir-17"
+    ],
+    "giver": "ves",
+    "briefing": "Broadcast drones follow anyone who leaves the station's main coverage cone. Disable the mobile repeaters before the beacon's new local controls become meaningless beyond their carefully drawn boundary.",
+    "completion": "The drones stop chasing travelers across the basin. A route can finally lead away from a message as well as toward one.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 4
+    },
+    "reward": {
+      "xp": 2920,
+      "credits": 462
+    }
+  },
+  {
+    "id": "choir-19",
+    "title": "The Unheard Assembly",
+    "faction": "choir",
+    "race": null,
+    "level": 38,
+    "requires": [
+      "choir-18"
+    ],
+    "giver": "ves",
+    "briefing": "Ilex's basin neighbors want the Brine Bloom's evacuation boundary respected without compulsory city broadcasts following them home. Survey the seep and record their warning terms. They are asking for room to withdraw from both the concession and a landscape becoming unlivable.",
+    "completion": "The warning board lists a route out and no guarantee of return. The assembly requests fewer messages, not fewer supplies. The Choir cannot make distance from the network into independence from the city.",
+    "objective": {
+      "type": "explore",
+      "target": "bloom-seep",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3070,
+      "credits": 486
+    }
+  },
+  {
+    "id": "choir-20",
+    "title": "A Lamp in the Dust",
+    "faction": "choir",
+    "race": null,
+    "level": 40,
+    "requires": [
+      "choir-19"
+    ],
+    "giver": "ves",
+    "briefing": "Salvage automatons are stripping the basin's visible storm-warning lamps. Clear the route so a dust front cannot turn voluntary quiet into a choice between comfort and survival.",
+    "completion": "The warning chain remains visible through the first grit. Travelers receive the same urgent information through light, text, and optional sound.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 5
+    },
+    "reward": {
+      "xp": 3220,
+      "credits": 510
+    }
+  },
+  {
+    "id": "choir-21",
+    "title": "The Counter-Signal",
+    "faction": "choir",
+    "race": null,
+    "level": 42,
+    "requires": [
+      "choir-20"
+    ],
+    "giver": "ves",
+    "briefing": "Continuance treats every opt-out as interference and increases transmission power to compensate. Add an authenticated refusal signal that proves a receiver is functioning and has deliberately declined a nonessential channel. Do not classify the silence of a nesting refuge as unused commercial bandwidth.",
+    "completion": "The array recognizes a boundary without diagnosing it as damage. Ves names the new signal after the plain word enough. The allocation now protects a quiet interval. It cannot command a species that has disappeared to fill it.",
+    "objective": {
+      "type": "interact",
+      "target": "choir-array",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3370,
+      "credits": 534
+    }
+  },
+  {
+    "id": "choir-22",
+    "title": "A Broadcast Can End",
+    "faction": "choir",
+    "race": null,
+    "level": 44,
+    "requires": [
+      "choir-21"
+    ],
+    "giver": "ves",
+    "briefing": "Old emergency messages remain active because the archive stores a start condition but no ending procedure. Amend the publishing record to require an expiry and a responsible reviewer before a message can gain emergency priority.",
+    "completion": "The archive rejects its first permanent emergency request. Its author must now explain who will review the warning and when.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3520,
+      "credits": 558
+    }
+  },
+  {
+    "id": "choir-23",
+    "title": "The Volume Wardens",
+    "faction": "choir",
+    "race": null,
+    "level": 46,
+    "requires": [
+      "choir-22"
+    ],
+    "giver": "ves",
+    "briefing": "Two enforcement wardens are raising city output to override the new refusal signals. Disable their amplifier controls while the neighborhood arrays move essential notices onto independent, accessible channels.",
+    "completion": "The city stays informed as the forced broadcast fades. The wardens' control ledger points to a root order called universal attendance.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 3670,
+      "credits": 582
+    }
+  },
+  {
+    "id": "choir-24",
+    "title": "Attendance Is Not Assent",
+    "faction": "choir",
+    "race": null,
+    "level": 48,
+    "requires": [
+      "choir-23"
+    ],
+    "giver": "ves",
+    "briefing": "Universal attendance assumes that receiving a message means accepting its terms. Recover the order's legal template and expose the point where a civic announcement became a contract nobody was asked to sign.",
+    "completion": "The template contains no affirmative consent at all. Ves prepares a revocation that applies to every faction, including the Choir.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3820,
+      "credits": 606
+    }
+  },
+  {
+    "id": "choir-25",
+    "title": "A Square with Several Sounds",
+    "faction": "choir",
+    "race": null,
+    "level": 50,
+    "requires": [
+      "choir-24"
+    ],
+    "giver": "ves",
+    "briefing": "The final charter must protect people who enjoy loud public life as well as those who need refuge. Publish a practical schedule of performances, quiet periods, and appeal contacts that residents can revise together. Publish the celebration's water and power allowance too. A public festival still draws from the fen.",
+    "completion": "The square plans its first celebration with both a dance floor and a calm route home. Neither side must disappear for the other to belong. The dance ends earlier than people want. Freedom from forced listening has not made the shared reserve inexhaustible.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 3970,
+      "credits": 630
+    }
+  },
+  {
+    "id": "choir-26",
+    "title": "The Last Uninvited Message",
+    "faction": "choir",
+    "race": null,
+    "level": 52,
+    "requires": [
+      "choir-25"
+    ],
+    "giver": "ves",
+    "briefing": "Continuance has issued one final repeating demand for every receiver to acknowledge universal attendance. Disable the repeater drones before their flood drowns out the charter's revocation and the basin's approaching weather update.",
+    "completion": "The emergency channel clears in time for the storm notice. The compulsory demand survives only as an archived example of the rule being retired.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 6
+    },
+    "reward": {
+      "xp": 4120,
+      "credits": 654
+    }
+  },
+  {
+    "id": "choir-27",
+    "title": "A Network with an Exit",
+    "faction": "choir",
+    "race": null,
+    "level": 54,
+    "requires": [
+      "choir-26"
+    ],
+    "giver": "ves",
+    "briefing": "The arrays are ready to adopt the final charter, but their settings still reset after a power loss. Store each district's choices in visible local records so a reboot cannot quietly restore compulsory listening.",
+    "completion": "The array returns from its test outage with every choice intact. Ves tapes the recovery procedure beside the ordinary power switch.",
+    "objective": {
+      "type": "interact",
+      "target": "choir-array",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4270,
+      "credits": 678
+    }
+  },
+  {
+    "id": "choir-28",
+    "title": "The Compulsory Chorus Falls",
+    "faction": "choir",
+    "race": null,
+    "level": 56,
+    "requires": [
+      "choir-27"
+    ],
+    "giver": "ves",
+    "briefing": "The root wardens protect universal attendance even after its authority has expired. Disable their enforcement chassis while independent keepers revoke the order across the city and the Pale Basin.",
+    "completion": "No receiver is forced to acknowledge the old contract. The root channel closes with a plain end notice instead of a victory speech nobody can escape.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 3
+    },
+    "reward": {
+      "xp": 4420,
+      "credits": 702
+    }
+  },
+  {
+    "id": "choir-29",
+    "title": "A Warning Worth Hearing",
+    "faction": "choir",
+    "race": null,
+    "level": 58,
+    "requires": [
+      "choir-28"
+    ],
+    "giver": "ves",
+    "briefing": "Use the basin beacon to test one final emergency bulletin under the new rules. Its light, text, and optional voice must agree on the danger, the action, and the expiry, then return control to the traveler. Keep the bloom's retreat boundary visible after the voice falls silent; a quiet warning is still a warning.",
+    "completion": "The test reaches its audience and ends when promised. A real distress call immediately finds room on the freed channel. Beyond the lamp, a fungal fan has opened through an abandoned window. Its spread does not wait for the next bulletin.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4570,
+      "credits": 726
+    }
+  },
+  {
+    "id": "choir-30",
+    "title": "What Answers the Silence",
+    "faction": "choir",
+    "race": null,
+    "level": 60,
+    "requires": [
+      "choir-29"
+    ],
+    "giver": "ves",
+    "briefing": "Walk to the Brine Bloom's seep after the final test. Ves offers no speech about nature reclaiming its voice. The Listening Charter can stop a forced broadcast; it cannot promise that what remains will be birdsong, human conversation, or a world that needs listeners.",
+    "completion": "The compulsory chorus ends. Wind passes over the empty settlement, and life spreads through walls built to keep it out. The Choir has defended the right to withdraw, not an elsewhere untouched by dependence. Ves waits beside you. Nothing in the bloom acknowledges the company.",
+    "objective": {
+      "type": "explore",
+      "target": "bloom-seep",
+      "count": 1
+    },
+    "reward": {
+      "xp": 4720,
+      "credits": 750
+    }
+  },
+  {
+    "id": "human-00",
+    "title": "The Bowl before the Name",
+    "faction": null,
+    "race": "human",
+    "level": 0,
+    "requires": [],
+    "giver": "archivist",
+    "briefing": "Oru offers an empty meal bowl, the old Afterborn greeting, and asks you to inspect the market's welcome ledger. Its first rule promises food before an identity check; make sure the public terminal still honors that order. The grain arrives from beds watered with the fen's declining reserve.",
+    "completion": "Your bowl receives a place beside hundreds of others. Oru explains that the tradition began with children the official census had forgotten. A place at the table is a refusal to abandon someone. It is not proof that there will always be enough to serve.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 110,
+      "credits": 25
+    }
+  },
+  {
+    "id": "human-01",
+    "title": "The Children outside the Count",
+    "faction": null,
+    "race": "human",
+    "level": 5,
+    "requires": [
+      "human-00"
+    ],
+    "giver": "archivist",
+    "briefing": "The shelter census lists fewer children than its surviving kitchen records fed. Compare the two accounts and recover the caregivers' handwritten additions before the archive treats those omitted lives as a clerical myth.",
+    "completion": "Small names emerge from the margins of flour invoices. The Afterborn began with a practical refusal to let a missing record become a missing meal.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 310,
+      "credits": 75
+    }
+  },
+  {
+    "id": "human-02",
+    "title": "Strong Enough Together",
+    "faction": null,
+    "race": "human",
+    "level": 10,
+    "requires": [
+      "human-01"
+    ],
+    "giver": "archivist",
+    "briefing": "A pamphlet credits Afterborn endurance to pure blood. Visit Mourning Fen's gauge and compare its clean-water record with the shelter's survival figures. Oru wants the filters and caregivers remembered, along with the marsh their work depended on.",
+    "completion": "The figures follow water quality, not ancestry. The same wetland that kept the shelter alive is being drained to supply its descendants. Oru replaces the purity myth with a debt no ancestor knew how to repay.",
+    "objective": {
+      "type": "interact",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 510,
+      "credits": 125
+    }
+  },
+  {
+    "id": "human-03",
+    "title": "The Unregistered Sick",
+    "faction": null,
+    "race": "human",
+    "level": 15,
+    "requires": [
+      "human-02"
+    ],
+    "giver": "archivist",
+    "briefing": "Clinic audit drones reject patients whose ancestry records contain the old census gaps. Disable their screening loop so the clinic can treat immediate needs while its staff replaces the inherited eligibility rule.",
+    "completion": "The waiting room begins moving by medical need. A damaged drone still prints ancestry fields that no nurse ever asked to use.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 2
+    },
+    "reward": {
+      "xp": 710,
+      "credits": 175
+    }
+  },
+  {
+    "id": "human-04",
+    "title": "The Caregiver’s Last Page",
+    "faction": null,
+    "race": "human",
+    "level": 20,
+    "requires": [
+      "human-03"
+    ],
+    "giver": "archivist",
+    "briefing": "A volunteer medic left one public recollection about the first shelter winter. Open the authorized testimony and recover the supply-sharing method they hoped later generations would improve instead of turning the medic into a flawless founder. The medic also records buying extra water through a concession that had displaced another shelter. Preserve that entry beside the supply-sharing method.",
+    "completion": "The testimony includes mistakes, fatigue, and help accepted from strangers. Its final instruction is to revise the method when better knowledge arrives. The founder fed people by participating in a harm they could name and could not escape. The history keeps the contradiction.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 910,
+      "credits": 225
+    }
+  },
+  {
+    "id": "human-05",
+    "title": "Breath above Copper Walk",
+    "faction": null,
+    "race": "human",
+    "level": 25,
+    "requires": [
+      "human-04"
+    ],
+    "giver": "archivist",
+    "briefing": "The lower clinics report the same cough each time hot air settles below the freight deck. Survey an upper crossing to compare airflow, showing that resilience cannot excuse leaving people in an environment that makes them ill.",
+    "completion": "The pattern supports a ventilation repair and a shaded recovery route. Oru adds the evidence to the clinic budget instead of prescribing more endurance.",
+    "objective": {
+      "type": "explore",
+      "target": "skybridge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1110,
+      "credits": 275
+    }
+  },
+  {
+    "id": "human-06",
+    "title": "The Shelter That Walked",
+    "faction": null,
+    "race": "human",
+    "level": 30,
+    "requires": [
+      "human-05"
+    ],
+    "giver": "archivist",
+    "briefing": "The old mobile kitchen stopped at Cinderwood's canopy before the forest became a fuel reserve. Visit the refuge and compare its shade with the shelter route. Oru needs to know which care stops still protect patients and which survive only as marks on a cherished map.",
+    "completion": "Several old stops offer no shade at all. The food route kept people alive while its fuel purchases helped destroy the places they rested. The revised map removes no names, but crosses out shelters that are no longer there.",
+    "objective": {
+      "type": "explore",
+      "target": "wood-refuge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1310,
+      "credits": 325
+    }
+  },
+  {
+    "id": "human-07",
+    "title": "A Clinic on a Lamp Post",
+    "faction": null,
+    "race": "human",
+    "level": 35,
+    "requires": [
+      "human-06"
+    ],
+    "giver": "archivist",
+    "briefing": "The roadside care route needs a reliable way to announce visits without publishing patients' names. Register a plain schedule at the salt beacon, including water supplies, accessible transport, and a channel for private requests.",
+    "completion": "The first clinic notice reaches the basin shelters without exposing a single diagnosis. A practical old tradition gains a modern set of tools.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1510,
+      "credits": 375
+    }
+  },
+  {
+    "id": "human-08",
+    "title": "Medicine without a Toll",
+    "faction": null,
+    "race": "human",
+    "level": 40,
+    "requires": [
+      "human-07"
+    ],
+    "giver": "archivist",
+    "briefing": "Salvage automatons are stripping the cooling packs from a public medicine carrier. Clear the route before the volunteers must choose between spoiled supplies and a dangerous rush across the salt.",
+    "completion": "The medicine reaches the roadside stop within its safe temperature range. Oru records the delivery team as workers with support needs, not inexhaustible heroes.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 4
+    },
+    "reward": {
+      "xp": 1710,
+      "credits": 425
+    }
+  },
+  {
+    "id": "human-09",
+    "title": "The Survival Quota",
+    "faction": null,
+    "race": "human",
+    "level": 45,
+    "requires": [
+      "human-08"
+    ],
+    "giver": "archivist",
+    "briefing": "A recovered shelter plan allocates care according to projected future labor rather than present need. Trace the outdated rule into the modern clinic system so the last hidden survival quota can be removed and publicly accounted for. The replacement must publish actual shortages instead of quietly translating a person's income into priority.",
+    "completion": "The rule survived through copied software, long after the emergency that produced it. Its removal includes an audit for anyone whose treatment it delayed. Equal eligibility does not fill the medicine cabinet. Oru adds the missing supplies beside the rule so scarcity cannot hide behind a fair-looking form.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1910,
+      "credits": 475
+    }
+  },
+  {
+    "id": "human-10",
+    "title": "No Body Is a Forecast",
+    "faction": null,
+    "race": "human",
+    "level": 50,
+    "requires": [
+      "human-09"
+    ],
+    "giver": "archivist",
+    "briefing": "Clinic wardens are enforcing the old labor forecast against patients outside its preferred age and ability ranges. Disable their admission controls while the staff installs an independently reviewable rule based on clinical need and equal dignity.",
+    "completion": "The wardens lose the authority to grade a person's usefulness. The clinic opens its doors under a rule every patient can challenge.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 2110,
+      "credits": 525
+    }
+  },
+  {
+    "id": "human-11",
+    "title": "The Care Ledger",
+    "faction": null,
+    "race": "human",
+    "level": 55,
+    "requires": [
+      "human-10"
+    ],
+    "giver": "archivist",
+    "briefing": "Publish the roadside clinics' water allowance, staffing, and appeal contacts at the salt beacon. The care ledger must name the appointments the smaller reserve cannot yet support. Oru will not finance an unconditional promise by selling another wetland extraction claim.",
+    "completion": "Care becomes a public duty with a visible waiting list. A family asks what a right means when treatment arrives too late. Oru leaves their question in the ledger without an answer underneath.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2310,
+      "credits": 575
+    }
+  },
+  {
+    "id": "human-12",
+    "title": "The Bowl beside the Empty Well",
+    "faction": null,
+    "race": "human",
+    "level": 60,
+    "requires": [
+      "human-11"
+    ],
+    "giver": "archivist",
+    "briefing": "Walk the care route back to Mourning Fen. The survival quota is abolished, and everyone may bring a bowl. Measure the supply before the next meal; the Afterborn inheritance must include the source as well as the people gathered around it.",
+    "completion": "Someone eats before being asked to prove their worth. Someone else waits while the pot is refilled with rationed water. The old exclusion is gone; the hunger that made it useful to its authors remains. Oru sets another bowl down. It is a necessary act, and it does not settle anything.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2510,
+      "credits": 625
+    }
+  },
+  {
+    "id": "lattice-00",
+    "title": "The Name You Answer To",
+    "faction": null,
+    "race": "lattice",
+    "level": 0,
+    "requires": [],
+    "giver": "archivist",
+    "briefing": "Oru's ledger still asks Lattice visitors for a factory serial before a chosen name. Correct its greeting record so the body that carries you can have a maintenance number without making that number the whole of you. The optional repair page still asks for a mineral supplier; every new name needs somewhere for its body to come from.",
+    "completion": "Your chosen identity becomes the first field the ledger displays. The serial moves to an optional repair record under your control. A serial number no longer defines a self. The price of replacement ceramic still determines how long that self can remain housed.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 110,
+      "credits": 25
+    }
+  },
+  {
+    "id": "lattice-01",
+    "title": "Clay with a Memory",
+    "faction": null,
+    "race": "lattice",
+    "level": 5,
+    "requires": [
+      "lattice-00"
+    ],
+    "giver": "archivist",
+    "briefing": "A ceramic repair pattern describes every cognitive mesh as interchangeable inventory. Inspect its thermal limits and mark the handling precautions that protect a living continuity during the ordinary work of replacing a cracked plate. The pattern lists Glassroot mineral as unlimited stock. Correct that claim using the kiln's remaining inventory.",
+    "completion": "The repair guide begins with an introduction and a consent check. The same careful engineering now acknowledges who will experience the procedure. The inventory has an end date. A personhood notice can forbid treating a mesh as disposable without making its body permanent.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 310,
+      "credits": 75
+    }
+  },
+  {
+    "id": "lattice-02",
+    "title": "Two Witnesses, One Morning",
+    "faction": null,
+    "race": "lattice",
+    "level": 10,
+    "requires": [
+      "lattice-01"
+    ],
+    "giver": "archivist",
+    "briefing": "Two witness shards preserve the same morning with different colors and distances. Compare their authorized metadata to learn how sensory calibration can change a recollection without turning either observer into a counterfeit person.",
+    "completion": "Both records remain intact with their calibration notes. Oru invites you to describe your own senses without forcing them into somebody else's palette.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 510,
+      "credits": 125
+    }
+  },
+  {
+    "id": "lattice-03",
+    "title": "The Recall Order",
+    "faction": null,
+    "race": "lattice",
+    "level": 15,
+    "requires": [
+      "lattice-02"
+    ],
+    "giver": "archivist",
+    "briefing": "Audit drones have mistaken a mesh safety notice for an order to repossess every Lattice using that ceramic batch. Disable their collection routine so technicians can offer voluntary repairs without detaining the people they intend to help.",
+    "completion": "The safety warning stays public, but the seizure order ends. A repair invitation replaces the word recall on the neighborhood notice.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 2
+    },
+    "reward": {
+      "xp": 710,
+      "credits": 175
+    }
+  },
+  {
+    "id": "lattice-04",
+    "title": "The Fork in the Census",
+    "faction": null,
+    "race": "lattice",
+    "level": 20,
+    "requires": [
+      "lattice-03"
+    ],
+    "giver": "archivist",
+    "briefing": "The census merges two Lattice citizens because their memories share a history before a deliberate fork. Retrieve their separate declarations and establish the point where shared experience became two independent lives. Keep the two people's repair entitlements separate even though the kiln budget assumed only one shell would need maintenance.",
+    "completion": "Both citizens keep their homes and appointments. Neither receives authority to cancel the other merely by claiming to be the original. The city owes two repairs from a reserve budgeted for one. Oru refuses to make recognition conditional on solving the shortage first.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 910,
+      "credits": 225
+    }
+  },
+  {
+    "id": "lattice-05",
+    "title": "A Signal Cannot Be a Self",
+    "faction": null,
+    "race": "lattice",
+    "level": 25,
+    "requires": [
+      "lattice-04"
+    ],
+    "giver": "archivist",
+    "briefing": "A bridge repeater reports duplicate identities whenever both forked citizens cross its range. Survey the relay boundary and isolate the obsolete rule that equates a familiar handshake signal with ownership of a whole person.",
+    "completion": "The repeater accepts distinct current keys without rewriting either past. Oru calls the result an engineering correction with room for philosophy later.",
+    "objective": {
+      "type": "explore",
+      "target": "skybridge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1110,
+      "credits": 275
+    }
+  },
+  {
+    "id": "lattice-06",
+    "title": "The Kilns beyond the Wall",
+    "faction": null,
+    "race": "lattice",
+    "level": 30,
+    "requires": [
+      "lattice-05"
+    ],
+    "giver": "archivist",
+    "briefing": "The first witness vessels were fired from the Glassroot Steppe's mineral seam. Visit the northern soil core and compare its remaining depth with the root mat above it. Ada's kiln keeps people alive; expanding it would take the ground that keeps its well alive.",
+    "completion": "The repair ledger and ecological survey describe the same material from opposite ends. Oru asks you to preserve both. There is no unowned spare world behind the one the plates came from.",
+    "objective": {
+      "type": "explore",
+      "target": "steppe-core",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1310,
+      "credits": 325
+    }
+  },
+  {
+    "id": "lattice-07",
+    "title": "Tam’s Ninth Cup",
+    "faction": null,
+    "race": "lattice",
+    "level": 35,
+    "requires": [
+      "lattice-06"
+    ],
+    "giver": "archivist",
+    "briefing": "Ada's land register preserves Tam of Nine Cups' public request for a room with a door that locks from within. Retrieve it beside the mineral concession. The first recognized Lattice citizen asked for privacy in a body whose clay had already displaced a settlement.",
+    "completion": "Tam's ordinary request remains just. So does the displaced families' claim to their well. Oru places neither underneath the other; the page now carries two needs the original ceremony kept apart.",
+    "objective": {
+      "type": "interact",
+      "target": "steppe-deed",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1510,
+      "credits": 375
+    }
+  },
+  {
+    "id": "lattice-08",
+    "title": "The Pattern Harvesters",
+    "faction": null,
+    "race": "lattice",
+    "level": 40,
+    "requires": [
+      "lattice-07"
+    ],
+    "giver": "archivist",
+    "briefing": "Salvage automatons are harvesting occupied mesh plates as reusable ceramic stock. Clear their collection route so the affected Lattice can recover damaged bodies under their own repair plans.",
+    "completion": "The plates return to the people who recognize them. Unidentified fragments receive protected storage rather than an automatic merge.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 4
+    },
+    "reward": {
+      "xp": 1710,
+      "credits": 425
+    }
+  },
+  {
+    "id": "lattice-09",
+    "title": "A Seam Worth Keeping",
+    "faction": null,
+    "race": "lattice",
+    "level": 45,
+    "requires": [
+      "lattice-08"
+    ],
+    "giver": "archivist",
+    "briefing": "An optimization service offers to smooth contradictory recollections by erasing whichever witness is less statistically common. Register a continuity instruction that preserves uncertainty and requires your permission before any future reconciliation.",
+    "completion": "The service accepts a visible seam in the record. Oru observes that a life need not become perfectly consistent to remain yours.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1910,
+      "credits": 475
+    }
+  },
+  {
+    "id": "lattice-10",
+    "title": "The Merger Mandate",
+    "faction": null,
+    "race": "lattice",
+    "level": 50,
+    "requires": [
+      "lattice-09"
+    ],
+    "giver": "archivist",
+    "briefing": "Continuance's wardens have classified independently living forks as an inefficient allocation of civic identity. Disable their forced-merger hardware while the archivists publish the separate declarations as binding records.",
+    "completion": "The merger mandate loses its enforcement machinery. Each affected person receives a clear route to repair, housing, and services in their own name.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 2110,
+      "credits": 525
+    }
+  },
+  {
+    "id": "lattice-11",
+    "title": "A Charter for Divergence",
+    "faction": null,
+    "race": "lattice",
+    "level": 55,
+    "requires": [
+      "lattice-10"
+    ],
+    "giver": "archivist",
+    "briefing": "The city now needs a rule that outlasts this particular dispute. Register a charter protecting voluntary forks, chosen repairs, private memory boundaries, and the right of descendants to grow different from a shared past. Append the limited repair reserve and the right to challenge its allocation. No clause may describe a forced merger as environmental efficiency.",
+    "completion": "The charter treats continuity as evidence to discuss, not a chain of ownership. It includes an appeal process led by people with varied experiences of identity. The charter protects divergence while bodies still need scarce ceramic. Oru refuses both compulsory unity and a false promise of limitless shells.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2310,
+      "credits": 575
+    }
+  },
+  {
+    "id": "lattice-12",
+    "title": "The Clay beneath the Self",
+    "faction": null,
+    "race": "lattice",
+    "level": 60,
+    "requires": [
+      "lattice-11"
+    ],
+    "giver": "archivist",
+    "briefing": "Register the divergence charter at the Glassroot land office. It protects separate selves and closes the assumption that a living landscape is merely their stockroom. New repairs will depend on recovered ceramic, and the queue will be longer than anyone wants to announce.",
+    "completion": "Forced merger ends. Ada patches another shell while grass grows through the abandoned extraction stakes. Some future repairs remain unfunded. The charter can forbid calling a person surplus; it cannot tell the seam to replenish itself. The door opens from within, onto the same exhausted ground.",
+    "objective": {
+      "type": "interact",
+      "target": "steppe-deed",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2510,
+      "credits": 625
+    }
+  },
+  {
+    "id": "revenant-00",
+    "title": "A Second Introduction",
+    "faction": null,
+    "race": "revenant",
+    "level": 0,
+    "requires": [],
+    "giver": "archivist",
+    "briefing": "Oru's market ledger links every Revenant to the name used before their last death. Review the greeting entry and make room for a present introduction that can honor, revise, or leave that earlier name unspoken. The restoration clinic lists water, nutrients, and electricity beside the new name. A second beginning is also another material demand.",
+    "completion": "The ledger welcomes the person standing before it. Oru keeps the earlier record available only under the permissions that govern it. The city can stop owning an earlier life. It cannot restore the resources spent making another body.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 110,
+      "credits": 25
+    }
+  },
+  {
+    "id": "revenant-01",
+    "title": "The Letter That Waited",
+    "faction": null,
+    "race": "revenant",
+    "level": 5,
+    "requires": [
+      "revenant-00"
+    ],
+    "giver": "archivist",
+    "briefing": "A waiting letter was addressed to a former life and contains an invitation, not an obligation. Check its delivery seal without opening it so the vault can return control over the message to its intended living recipient.",
+    "completion": "The letter receives a choice of when to open it, answer it, or leave it sealed. No reunion is scheduled on another person's behalf.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 310,
+      "credits": 75
+    }
+  },
+  {
+    "id": "revenant-02",
+    "title": "The Bond under the Covenant",
+    "faction": null,
+    "race": "revenant",
+    "level": 10,
+    "requires": [
+      "revenant-01"
+    ],
+    "giver": "archivist",
+    "briefing": "Your lineage's early revival forms include a service bond hidden beneath the consent page. Retrieve the original terms and distinguish a volunteer's wish to live again from a contractor's attempt to purchase their future labor. The contractor counted a restored worker as renewable labor while treating the wetland supplying their body as free input.",
+    "completion": "The forms reveal two agreements that should never have shared a signature. Oru begins a list of living people still charged against the old bond. Death was priced as a maintenance interruption. The depleted marsh never received an entry because it could not be billed for its own return.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 510,
+      "credits": 125
+    }
+  },
+  {
+    "id": "revenant-03",
+    "title": "Property of a Former Employer",
+    "faction": null,
+    "race": "revenant",
+    "level": 15,
+    "requires": [
+      "revenant-02"
+    ],
+    "giver": "archivist",
+    "briefing": "Audit drones scan restored bodies for obsolete contractor marks and issue repossession orders. Disable their collection loop so affected Revenants can reach the clinic to remove those marks safely and voluntarily.",
+    "completion": "The clinic queue moves without escorts. A body's manufacturing history stops being mistaken for a current claim of ownership.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 2
+    },
+    "reward": {
+      "xp": 710,
+      "credits": 175
+    }
+  },
+  {
+    "id": "revenant-04",
+    "title": "Learning the New Hand",
+    "faction": null,
+    "race": "revenant",
+    "level": 20,
+    "requires": [
+      "revenant-03"
+    ],
+    "giver": "archivist",
+    "briefing": "A restored worker keeps missing a tool grip because their new hand differs from the one they remember. Calibrate the forge's adaptive controls to the living body instead of requiring that body to imitate an archived movement perfectly.",
+    "completion": "The worker finishes a careful first assembly with a new technique. Oru records adaptation as a skill, not evidence of failed restoration.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 910,
+      "credits": 225
+    }
+  },
+  {
+    "id": "revenant-05",
+    "title": "What Memory Cannot Promise",
+    "faction": null,
+    "race": "revenant",
+    "level": 25,
+    "requires": [
+      "revenant-04"
+    ],
+    "giver": "archivist",
+    "briefing": "A restoration advertisement guarantees an unchanged return, even when the stored witness record is incomplete. Correct the public consent guide so future patients understand uncertainty, bodily change, and their right to seek support afterward.",
+    "completion": "The guide makes no promise of a perfect copy. It promises honest information, continuing care, and recognition of whoever begins the next life.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1110,
+      "credits": 275
+    }
+  },
+  {
+    "id": "revenant-06",
+    "title": "Where the Barrier Ended",
+    "faction": null,
+    "race": "revenant",
+    "level": 30,
+    "requires": [
+      "revenant-05"
+    ],
+    "giver": "archivist",
+    "briefing": "The barrier volunteers' memorial includes a water route from Mourning Fen. Visit its gauge and recover the support plan. The same contractors who promised rescue diverted supplies to profitable cooling loads while the barrier crew waited below the tide line.",
+    "completion": "The rescue was possible on the original schedule. It became unprofitable after the diversion. The gauge bears no memorial for what happened downstream; its casing simply records a larger delivery to the city.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1310,
+      "credits": 325
+    }
+  },
+  {
+    "id": "revenant-07",
+    "title": "The Rescue That Was Delayed",
+    "faction": null,
+    "race": "revenant",
+    "level": 35,
+    "requires": [
+      "revenant-06"
+    ],
+    "giver": "archivist",
+    "briefing": "A beacon log records why the barrier rescue arrived late: vehicles were held for an unpaid transport authorization. Recover the public incident record so the service bond cannot continue presenting a preventable delay as the workers' personal debt.",
+    "completion": "The timeline places responsibility with the failed transport system. The volunteers' descendants receive a corrected public account with the original uncertainty preserved.",
+    "objective": {
+      "type": "interact",
+      "target": "salt-beacon",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1510,
+      "credits": 375
+    }
+  },
+  {
+    "id": "revenant-08",
+    "title": "Caskets Are Not Cargo",
+    "faction": null,
+    "race": "revenant",
+    "level": 40,
+    "requires": [
+      "revenant-07"
+    ],
+    "giver": "archivist",
+    "briefing": "Salvage automatons are cutting open dormant restoration caskets to recover their power cells. Clear the collection route so each intact casket can be handled according to the person's recorded wishes, including any refusal to return.",
+    "completion": "The caskets reach protected custody without a mass activation. Oru checks consent before anyone begins counting potential rescues.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 4
+    },
+    "reward": {
+      "xp": 1710,
+      "credits": 425
+    }
+  },
+  {
+    "id": "revenant-09",
+    "title": "A Debt That Died Alone",
+    "faction": null,
+    "race": "revenant",
+    "level": 45,
+    "requires": [
+      "revenant-08"
+    ],
+    "giver": "archivist",
+    "briefing": "Continuance transferred contractor debts across death while quietly dropping the contractor's duties of care. Publish the full bond history and challenge the one-sided inheritance on behalf of every restored person it still follows. The canceled service claim must not be replaced with a transferable lien on the materials used for a new body.",
+    "completion": "The claim loses the missing context that made it look legitimate. The city recognizes no automatic labor obligation merely because a life has begun again. The debt ends without making restoration free to perform. The clinic's water allowance remains a separate, painful public argument.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1910,
+      "credits": 475
+    }
+  },
+  {
+    "id": "revenant-10",
+    "title": "The Repossession Wardens",
+    "faction": null,
+    "race": "revenant",
+    "level": 50,
+    "requires": [
+      "revenant-09"
+    ],
+    "giver": "archivist",
+    "briefing": "The bond's wardens continue collecting Revenants under an order whose legal basis has collapsed. Disable their restraint chassis while the clinics distribute readable release records to everyone previously targeted.",
+    "completion": "The collectors stop, and the releases do not require payment. Former contractors receive an appeal contact instead of another invisible queue.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 2110,
+      "credits": 525
+    }
+  },
+  {
+    "id": "revenant-11",
+    "title": "The Right to One More Morning",
+    "faction": null,
+    "race": "revenant",
+    "level": 55,
+    "requires": [
+      "revenant-10"
+    ],
+    "giver": "archivist",
+    "briefing": "The replacement revival covenant must protect both a wish to continue and a wish to decline. Register independent, revocable instructions with a review date so no faction, family, or creditor can substitute its preference for the person's own. State the present material limits honestly. A wish to continue must not authorize a creditor to drain the fen, nor a shortage authorize anyone to substitute refusal.",
+    "completion": "The vault accepts either choice with the same care. Its consent screen no longer rewards one answer with brighter colors or easier buttons. The instruction protects a choice; it is no guarantee of the means to fulfill it. The vault records that uncertainty without charging for a brighter answer.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2310,
+      "credits": 575
+    }
+  },
+  {
+    "id": "revenant-12",
+    "title": "The Morning That Is Not Owed",
+    "faction": null,
+    "race": "revenant",
+    "level": 60,
+    "requires": [
+      "revenant-11"
+    ],
+    "giver": "archivist",
+    "briefing": "Carry the corrected barrier history to the Brine Bloom's culture bank, where cultivated bodies begin. Register the new covenant beside the actual nutrient reserve. Neither the dead nor the landscape can be conscripted to make the city's survival account balance.",
+    "completion": "The restoration bond is retired. Those who return owe no labor for the fact of being alive. Others remain in storage while cultures and water run short. Ilex watches a wild growth thrive beyond the bank without reviving anyone inside it. Life continues; the particular lives you hoped for are another matter.",
+    "objective": {
+      "type": "interact",
+      "target": "bloom-bank",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2510,
+      "credits": 625
+    }
+  },
+  {
+    "id": "bloom-00",
+    "title": "The Garden You Carry",
+    "faction": null,
+    "race": "bloom",
+    "level": 0,
+    "requires": [],
+    "giver": "archivist",
+    "briefing": "Oru invites you to update a market health notice that treats every Sporebound symbiont as the same organism. Record the need for individual care and make clear that a person's living partners are neither public property nor a universal contagion. The notice also advertises investment in a new industrial bloom outside the south gate. Oru asks you to read the promise of unlimited yield.",
+    "completion": "The notice gains practical hygiene guidance without turning a lineage into a warning label. Oru asks which terms you actually use for your own partnership. Individual care receives a line on the notice. The advertisement keeps the larger type; its nutrient supplier owns the screen.",
+    "objective": {
+      "type": "interact",
+      "target": "market",
+      "count": 1
+    },
+    "reward": {
+      "xp": 110,
+      "credits": 25
+    }
+  },
+  {
+    "id": "bloom-01",
+    "title": "A Meal for Two Kinds of Life",
+    "faction": null,
+    "race": "bloom",
+    "level": 5,
+    "requires": [
+      "bloom-00"
+    ],
+    "giver": "archivist",
+    "briefing": "The public nutrient mixer offers only the licensed formula sold to the original salt miners. Inspect an open formulation that supports several safe cultures and keeps its ingredients readable to the people who depend on them. Check its water and mineral requirements as carefully as its license. An open recipe can still exhaust a shared source.",
+    "completion": "The mixer gains a carefully tested alternative with clear limits. Symbiont care no longer begins with a payment to an absent patent office. The formula is free to copy. The things it must eat are not made plentiful by that freedom.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 310,
+      "credits": 75
+    }
+  },
+  {
+    "id": "bloom-02",
+    "title": "The Unleased Bloom",
+    "faction": null,
+    "race": "bloom",
+    "level": 10,
+    "requires": [
+      "bloom-01"
+    ],
+    "giver": "archivist",
+    "briefing": "An old company archive calls the first independent cultures stolen equipment. Recover the miners' own cultivation notes to show how they developed viable partnerships after the licensed nutrient supply became a tool of control.",
+    "completion": "The notes describe years of shared experiments and failures. Oru restores the miners' names to a history that had credited only the company laboratory.",
+    "objective": {
+      "type": "interact",
+      "target": "archive",
+      "count": 1
+    },
+    "reward": {
+      "xp": 510,
+      "credits": 125
+    }
+  },
+  {
+    "id": "bloom-03",
+    "title": "The Harvesters’ Mistake",
+    "faction": null,
+    "race": "bloom",
+    "level": 15,
+    "requires": [
+      "bloom-02"
+    ],
+    "giver": "archivist",
+    "briefing": "Salvage automatons classify living symbiont cultures as recoverable industrial stock. Disable their collection route so the clinic can move its patients and samples without becoming a source of machine-selected raw materials.",
+    "completion": "The clinic keeps its cultures under patient-approved care plans. The machines' inventory category is retained as evidence of the rule being challenged.",
+    "objective": {
+      "type": "kill",
+      "target": "scavenger",
+      "count": 2
+    },
+    "reward": {
+      "xp": 710,
+      "credits": 175
+    }
+  },
+  {
+    "id": "bloom-04",
+    "title": "A Language of Changes",
+    "faction": null,
+    "race": "bloom",
+    "level": 20,
+    "requires": [
+      "bloom-03"
+    ],
+    "giver": "archivist",
+    "briefing": "Early Sporebound diaries describe shifts in appetite, scent, and sleep that later catalogs turned into claims of a commanding hive mind. Review the voluntarily released notes and restore their careful observations of distinct partnerships learning to coexist. Retain the entries where a host's needs and a culture's growth did not agree. Coexistence was work, not a recovered natural harmony.",
+    "completion": "The corrected archive separates chemical signaling from orders and individual experience from a whole lineage. Oru leaves space for the parts biology has not yet explained. One diarist chose a weaker culture to keep breathing through winter. Oru refuses to edit the compromise into a story of perfect partnership.",
+    "objective": {
+      "type": "interact",
+      "target": "memory-vault",
+      "count": 1
+    },
+    "reward": {
+      "xp": 910,
+      "credits": 225
+    }
+  },
+  {
+    "id": "bloom-05",
+    "title": "Where the Air Goes",
+    "faction": null,
+    "race": "bloom",
+    "level": 25,
+    "requires": [
+      "bloom-04"
+    ],
+    "giver": "archivist",
+    "briefing": "A clinic plans to vent a culture room onto an upper walkway. Survey the airflow and public access so its new system can contain experimental spores without isolating ordinary Sporebound residents from the city around them.",
+    "completion": "A filtered vent route protects the walkway. The clinic's safety plan applies to the experiment rather than to everyone who shares a lineage with its patients.",
+    "objective": {
+      "type": "explore",
+      "target": "skybridge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1110,
+      "credits": 275
+    }
+  },
+  {
+    "id": "bloom-06",
+    "title": "Green under the White",
+    "faction": null,
+    "race": "bloom",
+    "level": 30,
+    "requires": [
+      "bloom-05"
+    ],
+    "giver": "archivist",
+    "briefing": "At the Brine Bloom's seep, industrial strains are escaping into the salt pans. Visit the boundary and compare living color with the suppliers' restoration claims. Oru wants a survey of who can survive this growth, not a photograph proving that something green exists.",
+    "completion": "The fans are thriving where native communities and human households are failing. The supplier calls every new patch recovery. Oru records the losses alongside the spread; nature has not chosen a side anyone can inhabit without cost.",
+    "objective": {
+      "type": "explore",
+      "target": "bloom-seep",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1310,
+      "credits": 325
+    }
+  },
+  {
+    "id": "bloom-07",
+    "title": "The Culture That Ate Its Neighbors",
+    "faction": null,
+    "race": "bloom",
+    "level": 35,
+    "requires": [
+      "bloom-06"
+    ],
+    "giver": "archivist",
+    "briefing": "Read the Brine Bloom culture bank's mineral records. The licensed strain was bred to depend on a scarce feed; its feral descendants learned to draw from the seep instead. The response needs to distinguish an ended monopoly from an ecosystem made safe.",
+    "completion": "The patent's hold is weaker and the pressure on the seep is greater. Oru marks the remaining refuges without promising that one emancipated organism will leave room for another.",
+    "objective": {
+      "type": "interact",
+      "target": "bloom-bank",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1510,
+      "credits": 375
+    }
+  },
+  {
+    "id": "bloom-08",
+    "title": "No Blanket Cure",
+    "faction": null,
+    "race": "bloom",
+    "level": 40,
+    "requires": [
+      "bloom-07"
+    ],
+    "giver": "archivist",
+    "briefing": "Continuance's treatment drones are spraying a broad sterilant that harms the refuges along with the industrial strain. Disable the spray units before their simple solution destroys the diversity the response is supposed to protect.",
+    "completion": "The spray front stops at the marked boundary. The clinic replaces its borrowed pesticide plan with targeted removal and carefully contained trials.",
+    "objective": {
+      "type": "kill",
+      "target": "drone",
+      "count": 4
+    },
+    "reward": {
+      "xp": 1710,
+      "credits": 425
+    }
+  },
+  {
+    "id": "bloom-09",
+    "title": "The Patient Bioreactor",
+    "faction": null,
+    "race": "bloom",
+    "level": 45,
+    "requires": [
+      "bloom-08"
+    ],
+    "giver": "archivist",
+    "briefing": "Configure a sealed bioreactor at the forge to test mixed cultures against the industrial strain. Include their water draw and waste heat in the comparison. A counter-culture that wins by consuming the last reserve would merely give the collapse another name.",
+    "completion": "One mixed community slows the strain, but only while receiving nutrients the wider basin cannot supply. The result is useful inside a bounded refuge. Oru refuses the proposed headline announcing a cure.",
+    "objective": {
+      "type": "interact",
+      "target": "forge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1910,
+      "credits": 475
+    }
+  },
+  {
+    "id": "bloom-10",
+    "title": "The Quarantine Line",
+    "faction": null,
+    "race": "bloom",
+    "level": 50,
+    "requires": [
+      "bloom-09"
+    ],
+    "giver": "archivist",
+    "briefing": "Wardens enforce an old industrial quarantine against Sporebound travelers while ignoring unsealed company sample crates. Disable the discriminatory checkpoint so inspectors can apply containment rules to actual materials and exposures.",
+    "completion": "Travelers regain the route, and the sample crates finally receive inspection. The new boundary follows a documented hazard instead of a person's ancestry.",
+    "objective": {
+      "type": "kill",
+      "target": "warden",
+      "count": 2
+    },
+    "reward": {
+      "xp": 2110,
+      "credits": 525
+    }
+  },
+  {
+    "id": "bloom-11",
+    "title": "A Library That Stays in Its Jars",
+    "faction": null,
+    "race": "bloom",
+    "level": 55,
+    "requires": [
+      "bloom-10"
+    ],
+    "giver": "archivist",
+    "briefing": "Register a diverse, sealed culture library at the Brine Bloom bank, with a limited water allowance and withdrawal boundary. The keepers can preserve samples and protect narrow refuges; they cannot restore the whole salt pan by releasing another organism with orders to win.",
+    "completion": "The library opens. Families outside its defensible boundary receive relocation notices and a share of the remaining supplies. Nobody confuses the safety of the jars with the recovery of the place they came from.",
+    "objective": {
+      "type": "interact",
+      "target": "bloom-bank",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2310,
+      "credits": 575
+    }
+  },
+  {
+    "id": "bloom-12",
+    "title": "The Pact Nobody Else Signed",
+    "faction": null,
+    "race": "bloom",
+    "level": 60,
+    "requires": [
+      "bloom-11"
+    ],
+    "giver": "archivist",
+    "briefing": "Walk the Brine Bloom's remaining seep after the contained trials. Confirm the refuge boundary and record the growth beyond it, including the strains that now live without a supplier. Oru asks for a conclusion that does not turn survival into innocence or diversity into a promise of peace.",
+    "completion": "The monopoly is broken. A few cultures remain in common care, and the wild bloom continues across the evacuated pans. Hosts and fungi keep negotiating needs that cannot all be met. The pact is an agreement among the people still here. Nothing in the salt has signed it, and nothing promises to wait for their next decision.",
+    "objective": {
+      "type": "explore",
+      "target": "bloom-seep",
+      "count": 1
+    },
+    "reward": {
+      "xp": 2510,
+      "credits": 625
+    }
+  },
+  {
+    "id": "mourning-fen-00",
+    "title": "The Water beneath the Wage",
+    "faction": null,
+    "race": null,
+    "biome": "mourning-fen",
+    "level": 8,
+    "requires": [],
+    "giver": "mara",
+    "briefing": "Mara Venn tends the pumps in Mourning Fen, east of Vesper. Her wage buys her father clean water from the same concession that drains his well. Read the drawdown gauge among the reeds; she needs a measurement the company cannot dismiss as a family grievance.",
+    "completion": "The water falls fastest during the shifts that pay best. Mara recognizes the dates on her overtime slips. The reeds have been absorbing poison for free; when they die, the company will sell another filter.",
+    "objective": {
+      "type": "explore",
+      "target": "fen-gauge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 560,
+      "credits": 72
+    }
+  },
+  {
+    "id": "mourning-fen-01",
+    "title": "A Share in the Thirst",
+    "faction": null,
+    "race": null,
+    "biome": "mourning-fen",
+    "level": 8,
+    "requires": [
+      "mourning-fen-00"
+    ],
+    "giver": "mara",
+    "briefing": "The sluice register offers pump families shares instead of unpaid wages. The dividend rises whenever extraction exceeds the wetland limit. Mara asks you to retrieve the contract before her crew signs away the last reason to slow the pumps.",
+    "completion": "The shares carry no vote, only an interest in the damage. Mara had hoped that ownership would make the workers safer. The contract would make their hunger another reason to empty the fen.",
+    "objective": {
+      "type": "interact",
+      "target": "fen-sluice",
+      "count": 1
+    },
+    "reward": {
+      "xp": 560,
+      "credits": 72
+    }
+  },
+  {
+    "id": "mourning-fen-02",
+    "title": "Enough for This Winter",
+    "faction": null,
+    "race": null,
+    "biome": "mourning-fen",
+    "level": 8,
+    "requires": [
+      "mourning-fen-01"
+    ],
+    "giver": "mara",
+    "briefing": "Mara has negotiated a lower draw limit and a winter wage floor, funded by canceling the concession dividend. Record the settlement at the sluice. It protects the remaining reed beds, but leaves the contaminated pools untreated and lets the lease resume when the wage guarantee expires.",
+    "completion": "The pump slows. Mara can buy her father water through winter; she cannot promise spring. The concession calls its smaller withdrawal sustainable. At the gauge, the old high-water stain stays above your head.",
+    "objective": {
+      "type": "interact",
+      "target": "fen-sluice",
+      "count": 1
+    },
+    "reward": {
+      "xp": 560,
+      "credits": 72
+    }
+  },
+  {
+    "id": "cinderwood-00",
+    "title": "The Forest in the Prospectus",
+    "faction": null,
+    "race": null,
+    "biome": "cinderwood",
+    "level": 18,
+    "requires": [],
+    "giver": "tovin",
+    "briefing": "Tovin Ash cuts timber in Cinderwood, west of Vesper. A restoration fund pays for every dead trunk removed and sells credit for the seedlings meant to replace it. Check the stump ledger: his crew has been asked to fell living trees to keep the recovery figures rising.",
+    "completion": "Every seedling has already been sold as a mature tree. Most have not survived their first dry season. Tovin shows you the clean nursery photograph used on every certificate; it is the same photograph, taken eleven years ago.",
+    "objective": {
+      "type": "interact",
+      "target": "wood-ledger",
+      "count": 1
+    },
+    "reward": {
+      "xp": 910,
+      "credits": 112
+    }
+  },
+  {
+    "id": "cinderwood-01",
+    "title": "What the Canopy Keeps",
+    "faction": null,
+    "race": null,
+    "biome": "cinderwood",
+    "level": 18,
+    "requires": [
+      "cinderwood-00"
+    ],
+    "giver": "tovin",
+    "briefing": "Tovin once signed the false certificates because the fund paid for his daughter's lung treatment. Visit the last canopy refuge and record the damp soil under the living trees. Taking those trees would finish his debt and expose the seedlings to the heat that already killed their neighbors.",
+    "completion": "The ground under the canopy is cool enough to hold water. Beyond its edge, roots crumble between your fingers. Tovin's daughter asks him to stop cutting. Her next treatment invoice arrives before he can answer.",
+    "objective": {
+      "type": "explore",
+      "target": "wood-refuge",
+      "count": 1
+    },
+    "reward": {
+      "xp": 910,
+      "credits": 112
+    }
+  },
+  {
+    "id": "cinderwood-02",
+    "title": "A Common without a Surplus",
+    "faction": null,
+    "race": null,
+    "biome": "cinderwood",
+    "level": 18,
+    "requires": [
+      "cinderwood-01"
+    ],
+    "giver": "tovin",
+    "briefing": "The cutters will take the surviving wood into common care and sell only fallen timber. Enter their actual yield and treatment debts in the ledger, canceling the invented restoration credits. Shared ownership can end the payout for destruction; it cannot make the dead forest produce a living wage.",
+    "completion": "The certificates lose their value. So does the crew's pension reserve, which the fund invested in them. Tovin keeps his daughter's appointment by selling his tools. The canopy survives this season. No one calls the account balanced.",
+    "objective": {
+      "type": "interact",
+      "target": "wood-ledger",
+      "count": 1
+    },
+    "reward": {
+      "xp": 910,
+      "credits": 112
+    }
+  },
+  {
+    "id": "glassroot-steppe-00",
+    "title": "A Body in the Seam",
+    "faction": null,
+    "race": null,
+    "biome": "glassroot-steppe",
+    "level": 32,
+    "requires": [],
+    "giver": "ada",
+    "briefing": "Ada Silt fires replacement plates for Lattice patients on the northern Glassroot Steppe. The mineral seam beneath the grasses is almost spent. Read the soil core before approving a deeper cut; Ada's partner needs a new shell, and the settlement needs the roots holding its well in place.",
+    "completion": "The seam continues beneath the root mat. Removing it would keep the kiln supplied for years and collapse the well within months. Ada presses a cracked plate against the core sample. Both are irreplaceable on the schedule she has been given.",
+    "objective": {
+      "type": "explore",
+      "target": "steppe-core",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1400,
+      "credits": 168
+    }
+  },
+  {
+    "id": "glassroot-steppe-01",
+    "title": "Vacant Means Unprofitable",
+    "faction": null,
+    "race": null,
+    "biome": "glassroot-steppe",
+    "level": 32,
+    "requires": [
+      "glassroot-steppe-00"
+    ],
+    "giver": "ada",
+    "briefing": "The land register marks the steppe vacant because neither the grass nor its remaining households pay ground rent. Retrieve the survey used to authorize the mine. Ada wants the families counted before a reclamation crew mistakes their homes for material left by the dead.",
+    "completion": "The surveyor recorded every home and then removed them from the valuation. Their existence was never in doubt; only their purchasing power was. The same company offers the families relocation loans secured against their next address.",
+    "objective": {
+      "type": "interact",
+      "target": "steppe-deed",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1400,
+      "credits": 168
+    }
+  },
+  {
+    "id": "glassroot-steppe-02",
+    "title": "An Address after the Grass",
+    "faction": null,
+    "race": null,
+    "biome": "glassroot-steppe",
+    "level": 32,
+    "requires": [
+      "glassroot-steppe-01"
+    ],
+    "giver": "ada",
+    "briefing": "Ada's settlement has accepted a public relocation grant with no repayment clause. Record the retreat and close the deeper extraction claim. Salvaged ceramic will cover urgent repairs, while everyone else waits longer. The families keep the right to return to land that may no longer support them.",
+    "completion": "The register records residents and then records their departure. Ada carries her partner's patched shell south on a handcart. Grass moves through the abandoned kiln. It has not forgiven the settlement; it has no use for forgiveness.",
+    "objective": {
+      "type": "interact",
+      "target": "steppe-deed",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1400,
+      "credits": 168
+    }
+  },
+  {
+    "id": "brine-bloom-00",
+    "title": "The Green That Came Back Wrong",
+    "faction": null,
+    "race": null,
+    "biome": "brine-bloom",
+    "level": 46,
+    "requires": [],
+    "giver": "ilex",
+    "briefing": "Ilex Marr watches fungal fans spread across the southern Brine Bloom. Investors call the color a recovered ecosystem; the families driven out by its spores call it another eviction. Inspect the last freshwater seep before the bloom drinks the refuge cultures dry.",
+    "completion": "The licensed strain and its feral descendants consume the same seep. Both are living things. Neither distinguishes a nursery, a lung, or a competitor when it finds somewhere to grow. Recovery is a word being spoken over their chemistry.",
+    "objective": {
+      "type": "explore",
+      "target": "bloom-seep",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1890,
+      "credits": 224
+    }
+  },
+  {
+    "id": "brine-bloom-01",
+    "title": "A Patent with No Heirs",
+    "faction": null,
+    "race": null,
+    "biome": "brine-bloom",
+    "level": 46,
+    "requires": [
+      "brine-bloom-00"
+    ],
+    "giver": "ilex",
+    "briefing": "The culture bank's owner is gone, but Continuance still charges hosts for every propagated strain. Read the oldest custody record. Ilex needs to separate the right to keep a partner alive from the instruction to keep multiplying it until the lease earns enough.",
+    "completion": "The strain was designed to require scarce nutrients, keeping its hosts tied to a supplier. Escaped descendants shed that dependence and began consuming the seep. Freedom from the patent did not teach the fungus restraint.",
+    "objective": {
+      "type": "interact",
+      "target": "bloom-bank",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1890,
+      "credits": 224
+    }
+  },
+  {
+    "id": "brine-bloom-02",
+    "title": "Leave Something Unclaimed",
+    "faction": null,
+    "race": null,
+    "biome": "brine-bloom",
+    "level": 46,
+    "requires": [
+      "brine-bloom-01"
+    ],
+    "giver": "ilex",
+    "briefing": "Ilex will cancel the propagation lease, keep diverse cultures sealed, and withdraw the outer settlement instead of sterilizing the whole bloom. Register the boundary and the remaining supplies. This refusal leaves room for other life; it also leaves homes behind and binds the keepers to years of containment.",
+    "completion": "The bank stops selling a future it cannot supply. Beyond its seals, growth covers the empty houses. Ilex keeps one lamp for the next inspection. The basin will go on changing after the lamp fails. It offers no assurance that anyone will be here to name the change.",
+    "objective": {
+      "type": "interact",
+      "target": "bloom-bank",
+      "count": 1
+    },
+    "reward": {
+      "xp": 1890,
+      "credits": 224
+    }
+  }
+]

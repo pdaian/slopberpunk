@@ -1,0 +1,21 @@
+{
+  "format": "sloperberpunk-content-manifest",
+  "version": 2,
+  "description": "Schema versions for every editable content document, including array-root legacy formats. Runtime records and transport use data version 2.",
+  "files": {
+    "rules": 1,
+    "world": 1,
+    "races": 1,
+    "factions": 1,
+    "quests": 1,
+    "dungeons": 1,
+    "talents": 1,
+    "abilities": 1,
+    "enemies": 1,
+    "npcs": 1,
+    "intro": 1,
+    "audio": 1,
+    "lore": 1,
+    "models": 1
+  }
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111b19">
+  <meta name="description" content="Sloperberpunk. An original open-source cyberpunk RPG. The first 1,000 account signups unlock the exclusive First Signal Halo and +5% XP from level 1 until level 10.">
+  <title>Sloperberpunk — Play</title>
+  <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/src/app.js"></script>
+</head>
+<body>
+  <canvas id="world" aria-label="Three-dimensional city of Vesper and the living biomes of the Pale Basin" tabindex="-1"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div id="loading"><img src="/assets/mark.svg" alt=""><span>ESTABLISHING A SIGNAL<span class="loading-dots">...</span></span></div>
+  <section id="landing" aria-label="Welcome to Sloperberpunk">
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="Sloperberpunk home"><img src="/assets/mark.svg" alt=""><span>SLOPERBERPUNK<small>THE AFTERLIGHT CHRONICLES</small></span></a>
+      <nav aria-label="Main navigation"><button data-page="world">THE WORLD</button><button data-page="factions">FACTIONS <span>04</span></button><button data-page="guide">FIELD GUIDE</button></nav>
+      <button class="account-link" id="account-button"><span class="status-dot"></span><span id="account-label">ACCOUNT</span><span>↗</span></button>
+    </header>
+    <main class="hero">
+      <div class="eyebrow"><span class="tiny-square"></span> THE COST OF ANOTHER MORNING <span class="edition">VOL. 01 / AFTERLIGHT</span></div>
+      <h1>YOUR BODY.<br>YOUR SIGNAL.<br><span>YOUR CITY.</span></h1>
+      <p class="hero-copy">The city lives on what it loses.<br>Beyond the neon: dying wetlands, a forest sold twice, and life returning without us.</p>
+      <div class="hero-actions"><button id="enter-button" class="button primary">ENTER VESPER <span>↗</span></button><button class="text-button" data-page="world">Discover the world <span>↓</span></button></div>
+      <div class="entry-note"><span class="status-dot"></span> FREE TO PLAY. FREE TO CHANGE. FOREVER YOURS.</div>
+    </main>
+    <aside class="founder-offer" aria-labelledby="founder-title">
+      <div class="founder-edition"><span class="tiny-square"></span> FIRST 1,000 ACCOUNT SIGNUPS <span>01 / LIMITED</span></div>
+      <img class="founder-art" src="/assets/first-signal-halo.svg" width="480" height="260" alt="Black-chrome halo crowned with hot-pink light fins and a cyan orbit">
+      <div class="founder-copy"><p class="founder-kicker">ARRIVE EARLY. LOOK UNFORGETTABLE.</p><h2 id="founder-title">First Signal Halo.</h2>
+        <p>Black chrome. Hot-pink light. A cyan orbit that turns heads across Vesper. Your exclusive, numbered signature.</p>
+        <div class="founder-perks"><span>KEEP THE LOOK FOREVER</span><span>+5% EARLY XP</span></div>
+        <p class="founder-terms">+5% combat &amp; quest XP from level 1 until you reach level 10. Permanently bound to your account and worn by every server character. Free with an eligible signup.</p>
+        <p id="founder-status" class="founder-status" role="status">Checking account-server availability…</p>
+        <button id="founder-cta" class="button founder-button">CHECK SIGNUP AVAILABILITY ↗</button>
+        <small>Limited to the first 1,000 accounts on this server. Local play does not reserve an edition.</small>
+      </div>
+    </aside>
+    <footer class="landing-footer"><div class="world-facts"><span><strong>04</strong> FACTIONS</span><span><strong>04</strong> LINEAGES</span><span><strong>60</strong> LEVELS</span><span class="license-fact"><strong>GPL</strong> OPEN SOURCE</span></div><div class="footer-right"><button id="music-button" aria-pressed="false"><span>♫</span> SOUND OFF</button><span class="version">BUILD 0.1.0 <i> / </i> A NEW SIGNAL</span></div></footer>
+  </section>
+  <section id="creation" hidden aria-label="Create a character">
+    <header class="masthead"><a class="brand" href="/"><img src="/assets/mark.svg" alt=""><span>SLOPERBERPUNK<small>IDENTITY REGISTRATION</small></span></a><button id="creation-back" class="text-button">← BACK</button></header>
+    <div class="creation-content"><div class="eyebrow">01 / A BODY IS JUST THE BEGINNING</div><h2>Become someone.</h2><p class="muted">Choose your origin. Your future is still unwritten.</p>
+      <form id="character-form">
+        <label class="field-label" for="character-name">CALLSIGN</label><input id="character-name" name="name" minlength="2" maxlength="24" required value="Echo" autocomplete="off" spellcheck="false">
+        <fieldset><legend>YOUR LINEAGE</legend><div id="race-options" class="choice-grid"></div></fieldset>
+        <p id="race-description" class="choice-description"></p>
+        <fieldset><legend>YOUR ALLEGIANCE</legend><div id="faction-options" class="choice-grid faction-choices"></div></fieldset>
+        <p id="faction-description" class="choice-description"></p>
+        <div id="character-error" class="form-error" role="alert"></div>
+        <button class="button primary" type="submit">MAKE CONTACT <span>↗</span></button><p id="creation-storage" class="form-note">Local character · saved in this browser. Accounts use the connected Rust server.</p>
+      </form>
+    </div><div class="creation-preview"><span id="preview-lineage">AFTERBORN</span><small>GENETIC SIGNATURE / VERIFIED</small><div class="preview-rule"></div><p>NO PRESET DESTINY.<br>NO WRONG BODY.</p></div>
+  </section>
+  <section id="cinematic" hidden aria-label="Opening cinematic"><div class="letterbox top"></div><div class="cinema-title">SLOPERBERPUNK<small>A BORROWED TOMORROW</small></div><div class="cinema-caption"><span id="cinema-label"></span><p id="cinema-subtitle" aria-live="polite"></p></div><button id="skip-intro">SKIP INTRO <kbd>ESC</kbd></button><div class="letterbox bottom"></div><div id="cinema-progress"></div></section>
+  <section id="hud" hidden aria-label="Game interface">
+    <div class="player-frame panel"><div class="portrait"><img src="/assets/mark.svg" alt=""><span id="player-level">0</span></div><div class="player-vitals"><div class="name-line"><strong id="player-name">Echo</strong><span id="player-origin">AFTERBORN</span></div><div class="stat-bar health"><span id="health-fill"></span><small id="health-text"></small></div><div class="stat-bar energy"><span id="energy-fill"></span><small id="energy-text"></small></div></div></div>
+    <div class="zone-title"><span id="zone-name">AFTERLIGHT COMMONS</span><small id="zone-subtitle">Every meal comes from somewhere that cannot invoice us.</small></div>
+    <time id="server-clock" class="server-clock" aria-label="World time in UTC"></time>
+    <div class="minimap-frame"><div class="minimap-heading"><span>VESPER</span><button data-action="map" aria-label="Open world map">M ↗</button></div><canvas id="minimap" width="180" height="180" aria-label="Nearby streets and quest markers"></canvas><div class="minimap-footer"><span id="elevation">STREET LEVEL</span><span id="network-label">LOCAL</span></div></div>
+    <div id="target-frame" class="target-frame panel" hidden><span id="target-name"></span><small id="target-level"></small><div class="stat-bar enemy"><span id="target-health"></span></div></div>
+    <aside class="quest-tracker"><div class="tracker-heading"><span class="tiny-square"></span> YOUR SIGNAL <button data-action="journal">J</button></div><div id="tracked-quests"></div></aside>
+    <div id="world-labels" aria-hidden="true"></div>
+    <button id="interaction" hidden><kbd>E</kbd><span id="interaction-text">Talk</span></button>
+    <div id="reticle" aria-hidden="true">·</div>
+    <div id="combat-log" class="combat-log" aria-live="polite"></div>
+    <button id="dungeon-status" class="dungeon-status" data-action="dungeons" hidden aria-label="Open dungeon casebook and group finder"></button>
+    <div id="dungeon-warning" class="dungeon-warning" role="status" hidden></div>
+    <div class="bottom-hud"><p id="ghostline-status" class="ghostline-status">GHOSTLINE · MOVE 12 m OVER 2 s, THEN PRESS R</p><div class="hotbar-top"><span id="role-label">FREELANCE RUNNER</span><span id="credits">45 ¤</span></div><div id="hotbar" class="hotbar"></div><div class="experience-bar"><span id="xp-fill"></span></div><span id="founder-xp-status" hidden>FIRST SIGNAL HALO · +5% XP UNTIL LEVEL 10</span><div class="hotbar-bottom"><span id="xp-text">LEVEL 0</span><span id="input-label">WASD MOVE · RMB LOOK · SPACE JUMP · Q DASH</span></div></div>
+    <nav class="game-menu" aria-label="Game panels"><button data-action="journal" title="Quest journal">J <span>JOURNAL</span></button><button data-action="talents" title="Talents">T <span>TALENTS</span></button><button data-action="inventory" title="Inventory">I <span>GEAR</span></button><button data-action="dungeons" title="Dungeons and group finder [G]" aria-label="Open dungeons and group finder">G <span>DUNGEONS</span></button><button data-action="community" title="Community, chat, guilds, auctions and forum [C]" aria-label="Open community">C <span>COMMUNITY</span><b id="community-badge"></b></button><button data-action="escape" title="Settings">☰</button></nav>
+    <div id="touch-controls"><div id="touch-stick" aria-label="Movement joystick"><span></span></div><div class="touch-actions"><button data-touch="target">TARGET</button><button data-touch="interact">USE</button><button data-touch="dash">DASH</button><button data-touch="jump">JUMP</button></div></div>
+    <div id="death-screen" hidden><span>SIGNAL LOST</span><h2>Another borrowed morning.</h2><p>Your body can be recovered. The world returns none of what it spent.</p><button id="respawn" class="button primary">RECONSTITUTE ↗</button><button id="death-dungeons" data-action="dungeons" class="small-button" hidden>OPEN EXPEDITION CASEBOOK</button></div>
+  </section>
+  <dialog id="panel-dialog"><div class="dialog-header"><div><span id="dialog-eyebrow" class="eyebrow">SLOPERBERPUNK</span><h2 id="dialog-title"></h2></div><button id="close-dialog" class="close-button" aria-label="Close panel">×</button></div><div id="dialog-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><div class="fatal">Sloperberpunk needs JavaScript and WebGL to render the world. Enable JavaScript, then reload.</div></noscript>
+</body>
+</html>

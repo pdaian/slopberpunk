@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 260" role="img" aria-labelledby="title desc">
+  <title id="title">First Signal Halo</title>
+  <desc id="desc">A floating black-chrome crown with six hot-pink light fins, a pale central spike, and a tilted cyan orbit.</desc>
+  <defs>
+    <radialGradient id="aura"><stop stop-color="#c9368a" stop-opacity=".32"/><stop offset="1" stop-color="#c9368a" stop-opacity="0"/></radialGradient>
+    <linearGradient id="chrome" x2="0" y2="1"><stop stop-color="#796278"/><stop offset=".3" stop-color="#302637"/><stop offset="1" stop-color="#100e18"/></linearGradient>
+    <linearGradient id="pink" x2="0" y2="1"><stop stop-color="#ffe2f4"/><stop offset=".3" stop-color="#ff6bbe"/><stop offset="1" stop-color="#ab226b"/></linearGradient>
+    <linearGradient id="orbit"><stop stop-color="#86f5ed" stop-opacity=".15"/><stop offset=".5" stop-color="#bafff7"/><stop offset="1" stop-color="#86f5ed" stop-opacity=".3"/></linearGradient>
+  </defs>
+  <ellipse cx="240" cy="142" rx="220" ry="122" fill="url(#aura)"/>
+  <g fill="none" stroke="#d087b8" opacity=".2"><path d="M24 130h44m344 0h44M240 14v18m0 202v12"/><path d="M75 52h15M82 45v14m308 140h15m-8-7v14"/></g>
+  <ellipse cx="240" cy="215" rx="103" ry="12" fill="#080d14" opacity=".7"/>
+  <ellipse cx="240" cy="143" rx="178" ry="57" transform="rotate(-15 240 143)" fill="none" stroke="#86f5ed" stroke-width="9" opacity=".05"/>
+  <path d="M72 180C18 132 174 57 330 73c55 5 87 26 78 48" fill="none" stroke="#86f5ed" stroke-width="2" stroke-dasharray="21 7" opacity=".45"/>
+  <path d="M158 119l-7-49 17 40m64-2 8-74 8 74m64 11 17-49-7 58" fill="url(#pink)" stroke="#ff70c4" stroke-width="1.5"/>
+  <path d="M133 132c0-28 48-49 107-49s107 21 107 49v21c0 29-48 51-107 51s-107-22-107-51z" fill="url(#chrome)" stroke="#8c6686"/>
+  <ellipse cx="240" cy="132" rx="107" ry="47" fill="#171420" stroke="#ff54b8" stroke-width="2"/>
+  <ellipse cx="240" cy="130" rx="88" ry="34" fill="#121b21" stroke="#60546c"/>
+  <path d="M135 140c12 27 56 43 105 43s93-16 105-43" fill="none" stroke="#ff54b8" stroke-width="3"/>
+  <path d="M142 155l-12-67 22 60-3 17zm45 31-9-67 23 61-6 12zm52 10-7-81 15 3 3 77zm48-10 15-67-5 74zm43-30 20-68-10 77z" fill="url(#pink)" stroke="#ff8bd1" stroke-width="1.5"/>
+  <path d="M237 186l3-56 5 56-5 9z" fill="#fff0fc"/>
+  <path d="M408 121c-7 39-107 84-215 91-59 4-105-8-121-32" fill="none" stroke="url(#orbit)" stroke-width="3" stroke-dasharray="26 8"/>
+  <g fill="#bafff7"><path d="m111 196 4-6 4 6-4 6zm245-104 3-5 3 5-3 5z"/><circle cx="288" cy="203" r="3"/></g>
+</svg>

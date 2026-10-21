@@ -1,0 +1,13 @@
+{
+  "format": "sloperberpunk-cinematic",
+  "version": 1,
+  "title": "What the living owe",
+  "duration": 38,
+  "music": "afterlight",
+  "shots": [
+    { "start": 0, "end": 9, "from": [1660, 75, 520], "to": [1510, 30, 410], "lookFrom": [1440, 2, 320], "lookTo": [1440, 2, 290], "caption": "The sea withdrew. The reeds returned. The company kept the water rights.", "label": "THE PALE BASIN · MOURNING FEN" },
+    { "start": 9, "end": 18, "from": [-110, 65, 130], "to": [-65, 34, 80], "lookFrom": [0, 25, 0], "lookTo": [0, 7, 0], "caption": "Vesper bought another morning with timber, borrowed bodies, and the promise that tomorrow would pay for today.", "label": "VESPER · THE COST OF ANOTHER MORNING" },
+    { "start": 18, "end": 28, "from": [45, 18, 65], "to": [24, 9, 42], "lookFrom": [0, 6, 0], "lookTo": [0, 3, 8], "caption": "Four factions keep the lights alive. Beyond them, the things that feed the lights are dying.", "label": "AFTERLIGHT COMMONS · FOUR INCOMPLETE ANSWERS" },
+    { "start": 28, "end": 38, "from": [12, 6, 46], "to": [0, 3.6, 39], "lookFrom": [0, 2, 24], "lookTo": [0, 2, 14], "caption": "You can break a claim. Share the hunger. Leave a home behind. The world promises no ending in which every life is spared.", "label": "NEW SIGNAL · NO CLEAN INHERITANCE" }
+  ]
+}

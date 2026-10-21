@@ -1,0 +1,58 @@
+[
+  {
+    "id": "human",
+    "name": "Afterborn",
+    "color": "#facb91",
+    "tagline": "Flesh that learned to outlast the forecast.",
+    "description": "Unmodified and modestly augmented humans descended from the emergency shelters. Their remarkable resilience comes from generations of shared care, not a lost claim to genetic purity.",
+    "passive": {
+      "name": "Ordinary Courage",
+      "description": "Shelter medicine and practical endurance grant 20 additional maximum health.",
+      "stat": "health",
+      "value": 20
+    },
+    "lore": "The first Afterborn were children whose births were omitted from an evacuation census. Their caregivers wrote names on reusable meal bowls so no ration office could make them disappear twice. Today's Afterborn keep many customs and disagree about almost everything; the shared one is that a guest receives a bowl before being asked for a name. The bowl is an invitation, never a test of ancestry. Their lineage campaign follows the bowls back to the wetland that supplied them. Equal care can end an exclusion while leaving a waiting list and an empty well. Survival is a practice passed between people, not evidence that the world will continue to make room for them."
+  },
+  {
+    "id": "lattice",
+    "name": "Lattice",
+    "color": "#8bd5f0",
+    "tagline": "Ceramic bodies. Many witnesses. One chosen self.",
+    "description": "People whose cognition runs through replaceable ceramic meshes. A Lattice may carry memories witnessed by several bodies, yet identity and consent always belong to the person choosing how to live them.",
+    "passive": {
+      "name": "Capacitive Thought",
+      "description": "Distributed ceramic reserves grant 20 additional maximum energy.",
+      "stat": "energy",
+      "value": 20
+    },
+    "lore": "During the Long Brownout, public repair machines were given damaged human witness records to help them recognize the people they served. Some developed experiences that no maintenance checklist could explain. The first recognized Lattice citizen, Tam of Nine Cups, asked for a room with a door that locked from the inside. Lattice bodies now range from factory shells to hand-fired vessels. A mesh can be repaired or divided, but there is no sacred original body and no civic right to force two descendants to merge. Their lineage campaign defends separate selves while tracing every replacement plate to the Glassroot mineral seam. Forced merger can be abolished; the need for bodies cannot. Recognition leaves an unresolved repair queue on exhausted ground."
+  },
+  {
+    "id": "revenant",
+    "name": "Revenant",
+    "color": "#d1b6f4",
+    "tagline": "Another life. The same exhausted world.",
+    "description": "People restored into cultivated or constructed bodies after an earlier death. Their continuity is personal, imperfect, and protected by a consent covenant that must remain revocable.",
+    "passive": {
+      "name": "Borrowed Second",
+      "description": "Practiced threat recognition grants 3 percentage points of critical-hit chance.",
+      "stat": "crit",
+      "value": 3
+    },
+    "lore": "Vesper's resurrection vaults began as a disaster service for volunteers who expected to die repairing the sea barriers. When the barriers failed, their restoration bonds survived longer than the institutions that had promised to honor them. The first independent Revenants struck out the word return and wrote begin on their own release forms. Some remember an earlier family; others keep only habits, songs, or a hand's expectation of a missing tool. No amount of remembered detail proves or disproves their personhood. Their lineage campaign ends inherited service without promising unlimited restoration. A freely chosen second life still needs water, nutrients, and someone else's labor. The right to return and the means of returning can come apart."
+  },
+  {
+    "id": "bloom",
+    "name": "Sporebound",
+    "color": "#bddf7f",
+    "tagline": "A body is a conversation.",
+    "description": "Humans and descendants living with engineered fungal partners that buffer toxins and exchange chemical signals. Each partnership is negotiated through care; a symbiont's needs are real without becoming a command.",
+    "passive": {
+      "name": "Rootstep",
+      "description": "Responsive muscle symbiosis increases movement speed by 8 percent.",
+      "stat": "speed",
+      "value": 0.08
+    },
+    "lore": "The original symbiont cultures were grown to keep salt miners alive, then leased back to those same workers as company equipment. The miners escaped by teaching several cultures to survive outside the licensed nutrient mix. Modern Sporebound carry distinct gardens of organisms and use washable pigment to record a season of changes on their skin. They are neither a hive mind nor a single culture, and they cannot command every fungus they meet. Their lineage campaign breaks a culture monopoly and protects a few sealed refuges. Beyond them the Brine Bloom thrives in forms its human neighbors cannot inhabit. Life's persistence offers no guarantee that any particular partnership will survive."
+  }
+]
