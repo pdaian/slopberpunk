@@ -1,4 +1,4 @@
-// Expedition content contract, local solo authority, and shared presentation.
+// Expedition content validation and presentation.
 // Online state and rewards are owned exclusively by the Rust expedition shard.
 // GPL-3.0-or-later. See LICENSE.
 import { distance } from './math.js';
@@ -40,98 +40,13 @@ export function dungeonZones(r, chapter, pulse) {
   if(chapter.pattern==='cross') return [[0,0,8,2*n],[0,0,2*n,8]];
   return [[-(n+8)/2,0,n-8,2*n],[(n+8)/2,0,n-8,2*n],[0,-(n+8)/2,16,n-8],[0,(n+8)/2,16,n-8]];
 }
-export function dungeonInDanger(r, chapter, pulse, position) {
-  return dungeonZones(r,chapter,pulse).some(([x,z,w,h])=>Math.abs(position[0]-r.arena[0]-x)<=w/2&&Math.abs(position[2]-r.arena[2]-z)<=h/2);
-}
-export function dungeonEnemies(data, definition, chapter, run, attempt) {
-  const r=data.dungeons.rules,c=definition.chapters[chapter],template=data.enemies.find(e=>e.id===c.enemy),count=Math.ceil(definition.players/2);
-  const health=Math.ceil(definition.players*(r.enemyHealthPerPlayer+definition.level*r.enemyHealthPerLevel)*c.healthMultiplier/count);
-  return Array.from({length:count},(_,i)=>{
-    const position=dungeonPosition(r,[(i-(count-1)/2)*6,0,-4]);
-    return {...template,id:`dungeon-${run}-${chapter}-${attempt}-${i}`,instance:run,type:c.enemy,name:count===1?c.boss:`${c.boss} ${i+1}`,color:definition.color,position,home:[...position],level:definition.level,maxHealth:health,health,damage:0,speed:3,attackAt:0,stunUntil:0,respawnAt:Infinity,yaw:0};
-  });
-}
-
-export class LocalDungeon {
-  constructor(sim,definition,id) {
-    this.sim=sim;this.definition=definition;this.rules=sim.data.dungeons.rules;
-    this.view={id,dungeon:definition.id,phase:'ready',chapter:0,attempt:0,ready:[],evidence:[],signed:[],votes:{},deadline:sim.time+this.rules.readySeconds,started:sim.time,pulse:0,nextPulse:0,recoveryReady:0,revivesLeft:this.rules.revivesPerEncounter};
-    this.cityEnemies=sim.enemies;
-  }
-  get active(){return this.view.phase!=='ready';}
-  snapshot(){const c=this.sim.character;return {...this.view,members:[{id:c.id,name:c.name,health:c.health,maxHealth:this.sim.playerStats.health}]};}
-  resetPosition(){
-    const s=this.sim,c=s.character;c.position=dungeonPosition(this.rules,[0,0,14]);c.yaw=0;c.health=s.playerStats.health;c.energy=s.playerStats.energy;
-    s.velocity=[0,0,0];s.grounded=true;s.jumpBuffer=0;s.coyote=0;s.dash=0;s.shield=0;s.deadAt=0;s.ghostTrail.clear();s.ghostlines=[];
-  }
-  enter(){
-    const s=this.sim;s.character.dungeonReturn=[...s.data.world.spawn];this.resetPosition();s.enemies=[];
-    this.view.phase='briefing';this.view.ready=[];this.view.deadline=0;s.event('notice',{text:'Expedition ready. Open Dungeons [G] to read your first chapter.'});
-  }
-  begin(){
-    const s=this.sim,v=this.view;v.phase='active';v.attempt++;v.ready=[];v.evidence=[];v.signed=[];v.pulse=0;v.nextPulse=s.time+this.rules.pulseSeconds;v.recoveryReady=0;v.revivesLeft=this.rules.revivesPerEncounter;
-    s.enemies=dungeonEnemies(s.data,this.definition,v.chapter,v.id,v.attempt);
-  }
-  leave(message='Returned to Vesper.'){
-    const s=this.sim;if(this.active){s.character.position=s.character.dungeonReturn||[...s.data.world.spawn];delete s.character.dungeonReturn;s.character.health=s.playerStats.health;s.character.energy=s.playerStats.energy;s.enemies=this.cityEnemies;s.velocity=[0,0,0];s.ghostTrail.clear();s.ghostlines=[];s.shield=0;s.deadAt=0;}
-    s.expedition=null;s.event('notice',{text:message});return true;
-  }
-  act(a){
-    const s=this.sim,v=this.view,c=s.character;if(a.run!==v.id)return false;
-    if(a.operation==='leave')return this.leave();
-    if(a.chapter!==v.chapter||a.attempt!==v.attempt)return false;
-    if(a.operation==='ready'&&v.phase==='ready'&&s.time<v.deadline&&c.health>0){this.enter();return true;}
-    if(a.operation==='begin'&&v.phase==='briefing'){this.begin();return true;}
-    if(a.operation==='vote'&&v.phase==='decision'&&s.time<v.deadline&&(a.choice==='defer'||this.definition.decision.choices.some(o=>o.id===a.choice))){v.votes[c.id]=a.choice;this.finish(a.choice);return true;}
-    if(v.phase!=='active'||c.health<=0)return false;
-    if(a.operation==='recover'&&s.time>=v.recoveryReady&&distance(c.position,this.rules.recoveryPosition)<4){c.health=Math.min(s.playerStats.health,c.health+s.playerStats.health*this.rules.recoveryFraction);v.recoveryReady=s.time+this.rules.recoverySeconds;s.event('sound',{name:'heal'});return true;}
-    if(a.operation==='interact'){
-      const e=this.definition.chapters[v.chapter].evidence.find(e=>e.id===a.target);
-      if(!e||distance(c.position,dungeonPosition(this.rules,e.position))>=4)return false;
-      if(!v.evidence.includes(e.id))v.evidence.push(e.id);if(!v.signed.includes(c.id))v.signed.push(c.id);
-      s.event('notice',{text:`Evidence recorded: ${e.name}. Read it in Dungeons [G].`});return true;
-    }
-    return false;
-  }
-  finish(choice){
-    const s=this.sim,v=this.view;if(v.phase!=='decision')return;
-    v.phase='complete';v.ending=choice;v.deadline=0;const d=this.definition;
-    const history=s.character.dungeonHistory||={};history[d.id]={clears:(history[d.id]?.clears||0)+1,ending:choice};
-    s.character.credits+=d.reward.credits;const xp=s.gainXp(d.reward.xp);
-    s.event('reward',{xp,credits:d.reward.credits});s.event('notice',{text:'Expedition complete. Your ending is in the casebook.'});
-  }
-  tick(){
-    const s=this.sim,v=this.view,c=s.character,r=this.rules;
-    if(s.time-v.started>=r.maxRunSeconds)return this.leave('Expedition time limit reached. Your completed chapters earned no partial reward.');
-    if(v.phase==='ready'){if(s.time>=v.deadline||c.health<=0)this.leave('Ready check ended. Queue again when ready.');return;}
-    if(v.phase==='decision'){if(s.time>=v.deadline)this.finish(v.votes[c.id]||'defer');return;}
-    if(v.phase==='wipe'){if(s.time>=v.deadline){this.resetPosition();v.phase='briefing';v.ready=[];v.evidence=[];v.signed=[];v.deadline=0;s.enemies=[];}return;}
-    if(v.phase!=='active')return;
-    if(c.health<=0){v.phase='wipe';v.deadline=s.time+s.data.rules.player.respawnSeconds;s.enemies=[];return;}
-    const chapter=this.definition.chapters[v.chapter];
-    if(s.time>=v.nextPulse){
-      if(dungeonInDanger(r,chapter,v.pulse,c.position)){
-        const damage=Math.round(s.playerStats.health*r.pulseFraction),absorbed=Math.min(s.shield,damage);s.shield-=absorbed;c.health=Math.max(0,c.health-damage+absorbed);s.lastCombat=s.time;s.event('hurt',{amount:damage-absorbed});
-        if(c.health<=0){s.deadAt=s.time;s.event('death');}
-      }
-      v.pulse++;v.nextPulse=s.time+r.pulseSeconds;
-    }
-    if(c.health>0&&s.enemies.every(e=>e.health<=0)&&v.evidence.length===chapter.evidence.length&&v.signed.includes(c.id)){
-      s.enemies=[];s.ghostlines=[];s.ghostTrail.clear();c.health=s.playerStats.health;c.energy=s.playerStats.energy;
-      if(v.chapter+1===this.definition.chapters.length){v.phase='decision';v.deadline=s.time+r.voteSeconds;}
-      else {v.chapter++;v.phase='briefing';v.ready=[];v.evidence=[];v.signed=[];}
-      s.event('notice',{text:'Chapter complete. Open Dungeons [G] for the discovery and next chapter.'});
-    }
-  }
-}
-
-export function dungeonPanel(data,c,state,online,time) {
+export function dungeonPanel(data,c,state,time) {
   const catalog=data.dungeons,run=state?.run,d=run&&catalog.entries.find(d=>d.id===run.dungeon);
   const button=(operation,label,extra='',disabled=false)=>`<button class="small-button" data-do="dungeon" data-operation="${operation}" ${run?`data-run="${run.id}" data-chapter="${run.chapter}" data-attempt="${run.attempt}"`:''} ${extra} ${disabled?'disabled':''}>${label}</button>`;
   const intro='<p class="dialog-intro">Find a crew. Follow the evidence. Decide what the city keeps.</p><p class="guide-note">Any lineage, faction, or talent combination. Everyone can heal, shield, investigate, and revive. G opens this casebook; E uses nearby evidence, the aid station, or a fallen ally. Each chapter waits for every runner before combat begins.</p>';
   if(!d||!phases.has(run.phase)){
     const queue=state?.queue;
-    return intro+(queue?`<div class="dungeon-status" role="status">Queued for ${esc(catalog.entries.find(d=>d.id===queue.dungeon)?.name||queue.dungeon)} · ${queue.waiting}/${queue.required} runners · ${Math.max(0,Math.floor(time-queue.joined))}s waiting. ${button('leave','LEAVE QUEUE')}</div>`:'')+(!online?'<p class="guide-note">Local play supports The Ninth Bell for one runner. Sign into the realm for the shared group queue.</p>':'<p class="muted">Queue for one dungeon at a time. Matching uses arrival order and exact headcount, with a 30-second ready check. Queue members may have any build.</p>')+`<div class="card-grid">${catalog.entries.map(d=>`<article class="info-card dungeon-card" style="--dungeon-color:${d.color}"><span class="tag">${d.players} ${d.players===1?'RUNNER':'RUNNERS'} · LEVEL ${d.level}+ · ${d.chapters.length} CHAPTERS</span><h3>${esc(d.name)}</h3><p class="muted">${esc(d.venue)}</p><p>${esc(d.premise)}</p><p class="quest-meta">${d.reward.xp} BASE XP · ${d.reward.credits} ¤ · EQUAL REWARDS FOR EVERY ENDING</p>${button('queue',d.players>1&&!online?'ONLINE GROUP REQUIRED':c.level<d.level?`REQUIRES LEVEL ${d.level}`:'JOIN QUEUE',`data-dungeon="${d.id}"`,Boolean(queue)||c.level<d.level||c.health<=0||(!online&&d.players>1))}${c.dungeonHistory?.[d.id]?`<details class="dungeon-evidence"><summary tabindex="0">${esc(c.dungeonHistory[d.id].clears)} clear(s) · ${esc(d.decision.choices.find(o=>o.id===c.dungeonHistory[d.id].ending)?.label||'Provisional settlement')}</summary><p>${esc(d.decision.choices.find(o=>o.id===c.dungeonHistory[d.id].ending)?.ending||d.decision.deferred)}</p></details>`:''}</article>`).join('')}</div>`;
+    return intro+(queue?`<div class="dungeon-status" role="status">Queued for ${esc(catalog.entries.find(d=>d.id===queue.dungeon)?.name||queue.dungeon)} · ${queue.waiting}/${queue.required} runners · ${Math.max(0,Math.floor(time-queue.joined))}s waiting. ${button('leave','LEAVE QUEUE')}</div>`:'')+'<p class="muted">Queue for one dungeon at a time. Matching uses arrival order and exact headcount, with a 30-second ready check. Queue members may have any build.</p>'+`<div class="card-grid">${catalog.entries.map(d=>`<article class="info-card dungeon-card" style="--dungeon-color:${d.color}"><span class="tag">${d.players} ${d.players===1?'RUNNER':'RUNNERS'} · LEVEL ${d.level}+ · ${d.chapters.length} CHAPTERS</span><h3>${esc(d.name)}</h3><p class="muted">${esc(d.venue)}</p><p>${esc(d.premise)}</p><p class="quest-meta">${d.reward.xp} BASE XP · ${d.reward.credits} ¤ · EQUAL REWARDS FOR EVERY ENDING</p>${button('queue',c.level<d.level?`REQUIRES LEVEL ${d.level}`:'JOIN QUEUE',`data-dungeon="${d.id}"`,Boolean(queue)||c.level<d.level||c.health<=0)}${c.dungeonHistory?.[d.id]?`<details class="dungeon-evidence"><summary tabindex="0">${esc(c.dungeonHistory[d.id].clears)} clear(s) · ${esc(d.decision.choices.find(o=>o.id===c.dungeonHistory[d.id].ending)?.label||'Provisional settlement')}</summary><p>${esc(d.decision.choices.find(o=>o.id===c.dungeonHistory[d.id].ending)?.ending||d.decision.deferred)}</p></details>`:''}</article>`).join('')}</div>`;
   }
   const ch=d.chapters[run.chapter],remaining=Math.max(0,Math.ceil((run.deadline||0)-time));
   const roster=`<ul class="dungeon-roster">${run.members.map(m=>`<li>${esc(m.name)} · <span data-dungeon-vitals="${esc(m.id)}">${m.health<=0?'DOWN':`${Math.ceil(m.health)}/${Math.ceil(m.maxHealth)} HP`}</span>${run.ready?.includes(m.id)?' · READY':''}${run.signed?.includes(m.id)?' · SIGNED':''}</li>`).join('')}</ul>`;

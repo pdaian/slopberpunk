@@ -4,7 +4,7 @@ The game-specific code, geometry, symbols, dialogue, rules, and synthesized audi
 
 The browser client has no third-party JavaScript package, hosted font, texture pack, mesh library, sampled audio, or external media dependency. It uses browser WebGL, Web Audio, Gamepad, Pointer Lock, and Speech Synthesis implementations and installed system fonts. Those implementations and local speech voices retain their providers' terms; they are not redistributed as project-authored assets.
 
-The Rust manifest pins seven direct dependencies:
+The Rust manifest pins seven runtime dependencies:
 
 | Crate | Version | Upstream license |
 | --- | --- | --- |
@@ -15,6 +15,8 @@ The Rust manifest pins seven direct dependencies:
 | [serde](https://docs.rs/serde/1.0.228/serde/) | 1.0.228 | MIT or Apache-2.0 |
 | [serde_json](https://docs.rs/serde_json/1.0.149/serde_json/) | 1.0.149 | MIT or Apache-2.0 |
 | [tokio](https://docs.rs/tokio/1.49.0/tokio/) | 1.49.0 | MIT |
+
+HTTP regression tests additionally use [tower 0.5.3](https://docs.rs/tower/0.5.3/tower/) (MIT) as a development dependency.
 
 Dependencies are referenced by the manifest; their source has not been copied into this repository. Compiled distributions must retain the resolved direct and transitive crates' required notices and provide corresponding source as applicable to the GPL-covered combined work. Generate and retain a Cargo lockfile and audit the resolved transitive license inventory when preparing a binary release. This table is the direct-dependency inventory, not an assertion that the unbuilt transitive graph has been fully audited.
 

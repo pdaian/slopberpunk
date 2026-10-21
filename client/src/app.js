@@ -1,7 +1,7 @@
 // Sloperberpunk browser application. GPL-3.0-or-later. See LICENSE.
 import { World } from './world.js';
 import { Renderer } from './renderer.js';
-import { Simulation,createCharacter,availableQuest,experienceFor,stats } from './simulation.js';
+import { Prediction,availableQuest,experienceFor,stats } from './prediction.js';
 import { Input } from './input.js';
 import { AudioEngine } from './audio.js';
 import { Connection,api } from './network.js';
@@ -9,31 +9,23 @@ import { icon,escapeHtml as esc } from './icons.js';
 import { clamp,distance,mix3,lerp } from './math.js';
 import { Community } from './social.js';
 import { WorldClock,clockLabel } from './clock.js';
-import { decodeLocal,encodeLocal,localSigningIdentity,signLocalExport,downloadCharacter } from './persistence.js';
+import { downloadCharacter } from './persistence.js';
 import { ghostPosition } from './ghostline.js';
 import { hasFounderHalo, founderBoostActive, founderXpReward, founderOfferView } from './founders.js';
 import { validateDungeons, dungeonPanel, dungeonPosition } from './dungeons.js';
 
-const $=selector=>document.querySelector(selector),storageKey='sloperberpunk.characters.v2',legacyStorageKey='sloperberpunk.characters.v1';
-let data,world,renderer,input,audio,simulation=null,connection=null,account=null,serverAvailable=false;
-let state='landing',selectedRace='human',selectedFaction='relay',targetId=null,nearest=null,online=false;
-let time=0,lastFrame=0,uiAccumulator=0,saveAccumulator=0,yaw=0,pitch=.15,thirdPerson=true,introTime=0,introShot=-1;
+const $=selector=>document.querySelector(selector);
+let data,world,renderer,input,audio,simulation=null,connection=null,account=null;
+let state='landing',selectedRace='human',selectedFaction='relay',targetId=null,nearest=null;
+let time=0,lastFrame=0,uiAccumulator=0,yaw=0,pitch=.15,thirdPerson=true,introTime=0,introShot=-1;
 let toastTimer,dialogPage='',journalFilter='active',otherPlayers=[],effects=[],floaters=[],log=[],deleteArmed=null;
-let community,myGuild=null,localIdentity=null,localKeyError='',localSaveError='',founderOffer=null;
+let community,myGuild=null,founderOffer=null;
+let sessionReady=Promise.resolve();
 let dungeonPanelKey='';
 const worldClock=new WorldClock();
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,4500);}
-function loadLocal(){
-  try{const list=decodeLocal(localStorage.getItem(storageKey)??localStorage.getItem(legacyStorageKey));localSaveError='';return list.filter(c=>c&&typeof c.id==='string'&&typeof c.name==='string'&&[...c.name].length<=24&&Array.isArray(c.position)&&c.position.length===3&&c.position.every(Number.isFinite)&&Number.isInteger(c.level)&&c.level>=0&&c.level<=60&&data.races.some(r=>r.id===c.race)&&data.factions.some(f=>f.id===c.faction)&&['health','energy','xp','credits','weaponRank','medkits'].every(k=>Number.isFinite(c[k])&&c[k]>=0)&&c.talents&&c.activeQuests&&Array.isArray(c.completed)).slice(0,8);}catch(error){localSaveError=error.message;return [];}
-}
-function saveLocal(character){
-  const list=loadLocal(),i=list.findIndex(c=>c.id===character.id);if(i>=0)list[i]=character;else list.push(character);
-  if(localSaveError){toast(localSaveError);return;}
-  character.revision=(character.revision||0)+1;
-  try{localStorage.setItem(storageKey,encodeLocal(list));}catch{toast('Browser storage is unavailable. Export your character from Settings before leaving.');}
-}
 function setState(next){
   state=next;for(const name of ['landing','creation','cinematic','hud'])$(`#${name}`).hidden=next!==(name==='hud'?'playing':name);
   if(input){input.active=next==='playing'||next==='cinematic';input.menu=next!=='playing'||$('#panel-dialog').open;input.clear();}
@@ -71,30 +63,32 @@ function updateChoices(){
   $('#preview-lineage').textContent=race.name.toUpperCase();$('#preview-lineage').style.color=race.color;
 }
 function openCreation(){
-  if(!online){loadLocal();if(localSaveError)return toast(localSaveError);}
-  closePanel();if(!online&&loadLocal().length>=8)return toast('All 8 local character slots are occupied. Remove a character to make room.');
-  $('#character-error').textContent='';$('#creation-storage').textContent=online?`Server character · account ${account.username}`:'Local character · saved in this browser. Accounts use the connected Rust server.';
-  if(online&&hasFounderHalo(account))$('#creation-storage').textContent+=' · First Signal Halo included.';
+  if(!account)return showAccount().catch(e=>toast(e.message));
+  closePanel();$('#character-error').textContent='';$('#creation-storage').textContent=`Server character · account ${account.username}`;
+  if(hasFounderHalo(account))$('#creation-storage').textContent+=' · First Signal Halo included.';
   setState('creation');$('#character-name').focus();
 }
 async function enter(){
-  online=Boolean(account);const chars=online?await api('/characters').then(r=>r.characters):loadLocal();
-  if(chars.length)showCharacters(chars);else openCreation();
+  await sessionReady;
+  if(!account)return showAccount();
+  try{const chars=(await api('/characters')).characters;if(chars.length)showCharacters(chars);else openCreation();}
+  catch(error){
+    if(error.status!==401)throw error;
+    account=null;$('#account-label').textContent='ACCOUNT';updateFounderOffer();return showAccount();
+  }
 }
 function showCharacters(chars){
-  panel('Choose your signal.',`<p class="muted">${online?'Account: '+esc(account.username):'These characters live in this browser.'}</p>${online&&hasFounderHalo(account)?'<p class="founder-account-note"><strong>First Signal Halo unlocked.</strong> Your numbered halo is worn automatically by every character on this account. +5% XP from level 1 until reaching level 10.</p>':''}${chars.map(c=>`<div class="character-row"><div class="grow"><strong>${esc(c.name)}</strong><small>LEVEL ${c.level} · ${esc(data.races.find(r=>r.id===c.race)?.name||c.race)} · ${esc(data.factions.find(f=>f.id===c.faction)?.name||c.faction)}</small></div><button class="small-button" data-do="play-character" data-id="${esc(c.id)}">ENTER ↗</button><button class="small-button danger" data-do="delete-character" data-id="${esc(c.id)}">${deleteArmed===c.id?'CONFIRM DELETE':'DELETE'}</button></div>`).join('')}<div class="settings-actions"><button class="button primary" data-do="new-character" ${chars.length>=8?'disabled':''}>NEW CHARACTER +</button>${online?'<button class="small-button" data-do="logout">SIGN OUT</button>':''}</div>`,'IDENTITY ARCHIVE / '+(online?'SERVER':'LOCAL'),'characters');
+  panel('Choose your signal.',`<p class="muted">Account: ${esc(account.username)}</p>${hasFounderHalo(account)?'<p class="founder-account-note"><strong>First Signal Halo unlocked.</strong> Your numbered halo is worn automatically by every character on this account. +5% XP from level 1 until reaching level 10.</p>':''}${chars.map(c=>`<div class="character-row"><div class="grow"><strong>${esc(c.name)}</strong><small>LEVEL ${c.level} · ${esc(data.races.find(r=>r.id===c.race)?.name||c.race)} · ${esc(data.factions.find(f=>f.id===c.faction)?.name||c.faction)}</small></div><button class="small-button" data-do="play-character" data-id="${esc(c.id)}">ENTER ↗</button><button class="small-button danger" data-do="delete-character" data-id="${esc(c.id)}">${deleteArmed===c.id?'CONFIRM DELETE':'DELETE'}</button></div>`).join('')}<div class="settings-actions"><button class="button primary" data-do="new-character" ${chars.length>=8?'disabled':''}>NEW CHARACTER +</button><button class="small-button" data-do="logout">SIGN OUT</button></div>`,'IDENTITY ARCHIVE / SERVER','characters');
 }
 async function startGame(character,newCharacter=false){
   closePanel();connection?.close();connection=null;otherPlayers=[];targetId=null;effects=[];floaters=[];
   myGuild=null;community?.reset();worldClock.reset();
-  simulation=new Simulation(data,world,structuredClone(character),onEvent);yaw=character.yaw||0;pitch=.15;
-  if(online){
-    connection=new Connection(character.id,onSnapshot,onEvent,()=>{
-      setState('landing');panel('Signal interrupted.','<p>Your server connection closed. Reconnect to continue from the server save.</p><button class="button primary" data-do="reconnect">RECONNECT ↗</button>','CONNECTION LOST','disconnected');
-    });
-    try{await connection.connect();}catch(error){connection.close();connection=null;simulation=null;setState('landing');toast(error.message);return;}
-  }
-  $('#network-label').textContent=online?'ONLINE':'LOCAL';
+  simulation=new Prediction(data,world,structuredClone(character),onEvent);yaw=character.yaw||0;pitch=.15;
+  connection=new Connection(character.id,onSnapshot,onEvent,()=>{
+    setState('landing');panel('Signal interrupted.','<p>Your server connection closed. Reconnect to continue from the server save.</p><button class="button primary" data-do="reconnect">RECONNECT ↗</button>','CONNECTION LOST','disconnected');
+  });
+  try{await connection.connect();}catch(error){connection.close();connection=null;simulation=null;setState('landing');toast(error.message);return;}
+  $('#network-label').textContent='ONLINE';
   if(newCharacter||!character.introSeen){introTime=0;introShot=-1;setState('cinematic');audio.unlock().catch(()=>{});}
   else{setState('playing');toast('Welcome back. Follow your faction’s signal.');}
   updateHUD();
@@ -106,20 +100,19 @@ function onSnapshot(message){
   simulation.character=server;simulation.enemies=message.enemies||[];otherPlayers=message.players||[];
   const previousRun=simulation.dungeonState?.run;simulation.dungeonState=message.dungeon||null;
   const currentRun=simulation.dungeonState?.run;
-  if(previousRun?.id!==currentRun?.id||previousRun?.phase==='ready'&&currentRun?.phase!=='ready'||previousRun?.phase==='wipe'&&currentRun?.phase==='briefing'){targetId=null;simulation.velocity=[0,0,0];simulation.dash=0;simulation.ghostTrail.clear();}
+  if(previousRun?.id!==currentRun?.id||previousRun?.phase==='ready'&&currentRun?.phase!=='ready'||previousRun?.phase==='wipe'&&currentRun?.phase==='briefing'){targetId=null;simulation.velocity=[0,0,0];simulation.dash=0;simulation.grounded=true;simulation.coyote=0;simulation.jumpBuffer=0;}
   simulation.cooldowns=message.cooldowns||{};simulation.time=message.time||0;simulation.shield=message.shield||0;
   simulation.ghostlines=message.ghostlines||[];simulation.ghostCharge=message.ghostCharge||{seconds:0,meters:0,ready:false};simulation.dashReady=message.dashReady??simulation.dashReady;
   worldClock.sync(message.serverTime);myGuild=message.guild||null;
 }
 function finishIntro(){
   if(state!=='cinematic')return;audio.stopVoice();simulation.character.introSeen=true;
-  if(online)connection.send({type:'intro_seen'});else saveLocal(simulation.character);
+  connection?.send({type:'intro_seen'});
   setState('playing');toast('Welcome to Vesper. E to talk · J for your journal · Move, then R to cast a Ghostline.');
 }
 function act(action){
   if(!simulation)return;
-  if(online)connection?.send(action);else simulation.action(action);
-  if(['quest','talent','buy'].includes(action.type)&&!online){saveLocal(simulation.character);updateHUD();}
+  connection?.send(action);
 }
 function onEvent(event){
   if(event.type==='braid'){
@@ -171,7 +164,7 @@ function perform(action,event){
 
 function showDungeons(){
   if(!simulation)return;
-  panel('Expedition casebook',dungeonPanel(data,simulation.character,simulation.dungeon,online,simulation.time),'DUNGEONS / GROUP FINDER','dungeons');
+  panel('Expedition casebook',dungeonPanel(data,simulation.character,simulation.dungeon,simulation.time),'DUNGEONS / GROUP FINDER','dungeons');
   dungeonPanelKey=dungeonKey();
 }
 function dungeonKey(){
@@ -224,12 +217,13 @@ function showShop(){
 }
 function showMap(){panel('The ground beneath the account.','<canvas id="full-map" class="map-view" width="900" height="720" aria-label="Map of Vesper, the Pale Basin, and four nature biomes with local quest contacts"></canvas><div class="map-legend"><span><i></i> YOU</span><span><i style="background:#e8c983"></i> OBJECTIVES</span><span><i style="background:#7dbfc0"></i> LIFTS</span><span><i style="background:#86b9a0"></i> BIOMES / CONTACTS</span></div><p class="panel-description">Mourning Fen lies east, Cinderwood west, Glassroot Steppe north, and Brine Bloom south. Follow the roads out of Vesper and the open paths through each biome to its contact. Yellow markers show active destinations and turn-ins. Lifts connect the city’s streets, 24 m skyways, and 48 m crowns.</p>','WORLD MAP / PALE BASIN','map');drawMap($('#full-map'),true);}
 function showSettings(){
-  panel('Keep your signal clear.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Original locally synthesized ambient score and effects.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Local narration<small>${audio.voices.length?'Installed device voices only. Dialogue remains visible.':'No local voice detected. Install an offline system voice to enable narration.'}</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="setting-row"><label for="setting-quality">Render resolution<small>Lower this on mobile hardware to improve frame pacing.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Volumetric light<small>Atmospheric sunlight and Commons lamp shafts. Low resolution skips lamp shafts.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Look sensitivity</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">Third person camera<small>Toggle at any time with V.</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">EXPORT SIGNED CHARACTER</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">${online?'Server':'Local browser'} character · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS / SIGNAL PREFERENCES','settings');
+  panel('Keep your signal clear.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Original locally synthesized ambient score and effects.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Local narration<small>${audio.voices.length?'Installed device voices only. Dialogue remains visible.':'No local voice detected. Install an offline system voice to enable narration.'}</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="setting-row"><label for="setting-quality">Render resolution<small>Lower this on mobile hardware to improve frame pacing.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Volumetric light<small>Atmospheric sunlight and Commons lamp shafts. Low resolution skips lamp shafts.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Look sensitivity</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">Third person camera<small>Toggle at any time with V.</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">EXPORT SIGNED CHARACTER</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">Server character · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS / SIGNAL PREFERENCES','settings');
 }
 async function showAccount(mode='login'){
-  if(account){online=true;return showCharacters((await api('/characters')).characters);}
+  await sessionReady;
+  if(account)return enter();
   refreshFounderOffer();
-  panel(mode==='register'?'Start a new signal.':'Welcome back, runner.',`<div class="tabs"><button class="${mode==='login'?'selected':''}" data-do="account-login">SIGN IN</button><button class="${mode==='register'?'selected':''}" data-do="account-register">CREATE ACCOUNT</button></div>${!serverAvailable?'<p class="guide-note">The account server is offline. You can play and save a local character while it is unavailable.</p>':''}${mode==='register'?`<p class="founder-account-note"><strong>First Signal Halo · first 1,000 accounts.</strong><br>Exclusive permanent cosmetic. +5% combat &amp; quest XP from level 1 until level 10.<br><span data-founder-status>${esc(founderOfferView(founderOffer,account).status)}</span></p>`:''}<form id="account-form" data-mode="${mode}"><div class="form-row"><label for="username">USERNAME</label><input id="username" name="username" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" required placeholder="Your callsign"></div><div class="form-row"><label for="password">PASSWORD / 12–128 CHARACTERS</label><input id="password" name="password" type="password" autocomplete="${mode==='register'?'new-password':'current-password'}" minlength="12" maxlength="128" required></div><div id="account-error" class="form-error" role="alert"></div><button type="submit" class="button primary">${mode==='register'?'CREATE ACCOUNT':'ESTABLISH LINK'} ↗</button></form><p class="form-note">Account characters are saved on the server. Local characters have their own browser save and cannot be imported to the server.</p><button class="text-button" data-do="play-local">PLAY LOCALLY →</button>`,'ACCOUNT / SECURE IDENTITY', 'account');
+  panel(mode==='register'?'Start a new signal.':'Welcome back, runner.',`<div class="tabs"><button class="${mode==='login'?'selected':''}" data-do="account-login">SIGN IN</button><button class="${mode==='register'?'selected':''}" data-do="account-register">CREATE ACCOUNT</button></div>${mode==='register'?`<p class="founder-account-note"><strong>First Signal Halo · first 1,000 accounts.</strong><br>Exclusive permanent cosmetic. +5% combat &amp; quest XP from level 1 until level 10.<br><span data-founder-status>${esc(founderOfferView(founderOffer,account).status)}</span></p>`:''}<form id="account-form" data-mode="${mode}"><div class="form-row"><label for="username">USERNAME</label><input id="username" name="username" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" required placeholder="Your callsign"></div><div class="form-row"><label for="password">PASSWORD / 12–128 CHARACTERS</label><input id="password" name="password" type="password" autocomplete="${mode==='register'?'new-password':'current-password'}" minlength="12" maxlength="128" required></div><div id="account-error" class="form-error" role="alert"></div><button type="submit" class="button primary">${mode==='register'?'CREATE ACCOUNT':'ESTABLISH LINK'} ↗</button></form><p class="form-note">Your characters and progress are saved on the server. Sign in to play from any device.</p>`,'ACCOUNT / SECURE IDENTITY', 'account');
 }
 
 function refreshPanel(){
@@ -250,7 +244,7 @@ function wireEvents(){
   $('#character-form').addEventListener('change',()=>{selectedRace=$('input[name="race"]:checked').value;selectedFaction=$('input[name="faction"]:checked').value;updateChoices();});
   $('#character-form').addEventListener('submit',async e=>{
     e.preventDefault();audio.unlock().catch(()=>{});const button=e.submitter;button.disabled=true;
-    try{const name=$('#character-name').value.trim();let c=createCharacter(name,selectedRace,selectedFaction,data);if(online)c=(await api('/characters',{name,race:selectedRace,faction:selectedFaction})).character;else saveLocal(c);await startGame(c,true);}
+    try{const name=$('#character-name').value.trim();const c=(await api('/characters',{name,race:selectedRace,faction:selectedFaction})).character;await startGame(c,true);}
     catch(error){$('#character-error').textContent=error.message;}finally{button.disabled=false;}
   });
   $('#dialog-content').addEventListener('click',async e=>{
@@ -259,42 +253,41 @@ function wireEvents(){
       if(action==='enter'){closePanel();await enter();}
       else if(action==='new-character')openCreation();
       else if(action==='account-login')await showAccount('login');else if(action==='account-register')await showAccount('register');
-      else if(action==='play-local'){online=false;const chars=loadLocal();chars.length?showCharacters(chars):openCreation();}
-      else if(action==='play-character'){const chars=online?(await api('/characters')).characters:loadLocal();const c=chars.find(c=>c.id===id);if(c)await startGame(c);}
+      else if(action==='play-character'){const chars=(await api('/characters')).characters;const c=chars.find(c=>c.id===id);if(c)await startGame(c);}
       else if(action==='delete-character'){
         if(deleteArmed!==id){deleteArmed=id;button.textContent='CONFIRM DELETE';return;}
-        if(online)await api('/characters/'+encodeURIComponent(id),{},'DELETE');else{const chars=loadLocal();if(localSaveError)throw new Error(localSaveError);localStorage.setItem(storageKey,encodeLocal(chars.filter(c=>c.id!==id)));}
-        deleteArmed=null;showCharacters(online?(await api('/characters')).characters:loadLocal());
+        await api('/characters/'+encodeURIComponent(id),{},'DELETE');
+        deleteArmed=null;showCharacters((await api('/characters')).characters);
       }
-      else if(action==='logout'){await api('/logout',{});account=null;online=false;$('#account-label').textContent='ACCOUNT';updateFounderOffer();refreshFounderOffer();closePanel();}
+      else if(action==='logout'){await api('/logout',{});account=null;$('#account-label').textContent='ACCOUNT';updateFounderOffer();refreshFounderOffer();closePanel();}
       else if(action==='reconnect'){if(simulation)await startGame(simulation.character);}
       else if(action==='journal-filter')showJournal(id);
-      else if(action==='quest-accept'||action==='quest-complete'){act({type:'quest',id,operation:action==='quest-accept'?'accept':'complete'});if(!online)refreshPanel();else setTimeout(refreshPanel,250);}
-      else if(action==='learn-talent'){act({type:'talent',id});if(!online)showTalents();else setTimeout(refreshPanel,250);}
-      else if(action==='buy'){act({type:'buy',item:id});if(!online)showShop();else setTimeout(refreshPanel,250);}
-      else if(action==='use-medkit'){act({type:'medkit'});if(!online)showInventory();}
+      else if(action==='quest-accept'||action==='quest-complete'){act({type:'quest',id,operation:action==='quest-accept'?'accept':'complete'});setTimeout(refreshPanel,250);}
+      else if(action==='learn-talent'){act({type:'talent',id});setTimeout(refreshPanel,250);}
+      else if(action==='buy'){act({type:'buy',item:id});setTimeout(refreshPanel,250);}
+      else if(action==='use-medkit'){act({type:'medkit'});setTimeout(showInventory,250);}
       else if(action==='speak'){audio.narration=true;if(!audio.speak(data.npcs.find(n=>n.id===id).dialogue))toast('No local speech voice is installed. Dialogue is available on screen.');}
       else if(action==='guide')showGuide();
       else if(action==='lineages')showLineages();
       else if(action==='intro'){closePanel();introTime=0;introShot=-1;setState('cinematic');}
       else if(action==='export'){
         button.disabled=true;
-        try{if(!online&&!localIdentity)throw new Error(localKeyError||'Local signing is unavailable in this browser.');const id=simulation.character.id;const envelope=online?await api(`/characters/${encodeURIComponent(id)}/export`):await signLocalExport(simulation,localIdentity);downloadCharacter(envelope,id);}
+        try{const id=simulation.character.id;const envelope=await api(`/characters/${encodeURIComponent(id)}/export`);downloadCharacter(envelope,id);}
         finally{button.disabled=false;}
       }
       else if(action==='community')await community.open();
       else if(action==='dungeons')showDungeons();
       else if(action==='dungeon'){
         act({type:'dungeon',operation:button.dataset.operation,dungeon:button.dataset.dungeon,run:Number(button.dataset.run),chapter:Number(button.dataset.chapter),attempt:Number(button.dataset.attempt),target:button.dataset.target,choice:button.dataset.choice});
-        if(button.dataset.operation==='begin')closePanel();else if(!online)showDungeons();
+        if(button.dataset.operation==='begin')closePanel();
       }
-      else if(action==='leave'){if(!online)saveLocal(simulation.character);connection?.close();connection=null;simulation=null;closePanel();setState('landing');}
+      else if(action==='leave'){connection?.close();connection=null;simulation=null;closePanel();setState('landing');}
     }catch(error){toast(error.message);}
   });
   $('#dialog-content').addEventListener('submit',async e=>{
     if(e.target.id!=='account-form')return;e.preventDefault();const form=e.target,button=e.submitter,fields=new FormData(form);button.disabled=true;
-    try{const result=await api('/'+form.dataset.mode,{username:fields.get('username'),password:fields.get('password')});account={username:result.username,founderHalo:result.founderHalo};serverAvailable=true;online=true;$('#account-label').textContent=account.username;updateFounderOffer();refreshFounderOffer();showCharacters((await api('/characters')).characters);if(form.dataset.mode==='register'&&hasFounderHalo(account))toast('First Signal Halo unlocked · your permanent early-signup reward.');}
-    catch(error){$('#account-error').textContent=error.message;}finally{button.disabled=false;}
+    try{const result=await api('/'+form.dataset.mode,{username:fields.get('username'),password:fields.get('password')});account={username:result.username,founderHalo:result.founderHalo};$('#account-label').textContent=account.username;updateFounderOffer();refreshFounderOffer();showCharacters((await api('/characters')).characters);if(form.dataset.mode==='register'&&hasFounderHalo(account))toast('First Signal Halo unlocked · your permanent early-signup reward.');}
+    catch(error){const field=$('#account-error');if(field)field.textContent=error.message;else toast(error.message);}finally{button.disabled=false;}
   });
   $('#dialog-content').addEventListener('change',async e=>{
     const t=e.target;
@@ -305,9 +298,8 @@ function wireEvents(){
     if(t.id==='setting-sensitivity')input.sensitivity=Number(t.value);
     if(t.id==='setting-camera')thirdPerson=t.checked;
   });
-  window.addEventListener('beforeunload',()=>{if(simulation&&!online)saveLocal(simulation.character);});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){audio.stopVoice();if(simulation&&!online)saveLocal(simulation.character);if(connection)connection.send({type:'move',forward:0,strafe:0,yaw,jump:false,dash:false,sprint:false,sequence:++connection.sequence});}});
-  window.addEventListener('graphicslost',()=>{input.clear();toast('Graphics context lost. The renderer will reload when your device restores it.');if(simulation&&!online)saveLocal(simulation.character);});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){audio.stopVoice();if(connection)connection.send({type:'move',forward:0,strafe:0,yaw,jump:false,dash:false,sprint:false,sequence:++connection.sequence});}});
+  window.addEventListener('graphicslost',()=>{input.clear();toast('Graphics context lost. The renderer will reload when your device restores it.');});
 }
 function updateMusicButton(){$('#music-button').innerHTML=`<span>♫</span> SOUND ${audio.enabled?'ON':'OFF'}`;$('#music-button').setAttribute('aria-pressed',String(audio.enabled));}
 
@@ -330,7 +322,7 @@ function findNearest(){
 function updateHUD(){
   if(!simulation)return;const c=simulation.character,s=simulation.playerStats;
   $('#player-name').textContent=c.name;$('#player-level').textContent=c.level;$('#player-origin').textContent=data.races.find(r=>r.id===c.race).name.toUpperCase();
-  $('#server-clock').textContent=clockLabel(worldClock.now(),online);
+  $('#server-clock').textContent=clockLabel(worldClock.now());
   $('#server-clock').dateTime=new Date(worldClock.now()).toISOString();
   $('#health-fill').style.width=`${clamp(c.health/s.health*100,0,100)}%`;$('#health-text').textContent=`${Math.ceil(c.health)} / ${s.health}${simulation.shield?' +'+Math.ceil(simulation.shield):''}`;
   $('#energy-fill').style.width=`${clamp(c.energy/s.energy*100,0,100)}%`;$('#energy-text').textContent=`${Math.floor(c.energy)} / ${s.energy}`;
@@ -368,7 +360,7 @@ function updateHUD(){
   nearest=findNearest();$('#interaction').hidden=!nearest||$('#panel-dialog').open||c.health<=0;
   if(nearest)$('#interaction-text').textContent=`${nearest.kind==='npc'?'Talk to ':nearest.kind==='lift'?'Ride ':''}${nearest.object.name}`;
   for(const a of data.abilities){const b=$(`[data-action="ability:${a.id}"]`),remaining=Math.max(0,(simulation.cooldowns[a.id]||0)-simulation.time);b.classList.toggle('locked',c.level<a.level);b.querySelector('.cooldown-shade').style.transform=`scaleY(${Math.min(1,remaining/a.cooldown)})`;b.querySelector('.cooldown-number').textContent=remaining>0?Math.ceil(remaining):'';b.querySelector('.locked-level').textContent=c.level<a.level?'LV '+a.level:'';}
-  const ghost=simulation.ghostlines.find(g=>g.owner===c.id&&simulation.time<=g.started+g.path.at(-1).time),charge=online?simulation.ghostCharge:simulation.ghostTrail.charge;
+  const ghost=simulation.ghostlines.find(g=>g.owner===c.id&&simulation.time<=g.started+g.path.at(-1).time),charge=simulation.ghostCharge;
   const ghostCooldown=Math.max(0,(simulation.cooldowns.ghostline||0)-simulation.time),ghostKey=input.connected?'R3':'R',g=data.rules.ghostline,ghostCost=data.abilities.find(a=>a.id==='ghostline').cost;
   $('#ghostline-status').textContent=c.health<=0?'GHOSTLINE · SIGNAL OFFLINE':ghost?'ECHO LIVE · CROSS THE CYAN RUNNER TO BRAID':ghostCooldown>0?`GHOSTLINE · RECHARGING ${Math.ceil(ghostCooldown)}s`:c.energy<ghostCost?`GHOSTLINE · NEED ${ghostCost} ENERGY`:charge?.ready?`${ghostKey} · GHOSTLINE READY · CAST, THEN CROSS YOUR ECHO`:`GHOSTLINE · MOVE ${Math.min(g.minDistance,Math.floor(charge?.meters||0))}/${g.minDistance} m · ${Math.min(g.minSeconds,charge?.seconds||0).toFixed(1)}/${g.minSeconds} s`;
   const wasHidden=$('#death-screen').hidden;$('#death-screen').hidden=c.health>0;
@@ -420,8 +412,9 @@ function frame(timestamp){
   if(state==='landing'){
     const orbit=reducedMotion?0:Math.sin(time*.018)*14;camera={eye:[135+orbit,81,165],target:[-45,36,-95],fov:.95};
   }else if(state==='creation'){
-    camera={eye:[3,2.4,6.5],target:[-3,1.2,0],fov:.62};actors=[{position:[0,0,0],model:'humanoid',yaw:Math.PI*.2+(reducedMotion?0:Math.sin(time*.2)*.15),color:data.races.find(r=>r.id===selectedRace).color,founderHalo:online?account?.founderHalo:null}];
+    camera={eye:[3,2.4,6.5],target:[-3,1.2,0],fov:.62};actors=[{position:[0,0,0],model:'humanoid',yaw:Math.PI*.2+(reducedMotion?0:Math.sin(time*.2)*.15),color:data.races.find(r=>r.id===selectedRace).color,founderHalo:account?.founderHalo}];
   }else if(state==='cinematic'){
+    connection?.update(dt,{forward:0,strafe:0,yaw,jump:false,dash:false,sprint:false});
     introTime+=dt;const index=data.intro.shots.findIndex(s=>introTime>=s.start&&introTime<s.end),shot=data.intro.shots[Math.max(0,index)];
     if(index<0){finishIntro();camera=gameCamera(dt);}else{
       const t=clamp((introTime-shot.start)/(shot.end-shot.start),0,1),eased=t*t*(3-2*t);camera={eye:mix3(shot.from,shot.to,eased),target:mix3(shot.lookFrom,shot.lookTo,eased),fov:.88};
@@ -429,11 +422,10 @@ function frame(timestamp){
       $('#cinema-progress').style.width=`${introTime/data.intro.duration*100}%`;
     }
   }else if(simulation){
-    controls.yaw=yaw;simulation.tick(dt,controls,online);connection?.update(dt,controls);camera=gameCamera(dt);
+    controls.yaw=yaw;simulation.tick(dt,controls);connection?.update(dt,controls);camera=gameCamera(dt);
     if(thirdPerson){const c=simulation.character;actors.push({...c,guild:myGuild,model:'humanoid',yaw:yaw+Math.PI,color:data.races.find(r=>r.id===c.race).color});}
     actors.push(...simulation.enemies,...otherPlayers.filter(p=>p.id!==simulation.character.id).map(p=>({...p,model:'humanoid',color:data.races.find(r=>r.id===p.race)?.color||'#c7ed99'})));
     uiAccumulator+=dt;if(uiAccumulator>.1){uiAccumulator=0;updateHUD();}
-    saveAccumulator+=dt;if(saveAccumulator>5){saveAccumulator=0;if(!online)saveLocal(simulation.character);}
   }
   if(!camera)camera={eye:[135,81,165],target:[-45,36,-95]};
   effects=effects.filter(e=>time-e.time<e.duration);floaters=floaters.filter(f=>time-f.time<f.duration);
@@ -446,11 +438,11 @@ async function boot(){
   const values=await Promise.all(names.map(async name=>{const response=await fetch(`/data/${name}.json`);if(!response.ok)throw new Error(`Could not load ${name}.`);return response.json();}));data=Object.fromEntries(names.map((n,i)=>[n,values[i]]));
   validateDungeons(data.dungeons,data);
   const models=await fetch('/assets/models.json').then(r=>r.json());world=new World(data.world);renderer=new Renderer($('#world'),world,models);renderer.reducedMotion=reducedMotion;audio=new AudioEngine(data.audio);
-  localSigningIdentity(localStorage).then(identity=>localIdentity=identity).catch(error=>{localKeyError=`Local character signing is unavailable: ${error.message}`;});
-  community=new Community({character:()=>simulation?.character,online:()=>online&&Boolean(connection?.open),showPanel:panel,isOpen:()=>dialogPage==='community'&&$('#panel-dialog').open,toast,races:data.races,now:()=>worldClock.now()});
+  community=new Community({character:()=>simulation?.character,online:()=>Boolean(connection?.open),showPanel:panel,isOpen:()=>dialogPage==='community'&&$('#panel-dialog').open,toast,races:data.races,now:()=>worldClock.now()});
   input=new Input($('#world'),perform,(dx,dy)=>{yaw-=dx;pitch=clamp(pitch+dy,-.45,1.05);});
   initialUI();wireEvents();$('#loading').hidden=true;setState('landing');requestAnimationFrame(frame);
   refreshFounderOffer();
-  api('/health').then(health=>{serverAvailable=true;worldClock.sync(health.serverTime);return api('/session');}).then(session=>{account={username:session.username,founderHalo:session.founderHalo};$('#account-label').textContent=account.username;updateFounderOffer();}).catch(()=>{});
+  api('/health').then(health=>worldClock.sync(health.serverTime)).catch(()=>{});
+  sessionReady=api('/session').then(session=>{account={username:session.username,founderHalo:session.founderHalo};$('#account-label').textContent=account.username;updateFounderOffer();}).catch(error=>{if(error.status!==401)toast('The server is unavailable. Try signing in again when your connection returns.');});
 }
 boot().catch(error=>{console.error(error);$('#loading').innerHTML='';const box=document.createElement('div');box.className='fatal';box.textContent=`Unable to establish a signal. ${error.message}`;$('#loading').append(box);});

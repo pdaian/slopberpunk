@@ -1,13 +1,13 @@
 # Playing Sloperberpunk on Steam Deck
 
-Run the existing browser client through a non-Steam shortcut. The Deck renders the game locally with WebGL, and the browser still handles site storage, account cookies, signed-character downloads, and web updates on reload. The shortcut needs no native game build or Proton. These instructions describe the intended setup; physical Steam Deck testing and performance measurements are still outstanding.
+Run the existing browser client through a non-Steam shortcut. The Deck renders the game locally with WebGL, and the browser still handles account cookies, signed-character downloads, and web updates on reload. The shortcut needs no native game build or Proton. These instructions describe the intended setup; physical Steam Deck testing and performance measurements are still outstanding.
 
 ## Choose the game address
 
-- **Hosted game:** use your deployment's HTTPS URL. This repository does not specify a public game server. For accounts, multiplayer, and community features, the host needs the Rust service and the HTTPS/HTTP/WebSocket configuration in [Operations](OPERATIONS.md). The Deck only needs a browser. A hosted client also supports local characters when the account service is unavailable, provided the client files can still load.
-- **Game hosted on the Deck:** use `http://localhost:3000` with Node.js 22 or later and a copy of this repository on the Deck; see [Local and offline play](#local-and-offline-play) below. The Node server alone supports local characters.
+- **Hosted game:** use your deployment's HTTPS URL. This repository does not specify a public game server. For accounts, multiplayer, and community features, the host needs the Rust service and the HTTPS/HTTP/WebSocket configuration in [Operations](OPERATIONS.md). The Deck only needs a browser. Playing requires a connection to that server.
+- **Game hosted on the Deck:** use `http://localhost:8080` with Rust 1.89 or later and a copy of this repository; see [Host the Rust server on the Deck](#host-the-rust-server-on-the-deck) below. This runs the same account-backed game and multiplayer service.
 
-`localhost` means the device running the browser. Starting the server on another PC does not make the Deck's `localhost:3000` reach that PC. Use HTTPS with a trusted certificate for a remote host: a plain HTTP LAN IP is not a secure context for browser gamepads and Web Crypto. Serve the game over HTTP(S), rather than opening `client/index.html` as a file. See [browser delivery requirements](COMPATIBILITY.md#rendering-and-delivery).
+`localhost` means the device running the browser. Starting the server on another PC does not make the Deck's `localhost:8080` reach that PC. Use HTTPS with a trusted certificate for a remote host: a plain HTTP LAN IP is not a secure context for browser gamepads. Serve the game over HTTP(S), rather than opening `client/index.html` as a file. See [browser delivery requirements](COMPATIBILITY.md#rendering-and-delivery).
 
 ## Add the browser to Gaming Mode
 
@@ -19,13 +19,13 @@ Run the existing browser client through a non-Steam shortcut. The Deck renders t
    --app="https://your-game-host.example/"
    ```
 
-   Replace that example URL with your actual game address, or use `--app="http://localhost:3000"` for a server running on the Deck. `--app` opens the URL in a dedicated browser window using the browser's profile. To keep the address bar and tabs, append the quoted URL alone instead. Keep your existing profile; private/incognito mode or a different `--user-data-dir` would separate your saves.
+   Replace that example URL with your actual game address, or use `--app="http://localhost:8080"` for a server running on the Deck. `--app` opens the URL in a dedicated browser window using the browser's profile. To keep the address bar and tabs, append the quoted URL alone instead. Keep cookies enabled; changing profiles requires signing in again to the same server.
 4. Open the shortcut's **Controller Layout**, choose the **Gamepad with Mouse Trackpad** template, and apply it. Keep the sticks, face buttons, triggers, and D-pad mapped as gamepad inputs. Set the right trackpad to **Mouse** and its click to **Left Mouse Click** for forms and menus.
-5. Fully quit Chrome before launching the shortcut so Steam starts the browser process. Select **Return to Gaming Mode**, open **Library → Non-Steam → Sloperberpunk**, and launch it. Tap/click the page and press a gamepad button to let the browser detect the controller. Choose **Enter Vesper** while signed out for a local character, or use **Account** to sign in to the connected server.
+5. Fully quit Chrome before launching the shortcut so Steam starts the browser process. Select **Return to Gaming Mode**, open **Library → Non-Steam → Sloperberpunk**, and launch it. Tap/click the page and press a gamepad button to let the browser detect the controller. Choose **Enter Vesper** or **Account** to register or sign in, then create or resume a server character.
 
 The desktop installation and shortcut steps follow [Valve's Desktop FAQ](https://help.steampowered.com/en/faqs/view/671A-4453-E8D2-323C). The [Chromium application-mode switch](https://chromium.googlesource.com/chromium/src/+/a771c0b220a3c12454cd814f0033f249355793af/chrome/common/chrome_switches.cc) supplies the dedicated window; it does not install an offline copy of the game.
 
-If you already have local characters in Firefox on the Deck, keep that browser: add Firefox to Steam and open the same URL there. The `--app` flag and Chrome Flatpak ID in this guide apply only to Chrome; changing browsers does not transfer local saves.
+Firefox can also be added as a Steam shortcut. The `--app` flag and Chrome Flatpak ID in this guide apply only to Chrome. Sign in to the same server to access your characters in either browser.
 
 If the sticks or buttons do nothing, first check that the page is focused, the URL is HTTPS or Deck-local localhost, and the Steam layout sends gamepad inputs. Open Settings using the on-screen menu button; a detected standard gamepad produces **Standard controller connected.** If Chrome's Flatpak still cannot see it, quit Chrome and run this in Desktop Mode's **Konsole**, then relaunch through Steam:
 
@@ -47,36 +47,20 @@ Start with **Settings → Render resolution → High**. If frame pacing is poor,
 
 ## Preserve saves and account access
 
-- **Local characters:** keep the same browser profile and origin (scheme, host, and port) in both modes. For example, `http://localhost:3000`, `http://127.0.0.1:3000`, `http://localhost:8080`, and an HTTPS deployment have separate stores. Local characters and their signing identity live in browser storage; clearing site data or removing the profile deletes them. Private browsing discards its storage when that session ends. See [browser localStorage behavior](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
-- **Exports:** use **Settings → Export signed character** and confirm that `sloperberpunk-<id>.json` downloads. Use the same browser in Desktop Mode if the download UI is awkward in Gaming Mode. Local signing requires Web Crypto Ed25519 support. The current client has **no character-import UI**; an export is an archive, not an implemented restore or transfer workflow. Preserve the browser profile as well. Local characters cannot become authoritative server characters.
-- **Across devices:** use **Account** on the same Rust server to resume a server character. Local saves are not synchronized by Steam Cloud or browser account sync. A Steam shortcut does not add either feature. Keep cookies/site storage allowed, and sign in again if the server session expires or the service restarts.
-- **Before leaving or sleeping:** choose **Settings → Return to title**. This explicitly saves a local character and closes an online world connection. After resume, restore connectivity and use **Reconnect** if the game reports **Signal interrupted**, or reload and sign in again if necessary. Suspend does not pause the server's world or its real-time timers.
+- **Characters:** progress is stored by the Rust server. Sign in to the same server from Desktop Mode, Gaming Mode, or another device to resume it. Keep cookies allowed; sign in again after a session expires or the service restarts.
+- **Exports:** use **Settings → Export signed character** and confirm that `sloperberpunk-<id>.json` downloads. The server signs this archive. The client has no character-import UI; exports are archives, not an implemented restore or transfer workflow. Server operators should back up the entire runtime database.
+- **Before leaving or sleeping:** choose **Settings → Return to title** to close the world connection. After resume, restore connectivity and use **Reconnect** if the game reports **Signal interrupted**, or reload and sign in again. Suspend does not pause the server world or its timers.
 
-## Local and offline play
+## Host the Rust server on the Deck
 
-With Node.js 22 or later available on the Deck, open Konsole in the repository root and run:
-
-```sh
-node tools/serve.mjs
-```
-
-Open `http://localhost:3000` in Chrome. Keep the terminal/server running while playing in Desktop Mode. There are no npm dependencies or client build step, and local play needs no Rust account service.
-
-For a local Gaming Mode shortcut, run the server independently of the Desktop terminal. Stop the foreground server with **Ctrl+C**, then, from the same repository directory, start a transient user service:
+With Rust 1.89 or later available, run from the repository root:
 
 ```sh
-systemd-run --user --unit=sloperberpunk-web --collect --service-type=exec \
-  --working-directory="$PWD" "$(command -v node)" tools/serve.mjs
+cargo run --release
 ```
 
-The [systemd-run service](https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html) runs in the background without a permanent service file. Check that `http://localhost:3000` loads before switching modes. It is not enabled at boot; rerun the command after a reboot or if the user service has stopped. Diagnose it with `systemctl --user status sloperberpunk-web` in Desktop Mode. After returning to the game's title screen, stop it when finished:
-
-```sh
-systemctl --user stop sloperberpunk-web
-```
-
-With the browser, Node runtime, and repository already on the Deck, that local URL can load without internet access. The client has no service worker or offline installation flow, and the frontend server sends `Cache-Control: no-store`. Visiting a remote site once or adding the Steam shortcut does not make later offline launches work. Accounts, multiplayer, and community features require a reachable Rust service; the Node server alone does not provide them. Add `/play.html` to the shortcut URL to open the game directly, skipping the landing page.
+Open `http://localhost:8080` in the browser. This one process serves the frontend, accounts, multiplayer, and community. The first run compiles the server; runtime progress lives in `server/data`. For Gaming Mode, keep the Rust process running through your user service manager across the mode switch. Use the same data directory when restarting, and shut down cleanly before backing it up. See [Operations](OPERATIONS.md) for listener configuration and storage recovery. Add `/play.html` to the shortcut URL to skip the landing page.
 
 ## Verify on the actual Deck
 
-Record SteamOS and browser versions and the Steam Input layout. Follow the [device acceptance checks](COMPATIBILITY.md#verification-status-and-acceptance-checks), including movement, combat, menus, text entry, and legibility. Also check that a local character survives closing/reopening the shortcut and switching modes at the same origin, that an export downloads, and that an online character can reconnect after suspend. For local hosting, verify the server survives the mode switch and the page reloads with Wi-Fi off. Report those results separately from automated repository checks; Steam Deck compatibility and a specific frame rate have not been certified.
+Record SteamOS and browser versions and the Steam Input layout. Follow the [device acceptance checks](COMPATIBILITY.md#verification-status-and-acceptance-checks), including movement, combat, menus, text entry, and legibility. Also check that a server character survives closing/reopening the shortcut and switching modes, that a signed export downloads, and that a character can reconnect after suspend. For Deck hosting, verify that the Rust server survives the mode switch. Report those results separately from automated repository checks; Steam Deck compatibility and a specific frame rate have not been certified.

@@ -23,7 +23,7 @@ Use **M → map** to locate contacts and **J → Basin** to read their chains. T
 
 Ghostline turns movement into a shared combat tool. Sprint through a fight, release a luminous cyan version of the route you just took, and cut back through your moving afterimage to **braid** the two timelines into a shockwave. Another runner can cross your echo instead, creating a stronger **double braid** and restoring both players’ dash. A retreat can become a setup for a friend; a solo runner can cooperate with their own past.
 
-It is playable from **level 0**, in local play and within an online world shard:
+It is playable from **level 0**, within an authoritative world shard:
 
 1. **Lay a route.** Move at least **12 m over two seconds**. The HUD shows your progress; the game remembers up to six seconds of recent movement.
 2. **Release it.** Press **R**, press the controller’s **right stick (R3)**, or tap the **R hotbar slot**. Costs **30 energy**, with an **18-second cooldown**; no selected enemy is needed. A glowing runner replays the recorded route, with a dotted trail and minimap trace.
@@ -36,7 +36,7 @@ Each echo can braid once and expires at the end of its recorded route. Damage us
 
 ## Dungeons — the Afterlight casebooks
 
-Press **G**, choose **Dungeons** on the HUD, or open **Settings → Dungeons / Group Finder**. Six expeditions have exact crew sizes and accept any combination of lineages, factions, and talent builds, including duplicate builds. The shared online queue matches runners from different home shards; an assembled crew has 30 seconds to accept. The solo expedition also works locally.
+Press **G**, choose **Dungeons** on the HUD, or open **Settings → Dungeons / Group Finder**. Six expeditions have exact crew sizes and accept any combination of lineages, factions, and talent builds, including duplicate builds. The shared online queue matches runners from different home shards; an assembled crew has 30 seconds to accept. The solo expedition uses the same server as group expeditions.
 
 | Dungeon | Runners | Minimum level | Opening mystery |
 | --- | ---: | ---: | --- |
@@ -55,41 +55,33 @@ The readable source is [dungeons.json](client/data/dungeons.json). Every entry i
 
 ## Run the game
 
-The first **1,000 account signups per server** receive the **First Signal Halo**, a numbered, permanent black-chrome crown with magenta light fins and a rotating cyan orbit. It is worn automatically by every character on the eligible account, appears to nearby players, and cannot be traded. The game’s title screen links directly to signup and checks the server for remaining editions; local play does not reserve one.
+The first **1,000 account signups per server** receive the **First Signal Halo**, a numbered, permanent black-chrome crown with magenta light fins and a rotating cyan orbit. It is worn automatically by every character on the eligible account, appears to nearby players, and cannot be traded. The game’s title screen links directly to signup and checks the server for remaining editions.
 
 The halo grants **+5% combat and quest XP from level 1 until reaching level 10**. The level-0 prologue is unboosted; large rewards are split at both boundaries, small rewards retain fractional bonus credit, and no bonus spills into progression beyond level 10. The cosmetic remains permanently. Gear shows the edition and boost status, and reward messages include the XP actually granted. Existing-account upgrade behavior is documented in [operations](docs/OPERATIONS.md).
 
-The client needs Node.js 22 or later and has **no npm dependencies or build step**:
+Install Rust 1.89 or later, then start the complete application from the repository root:
 
 ```sh
-node tools/serve.mjs
+cargo run --release
 ```
 
-Open **http://localhost:3000** for the minimal landing page, then choose **Enter Vesper** to open the game at **/play.html**. The landing page needs no JavaScript or WebGL. The game’s title screen lets you create or resume a character. Local progress is saved in that browser; **Settings → Export signed character** downloads a versioned JSON envelope. Local signing uses a browser identity created and saved on startup, where Web Crypto Ed25519 is available. An unavailable realm server does not prevent local play.
+Open **http://localhost:8080** for the landing page and choose **Enter Vesper** for the game at **/play.html**. This one Rust process serves the frontend, accounts, multiplayer WebSockets, community, and persistence on the same listener. Browser JavaScript is served directly as ES modules; no frontend build or separate runtime is needed.
 
-The same built-in webserver serves the entire frontend and proxies account requests and multiplayer WebSockets. Its single realm connection setting is **`SLOPERBERPUNK_BACKEND`**, an HTTP or HTTPS origin (default: `http://127.0.0.1:8080`):
+The default port is **8080**. To serve everything on **80** instead:
 
 ```sh
-SLOPERBERPUNK_BACKEND=https://realm.example.com node tools/serve.mjs
+PORT=80 cargo run --release
 ```
 
-No frontend configuration or build is needed when changing realms. `HOST` and `PORT` control the frontend listener (defaults: `127.0.0.1:3000`); `--port` overrides `PORT`. See [operations](docs/OPERATIONS.md) for public HTTPS hosting and the realm’s browser-origin allowlist.
+`HOST` selects the bind IP (default `127.0.0.1`); `SLOPERBERPUNK_BIND=IP:port` overrides both `HOST` and `PORT`. The default browser-origin allowlist follows the configured port, including the port-80 origin without a port suffix. See [operations](docs/OPERATIONS.md) for public HTTPS hosting, low-port permissions, storage, and thread configuration.
 
-For accounts and multiplayer, install Rust 1.89 or later, then run:
-
-```sh
-cargo run --release --manifest-path server/Cargo.toml
-```
-
-Keep the frontend at port 3000; its `/api` HTTP and WebSocket requests reach the configured realm. The Rust service can also serve the frontend directly at **http://localhost:8080**. Use **Account** on the game’s title screen to register, sign in, create, select, or delete a server character. Each account supports eight characters. The first Rust run resolves dependencies and compiles the service; starting the service creates its runtime database. These commands were not run during implementation because generated build/database files were excluded from the task.
-
-Local and server characters have separate stores. A local save cannot be uploaded as an authoritative server character.
+Use **Account** or **Enter Vesper** to register or sign in, then create or resume a server character. Each account supports eight characters. All play requires a connection to this server; characters and progress are stored there. **Settings → Export signed character** downloads a server-signed archive. The first Cargo run resolves dependencies and compiles the application; server startup creates the runtime database.
 
 With a server character, press **C** or choose **Community** for chat, messages, guilds, parties, the auction house, forums, contacts, and deliveries. The server generates its private Ed25519 signing identity on first startup and reuses it thereafter. Back up the entire data directory, including `social.json` and `signing-key.json`. Server character exports are signed by that server identity; they include progression, cooldowns, social records, and economic records without including authentication secrets.
 
 ### Play on Steam Deck
 
-Use the browser client through a non-Steam browser shortcut in Gaming Mode. The [Steam Deck guide](docs/STEAM_DECK.md) covers the game URL, browser launch options, Steam Input, local/offline play, and keeping browser saves and signed exports. Use the same browser profile and origin to retain local characters when switching between Desktop and Gaming Mode. Steam Deck hardware acceptance is still outstanding.
+Use the browser client through a non-Steam browser shortcut in Gaming Mode. The [Steam Deck guide](docs/STEAM_DECK.md) covers the game URL, browser launch options, Steam Input, account access, and signed exports. Sign in to the same server to resume your character across devices and browser profiles. Steam Deck hardware acceptance is still outstanding.
 
 ## What is implemented
 
@@ -114,32 +106,26 @@ Use the browser client through a non-Steam browser shortcut in Gaming Mode. The 
 client/
   index.html, landing.css     Lightweight landing page
   play.html, style.css        Game title, creation, cinematic, HUD, menus
-  src/                       Renderer, simulation, input, audio, network, UI
+  src/                       Renderer, movement prediction, input, audio, network, UI
   data/                      Map, rules, quests, lore, races, factions, abilities
   assets/                    Original SVG mark and box-mesh source models
 server/
-  Cargo.toml                 Seven direct Rust dependencies, pinned versions
-  src/main.rs                Service, simulation, character storage, and tests
+  Cargo.toml                 Seven runtime Rust dependencies, pinned versions
+  src/main.rs                Service, simulation threads, character storage, tests
+  src/config.rs              Listener, origin, and thread configuration with tests
+  src/web.rs                 Frontend delivery, security headers, HTTP tests
   src/ghostline.rs           Authoritative route replay, cooperative braids, tests
   src/dungeons.rs            Cross-shard finder, private encounters, ballots, tests
   src/social.rs              Community, auction escrow, signing, and tests
-tools/
-  serve.mjs                  Built-in frontend server and HTTP(S)/WebSocket proxy
-  check.mjs                  JavaScript syntax and JSON validation
-tests/
-  game.test.mjs              In-memory gameplay and content regression suite
-  dungeons.test.mjs          Solo completions, recovery, content, geometry, casebook
-  community.test.mjs         Clock, export, migration, UI safety, and retry tests
-  ghostline.test.mjs         Route, contact, combat, prediction, mesh, and input tests
-  frontend.test.mjs          Static delivery, realm proxy, and transport regressions
 docs/
   ARCHITECTURE.md             Transport, authority, sharding, persistence limits
   FORMATS.md                 Editable content and deterministic map contracts
   OPERATIONS.md              Configuration, deployment, recovery, validation
   COMPATIBILITY.md           Browser, Android, gamepad, and voice conditions
-  STEAM_DECK.md              Browser shortcut, controls, saves, and local play
+  STEAM_DECK.md              Browser shortcut, controls, accounts, and hosting
   PROVENANCE.md              Originality assessment and IP limits
   THIRD_PARTY.md             Dependency and system-component notices
+Cargo.toml                   Single-server workspace and release profile
 LICENSE                      Complete GNU GPL version 3 text
 ```
 
@@ -164,25 +150,18 @@ On touch devices, use the left stick, drag the world to look, and tap the action
 
 ## Validation and present limits
 
-The no-output checks are:
+Read-only source checks:
 
 ```sh
-node tests/game.test.mjs
-node tests/dungeons.test.mjs
-node tests/community.test.mjs
-node tests/ghostline.test.mjs
-node tests/founders.test.mjs
-node tests/frontend.test.mjs
-node tools/check.mjs
 rustfmt --edition 2024 --check server/src/main.rs
 git diff --check
 ```
 
-They write no test reports, caches, coverage data, or build products. The JavaScript tests exercise gameplay/content, UTC time, migration, startup signing identity reuse, tamper detection, UI escaping, tabard geometry, retries, Ghostline, and the First Signal Halo. The Ghostline suite covers bounded history, timing, swept crossings, arming/expiry boundaries, walls, elevation, resource validation, one-time kill credit, cleanup, prediction isolation, finite emissive geometry, and keyboard/controller input. Rust unit tests also cover cooperative and solo braids, forged route rejection, cooldown serialization, and cleanup, alongside membership/privacy rules, history pagination, escrow conservation, expiry after serialization/reload, duplicate claims, transaction recovery/retries, and lineage rewards; `cargo test --manifest-path server/Cargo.toml` runs them when build outputs are permitted.
+When build outputs are permitted, run `cargo test` for the Rust configuration, frontend HTTP, content, gameplay, dungeon, Ghostline, founder reward, community, persistence, and export tests. The frontend tests cover page/asset delivery, content types, security headers, HEAD requests, method restrictions, and private paths. Configuration tests cover ports 80/8080, IPv6, bind precedence, exact origins, and thread-count validation.
 
-During implementation, the JavaScript tests and JavaScript/JSON checks passed, and Rust parsing/formatting passed. Both scene and sky shaders compiled and linked in memory against software EGL/GLES for the GLSL ES 1.00 and 3.00 paths with shader caches disabled. **The Rust service has not been compiled or integration-tested in this environment, and browser/device or player-capacity certification is not claimed.** A Cargo lockfile has not been generated; resolve and retain it before a reproducible binary release.
+This change was checked without generating build outputs. Rust formatting/parsing, JavaScript syntax and in-memory behavior, JSON/content references, and the diff were validated. **The Rust service has not been compiled or integration-tested in this environment.** Browser/device and player-capacity certification remain outstanding. A Cargo lockfile has not been generated; resolve and retain the workspace's `Cargo.lock` before a reproducible binary release.
 
-The server uses parallel, independently owned world shards, 20 Hz simulation, 10 Hz nearby snapshots, and bounded queues. The default cap is 256 players per shard with at most 64 nearby player representations sent to a client. An additional expedition shard has its own 256-player ceiling, shared by queued runners, active runs, and runners who remain in its city after leaving a dungeon. These are design limits, **not measured capacity**. Ordinary party membership does not migrate characters; joining the dungeon finder moves a character to the expedition shard until disconnect. PvP, account recovery, and raid systems beyond these eight-player expeditions are not implemented. The community flatfile is retained in memory and rewritten atomically for each mutation; its growth and disk latency limit capacity. See [architecture](docs/ARCHITECTURE.md) for persistence and scaling tradeoffs.
+The server uses dedicated OS threads for independently owned world shards, a separate multithreaded HTTP/WebSocket scheduler, 20 Hz simulation, 10 Hz nearby snapshots, and bounded queues. The default cap is 256 players per shard with at most 64 nearby player representations sent to a client. An additional expedition shard has its own 256-player ceiling, shared by queued runners, active runs, and runners who remain in its city after leaving a dungeon. These are design limits, **not measured capacity**. Ordinary party membership does not migrate characters; joining the dungeon finder moves a character to the expedition shard until disconnect. PvP, account recovery, and raid systems beyond these eight-player expeditions are not implemented. The community flatfile is retained in memory and rewritten atomically for each mutation; its growth and disk latency limit capacity. See [architecture](docs/ARCHITECTURE.md) for persistence and scaling tradeoffs.
 
 ## License and originality
 

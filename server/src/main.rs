@@ -1,18 +1,19 @@
 // Sloperberpunk — GPL-3.0-or-later. See ../../LICENSE.
-// Gameplay, transport, and persistence are kept inline in this service.
+// One service owns gameplay, transport, frontend delivery, and persistence.
 #![forbid(unsafe_code)]
 
+mod config;
 mod dungeons;
 mod founders;
 mod ghostline;
 mod social;
+mod web;
 use ghostline::{GhostTrail, Ghostline};
 use social::{SigningIdentity, SocialState};
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 use axum::{
     Json, Router,
-    body::Body,
     extract::{
         ConnectInfo, DefaultBodyLimit, Path, Query, State, WebSocketUpgrade,
         ws::{Message, WebSocket},
@@ -682,7 +683,6 @@ struct App {
     dummy_hash: String,
     origins: Vec<String>,
     secure: bool,
-    client: PathBuf,
     shards: Vec<mpsc::Sender<Command>>,
     dungeon_lobby: mpsc::Sender<Command>,
     saves: mpsc::Sender<Save>,
@@ -1482,6 +1482,19 @@ fn start_writer(
     });
     (tx, handle)
 }
+// CPU-heavy simulation futures stay on dedicated OS threads. Tokio's shared
+// multithread runtime continues driving socket I/O, timers and blocking storage jobs.
+fn start_shard(
+    shard: Shard,
+    commands: mpsc::Receiver<Command>,
+    name: String,
+) -> io::Result<std::thread::JoinHandle<()>> {
+    let runtime = tokio::runtime::Handle::current();
+    std::thread::Builder::new()
+        .name(name)
+        .spawn(move || runtime.block_on(shard.run(commands)))
+}
+
 struct Shard {
     dungeons: dungeons::State,
     lobby: Option<mpsc::Sender<Command>>,
@@ -1630,6 +1643,9 @@ impl Shard {
         }
     }
     fn snapshots(&self) {
+        if self.players.is_empty() {
+            return;
+        }
         // Cell buckets avoid broadcasting the whole shard to every player.
         let radius = self.content.rule("network", "interestRadius");
         let cell = 80.0;
@@ -1644,6 +1660,20 @@ impl Shard {
                 .or_default()
                 .push(p);
         }
+        let (social_revision, badges) = {
+            let social = self.db.social.lock().ok();
+            let badges: HashMap<_, _> = self
+                .players
+                .keys()
+                .filter_map(|id| {
+                    social
+                        .as_ref()
+                        .and_then(|s| s.guild_badge(id))
+                        .map(|badge| (id.clone(), badge))
+                })
+                .collect();
+            (social.as_ref().map(|s| s.revision), badges)
+        };
         for p in self.players.values() {
             let cx = (p.c.position[0] / cell).floor() as i32;
             let cz = (p.c.position[2] / cell).floor() as i32;
@@ -1663,8 +1693,7 @@ impl Shard {
                 }
             }
             nearby.sort_unstable_by(|a, b| a.0.total_cmp(&b.0));
-            let social = self.db.social.lock().ok();
-            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"health":other.c.health,"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":social.as_ref().and_then(|s|s.guild_badge(&other.c.id))})).collect();
+            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"health":other.c.health,"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id)})).collect();
             let enemies: Vec<_> = self
                 .enemies
                 .iter()
@@ -1690,7 +1719,7 @@ impl Shard {
                     .then_with(|| a.owner.cmp(&b.owner))
             });
             ghosts.truncate(self.content.rule("ghostline", "maxVisible") as usize);
-            let _=p.output.try_send(json!({"type":"snapshot","version":DATA_VERSION,"character":p.c,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":social.as_ref().and_then(|s|s.guild_badge(&p.c.id)),"socialRevision":social.as_ref().map(|s|s.revision),"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id)}));
+            let _=p.output.try_send(json!({"type":"snapshot","version":DATA_VERSION,"character":p.c,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id)}));
         }
     }
     fn tick(&mut self) {
@@ -2239,85 +2268,6 @@ async fn health(State(app): State<Arc<App>>) -> Json<Value> {
         json!({"status":"ok","version":env!("CARGO_PKG_VERSION"),"dataVersion":DATA_VERSION,"serverTime":now_millis(),"timeZone":"UTC","dayLengthSeconds":86400,"players":app.active.lock().map(|a|a.len()).unwrap_or(0),"shards":app.shards.len(),"tickHz":20}),
     )
 }
-async fn static_file(State(app): State<Arc<App>>, uri: axum::http::Uri) -> Response {
-    let route = uri.path();
-    let relative = if route == "/" {
-        "index.html"
-    } else {
-        route.trim_start_matches('/')
-    };
-    if relative.contains('%')
-        || relative.contains('\\')
-        || relative.split('/').any(|s| s == ".." || s.starts_with('.'))
-    {
-        return StatusCode::NOT_FOUND.into_response();
-    }
-    let path = if relative == "LICENSE" {
-        app.client.parent().unwrap_or(&app.client).join("LICENSE")
-    } else {
-        app.client.join(relative)
-    };
-    let allowed = relative == "LICENSE"
-        || relative == "index.html"
-        || relative == "play.html"
-        || relative == "landing.css"
-        || relative == "style.css"
-        || relative.starts_with("data/")
-        || relative.starts_with("src/")
-        || relative.starts_with("assets/");
-    if !allowed {
-        return StatusCode::NOT_FOUND.into_response();
-    }
-    let Ok(path) = tokio::fs::canonicalize(path).await else {
-        return StatusCode::NOT_FOUND.into_response();
-    };
-    if relative != "LICENSE" && !path.starts_with(&app.client) {
-        return StatusCode::NOT_FOUND.into_response();
-    }
-    let mime = if relative.ends_with(".js") {
-        "text/javascript; charset=utf-8"
-    } else if relative.ends_with(".json") {
-        "application/json"
-    } else if relative.ends_with(".css") {
-        "text/css"
-    } else if relative.ends_with(".svg") {
-        "image/svg+xml"
-    } else if relative.ends_with(".html") {
-        "text/html; charset=utf-8"
-    } else {
-        "text/plain; charset=utf-8"
-    };
-    match tokio::fs::read(path).await {
-        Ok(body) => {
-            let mut response = Response::new(Body::from(body));
-            response
-                .headers_mut()
-                .insert(header::CONTENT_TYPE, HeaderValue::from_static(mime));
-            response
-        }
-        Err(_) => StatusCode::NOT_FOUND.into_response(),
-    }
-}
-async fn security_headers(
-    request: axum::extract::Request,
-    next: axum::middleware::Next,
-) -> Response {
-    let is_api = request.uri().path().starts_with("/api/");
-    let mut response = next.run(request).await;
-    let h = response.headers_mut();
-    h.insert(
-        "x-content-type-options",
-        HeaderValue::from_static("nosniff"),
-    );
-    h.insert("referrer-policy", HeaderValue::from_static("same-origin"));
-    h.insert("x-frame-options", HeaderValue::from_static("DENY"));
-    h.insert("content-security-policy",HeaderValue::from_static("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"));
-    h.insert(
-        header::CACHE_CONTROL,
-        HeaderValue::from_static(if is_api { "no-store" } else { "no-cache" }),
-    );
-    response
-}
 
 async fn shutdown_signal() {
     #[cfg(unix)]
@@ -2333,8 +2283,26 @@ async fn shutdown_signal() {
     let _ = tokio::signal::ctrl_c().await;
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = config::Config::load()?;
+    tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(config.workers)
+        .thread_name("sloperberpunk-io")
+        .enable_all()
+        .build()?
+        .block_on(serve(config))
+}
+
+async fn serve(config: config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    let config::Config {
+        bind,
+        origins,
+        secure,
+        workers,
+        shards: count,
+    } = config;
+    // Bind before opening storage or starting workers so listener failures leave no live world.
+    let listener = tokio::net::TcpListener::bind(bind).await?;
     let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let client = std::env::var_os("SLOPERBERPUNK_CLIENT")
         .map(PathBuf::from)
@@ -2343,16 +2311,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let data_dir = std::env::var_os("SLOPERBERPUNK_DATA")
         .map(PathBuf::from)
         .unwrap_or_else(|| base.join("data"));
-    let origins=std::env::var("SLOPERBERPUNK_ORIGINS").unwrap_or_else(|_|"http://localhost:3000,http://127.0.0.1:3000,http://localhost:8080,http://127.0.0.1:8080".into()).split(',').map(|s|s.trim().trim_end_matches('/').to_owned()).collect::<Vec<_>>();
-    let secure = std::env::var("SLOPERBERPUNK_SECURE").is_ok_and(|s| s == "1");
-    let bind: SocketAddr = std::env::var("SLOPERBERPUNK_BIND")
-        .unwrap_or_else(|_| "127.0.0.1:8080".into())
-        .parse()?;
-    if !bind.ip().is_loopback() && !secure {
-        return Err(
-            "Set SLOPERBERPUNK_SECURE=1 behind HTTPS before binding beyond loopback".into(),
-        );
-    }
     let content = Arc::new(Content::load(&client)?);
     let db = Arc::new(Database::open(data_dir)?);
     db.expire_auctions().map_err(|e| io::Error::other(e.1))?;
@@ -2372,24 +2330,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     let active = Arc::new(Mutex::new(HashSet::new()));
     let (saves, writer) = start_writer(db.clone(), active.clone());
-    let count = std::env::var("SLOPERBERPUNK_SHARDS")
-        .ok()
-        .and_then(|s| s.parse::<usize>().ok())
-        .unwrap_or_else(|| {
-            std::thread::available_parallelism()
-                .map(usize::from)
-                .unwrap_or(2)
-        })
-        .clamp(1, 64);
     let mut shards = Vec::new();
     let (dungeon_lobby, dungeon_rx) = mpsc::channel(4096);
-    tokio::spawn(Shard::new(content.clone(), saves.clone(), count, db.clone()).run(dungeon_rx));
+    let mut world_threads = vec![start_shard(
+        Shard::new(content.clone(), saves.clone(), count, db.clone()),
+        dungeon_rx,
+        "sloperberpunk-expeditions".into(),
+    )?];
     for index in 0..count {
         let (tx, rx) = mpsc::channel(4096);
         shards.push(tx);
         let mut shard = Shard::new(content.clone(), saves.clone(), index, db.clone());
         shard.lobby = Some(dungeon_lobby.clone());
-        tokio::spawn(shard.run(rx));
+        world_threads.push(start_shard(
+            shard,
+            rx,
+            format!("sloperberpunk-world-{index}"),
+        )?);
     }
     let salt = SaltString::encode_b64(b"dummy-not-a-user")
         .map_err(|_| "Could not initialize password salt")?;
@@ -2411,7 +2368,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         dummy_hash,
         origins,
         secure,
-        client,
         shards,
         dungeon_lobby,
         saves,
@@ -2432,13 +2388,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/characters/{id}/export", get(social::export))
         .route("/api/signing-key", get(social::public_key))
         .route("/api/world", get(world_upgrade))
-        .fallback(static_file)
+        .with_state(app.clone())
+        .merge(web::routes(client))
         .layer(DefaultBodyLimit::max(16384))
-        .layer(axum::middleware::from_fn(security_headers))
-        .with_state(app.clone());
-    let listener = tokio::net::TcpListener::bind(bind).await?;
+        .layer(axum::middleware::from_fn(web::security_headers));
     eprintln!(
-        "Sloperberpunk 0.1.0 — GPL-3.0-or-later, no warranty. http://{bind} ({count} world shards)"
+        "Sloperberpunk 0.1.0 — GPL-3.0-or-later, no warranty. http://{bind} ({workers} I/O workers, {count} world threads + 1 expedition thread)"
     );
     let shutdown = app.clone();
     axum::serve(
@@ -2468,7 +2423,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
     market_task.abort();
     drop(app);
-    let _ = tokio::task::spawn_blocking(move || writer.join()).await;
+    tokio::task::spawn_blocking(move || -> io::Result<()> {
+        for thread in world_threads {
+            thread
+                .join()
+                .map_err(|_| io::Error::other("A world thread panicked"))?;
+        }
+        writer
+            .join()
+            .map_err(|_| io::Error::other("The persistence thread panicked"))?;
+        Ok(())
+    })
+    .await??;
     Ok(())
 }
 

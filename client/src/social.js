@@ -30,7 +30,7 @@ export class Community {
   async browse(query) { return (await api(`${this.path()}?${new URLSearchParams(Object.entries(query).filter(([,v]) => v !== undefined && v !== null))}`)).data; }
   async open(view = this.view, query = {}) {
     if (!this.online()) {
-      this.showPanel('The city’s community.', '<p>Sign in and enter with a server character to join guilds and parties, trade, use persistent chat and messages, and browse the forum. Your local character remains available in this browser.</p>', 'COMMUNITY / ACCOUNT REQUIRED', 'community'); return;
+      this.showPanel('The city’s community.', '<p>Sign in and enter with a server character to join guilds and parties, trade, use persistent chat and messages, and browse the forum.</p>', 'COMMUNITY / ACCOUNT REQUIRED', 'community'); return;
     }
     const id = this.character().id;
     if (this.owner !== id) { this.owner = id; this.summary = null; this.pending = null; this.view = 'chat'; }

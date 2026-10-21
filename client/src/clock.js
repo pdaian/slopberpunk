@@ -20,7 +20,7 @@ export function daylight(epoch) {
     fog: [.035 + light * .21 + dawn * .05, .065 + light * .24, .085 + light * .26],
     label: light < .1 ? 'NIGHT' : dawn > .25 ? (phase < .5 ? 'DAWN' : 'DUSK') : 'DAY' };
 }
-export function clockLabel(epoch, online) {
+export function clockLabel(epoch) {
   const date = new Date(epoch);
-  return `${online ? 'SERVER' : 'LOCAL'} ${date.toISOString().slice(11, 19)} UTC · ${daylight(epoch).label}`;
+  return `SERVER ${date.toISOString().slice(11, 19)} UTC · ${daylight(epoch).label}`;
 }

@@ -1,5 +1,5 @@
+/target/
 /server/target/
 /server/data/
-/node_modules/
 /.env
 *.log
