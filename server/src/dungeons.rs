@@ -503,6 +503,7 @@ impl Shard {
                 [(i as f64 - (count as f64 - 1.0) / 2.0) * 6.0, 0.0, -4.0],
             );
             self.enemies.push(Enemy {
+                event: None,
                 id: format!("dungeon-{}-{}-{}-{i}", run.id, run.chapter, run.attempt),
                 instance: Some(run.id),
                 kind: chapter.enemy.clone(),

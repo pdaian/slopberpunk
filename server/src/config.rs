@@ -30,7 +30,7 @@ impl Config {
                 .parse()
                 .map_err(|_| invalid("SLOPERBERPUNK_BIND must be an IP:port address"))?
         } else {
-            let host = get("HOST")?.unwrap_or_else(|| "127.0.0.1".into());
+            let host = get("HOST")?.unwrap_or_else(|| "0.0.0.0".into());
             let port = get("PORT")?.unwrap_or_else(|| "8080".into());
             SocketAddr::new(
                 host.parse()
@@ -47,11 +47,6 @@ impl Config {
             "1" => true,
             _ => return Err(invalid("SLOPERBERPUNK_SECURE must be 0 or 1")),
         };
-        if !bind.ip().is_loopback() && !secure {
-            return Err(invalid(
-                "Set SLOPERBERPUNK_SECURE=1 behind HTTPS before binding beyond loopback",
-            ));
-        }
         let origins = match get("SLOPERBERPUNK_ORIGINS")? {
             Some(value) => value
                 .split(',')
@@ -173,10 +168,8 @@ mod tests {
     #[test]
     fn listener_defaults_and_port_80_origins() {
         let default = config(&[], 8).unwrap();
-        assert_eq!(
-            default.bind,
-            "127.0.0.1:8080".parse::<SocketAddr>().unwrap()
-        );
+        assert_eq!(default.bind, "0.0.0.0:8080".parse::<SocketAddr>().unwrap());
+        assert!(!default.secure);
         assert!(default.origins.contains(&"http://localhost:8080".into()));
         let port_80 = config(&[("PORT", "80")], 8).unwrap();
         assert_eq!(port_80.bind.port(), 80);
@@ -246,7 +239,7 @@ mod tests {
             }
         }
         assert!(config(&[("SLOPERBERPUNK_BIND", "127.0.0.1:0")], 8).is_err());
-        assert!(config(&[("HOST", "0.0.0.0")], 8).is_err());
+        assert!(config(&[("HOST", "invalid")], 8).is_err());
         assert!(config(&[("SLOPERBERPUNK_SECURE", "true")], 8).is_err());
         assert!(
             config(

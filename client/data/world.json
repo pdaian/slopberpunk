@@ -6,23 +6,63 @@
   "bounds": 3200,
   "cityRadius": 1120,
   "spawn": [0, 0, 32],
+  "graveyards": [
+    { "id": "commons-rest", "name": "Commons Remembrance", "position": [0, 0, 64] },
+    { "id": "archive-rest", "name": "Glass Steps Remembrance", "position": [320, 0, -180] },
+    { "id": "cinder-rest", "name": "Copper Walk Remembrance", "position": [-400, 0, -240] },
+    { "id": "quiet-rest", "name": "Listening Courts Remembrance", "position": [-320, 0, 160] },
+    { "id": "transit-rest", "name": "Last Connection Remembrance", "position": [320, 0, 240] },
+    { "id": "fen-rest", "name": "Fen Remembrance", "position": [1280, 0, 320] },
+    { "id": "wood-rest", "name": "Cinderwood Remembrance", "position": [-1280, 0, -320] },
+    { "id": "steppe-rest", "name": "Glassroot Remembrance", "position": [0, 0, -1280] },
+    { "id": "brine-rest", "name": "Brine Remembrance", "position": [400, 0, 1600] }
+  ],
   "cellSize": 80,
   "plazaRadius": 65,
   "buildingGrid": { "min": -13, "max": 13, "spacing": 80, "widthMin": 29, "widthMax": 48, "heightMin": 24, "heightMax": 146, "excludeCenter": 90 },
-  "palette": { "sky": "#071718", "fog": "#153233", "ground": "#182a2a", "concrete": ["#294043", "#34484b", "#243739", "#42504d"], "neon": ["#bce98a", "#64d4d6", "#e9a473", "#bd92c9"] },
+  "interiors": {
+    "height": 6.4, "wall": 0.8, "doorWidth": 5, "doorHeight": 4.2,
+    "rooms": [
+      { "name": "NIGHT CLINIC", "color": "#6de4dd", "furniture": [
+        { "kind": "counter", "center": [-7, 0.7, -6], "size": [5, 1.4, 2] },
+        { "kind": "bed", "center": [7, 0.5, -5], "size": [2.4, 1, 4.5] },
+        { "kind": "bed", "center": [7, 0.5, 4], "size": [2.4, 1, 4.5] },
+        { "kind": "cabinet", "center": [-8, 1.6, 5], "size": [3, 3.2, 1.5] }
+      ] },
+      { "name": "COIL REPAIR", "color": "#ffae69", "furniture": [
+        { "kind": "counter", "center": [-7, 0.7, 0], "size": [2.4, 1.4, 8] },
+        { "kind": "cabinet", "center": [8, 1.8, -6], "size": [3, 3.6, 2] },
+        { "kind": "table", "center": [7, 0.6, 4], "size": [4, 1.2, 3] }
+      ] },
+      { "name": "LAST TRAIN / NOODLES", "color": "#ff709b", "furniture": [
+        { "kind": "counter", "center": [-7, 0.7, -3], "size": [2.4, 1.4, 9] },
+        { "kind": "table", "center": [6, 0.6, -5], "size": [3, 1.2, 2.4] },
+        { "kind": "bench", "center": [9, 0.45, -5], "size": [1.2, 0.9, 3.6] },
+        { "kind": "table", "center": [6, 0.6, 5], "size": [3, 1.2, 2.4] },
+        { "kind": "bench", "center": [9, 0.45, 5], "size": [1.2, 0.9, 3.6] }
+      ] },
+      { "name": "TRANSIT LOUNGE", "color": "#b8c6ff", "furniture": [
+        { "kind": "bench", "center": [-8, 0.45, 0], "size": [1.6, 0.9, 9] },
+        { "kind": "bench", "center": [8, 0.45, 0], "size": [1.6, 0.9, 9] },
+        { "kind": "cabinet", "center": [-7, 1.6, -8], "size": [3, 3.2, 1.6] },
+        { "kind": "table", "center": [7, 0.6, 8], "size": [4, 1.2, 2] }
+      ] }
+    ]
+  },
+  "palette": { "sky": "#080e20", "fog": "#25374b", "ground": "#252a35", "concrete": ["#303848", "#3b414e", "#262e3c", "#4a454d"], "neon": ["#73f4d1", "#60d9fa", "#ffae69", "#ff5c9f"] },
   "districts": [
-    { "id": "market", "name": "AFTERLIGHT COMMONS", "subtitle": "Every meal comes from somewhere that cannot invoice us.", "center": [0, 0, 0], "radius": 180, "minLevel": 0, "color": "#c4ed92" },
-    { "id": "archive", "name": "THE GLASS ARCHIVE", "subtitle": "The forest is gone. Its valuation survives.", "center": [320, 0, -320], "radius": 220, "minLevel": 10, "color": "#c9a2ec" },
-    { "id": "furnace", "name": "CINDER WORKS", "subtitle": "The night shift ends. The ash keeps falling.", "center": [-320, 0, -320], "radius": 220, "minLevel": 20, "color": "#e9ac78" },
-    { "id": "quiet", "name": "THE QUIET QUARTER", "subtitle": "Silence is also what extinction sounds like.", "center": [-320, 0, 320], "radius": 220, "minLevel": 30, "color": "#c4ed92" },
-    { "id": "skybridge", "name": "UPPER TRANSIT", "subtitle": "Above the smoke, the damage looks like distance.", "center": [320, 24, 320], "radius": 220, "minLevel": 40, "color": "#81e5ed" },
-    { "id": "basin", "name": "THE PALE BASIN", "subtitle": "The sea left. The claims on it did not.", "center": [0, 0, 1450], "radius": 1700, "minLevel": 50, "color": "#e7c495" }
+    { "id": "market", "name": "AFTERLIGHT COMMONS", "subtitle": "Night stalls · public terminals · street supply", "center": [0, 0, 0], "radius": 180, "minLevel": 0, "color": "#c4ed92" },
+    { "id": "archive", "name": "THE GLASS ARCHIVE", "subtitle": "Vault district · records and cooling towers", "center": [320, 0, -320], "radius": 220, "minLevel": 10, "color": "#c9a2ec" },
+    { "id": "furnace", "name": "CINDER WORKS", "subtitle": "Furnaces · workshops · freight access", "center": [-320, 0, -320], "radius": 220, "minLevel": 20, "color": "#e9ac78" },
+    { "id": "quiet", "name": "THE QUIET QUARTER", "subtitle": "Listening rooms · sheltered courtyards", "center": [-320, 0, 320], "radius": 220, "minLevel": 30, "color": "#c4ed92" },
+    { "id": "skybridge", "name": "UPPER TRANSIT", "subtitle": "Skyways 24 m · crown landings 48 m", "center": [320, 24, 320], "radius": 220, "minLevel": 40, "color": "#81e5ed" },
+    { "id": "basin", "name": "THE PALE BASIN", "subtitle": "Dry harbor · salt roads · low visibility", "center": [0, 0, 1450], "radius": 1700, "minLevel": 50, "color": "#e7c495" }
   ],
   "biomes": [
-    { "id": "mourning-fen", "name": "MOURNING FEN", "subtitle": "The reeds clean water nobody can afford.", "description": "East of Vesper, reed beds and black pools filter the city's runoff. Pump families live on wages paid by the concession draining their drinking water. A slower pump means fewer poisoned nests and fewer paid shifts.", "center": [1440, 0, 320], "radius": 240, "minLevel": 8, "color": "#86b9a0", "ground": "#233e35", "kind": "wetland", "seed": 4181 },
-    { "id": "cinderwood", "name": "CINDERWOOD", "subtitle": "A standing tree pays less than a dead one.", "description": "West of the furnaces, charred trunks shelter the last living canopy. A restoration fund pays cutters by the stump and counts its plantations before they germinate. The workers know; their children still need heat.", "center": [-1440, 0, -320], "radius": 240, "minLevel": 18, "color": "#b99b75", "ground": "#383930", "kind": "forest", "seed": 4182 },
-    { "id": "glassroot-steppe", "name": "GLASSROOT STEPPE", "subtitle": "The grass grows through the survey stakes.", "description": "North of the city, silver grasses root in the mineral seam used to fire Lattice bodies. Mining buys another person's continuity by removing the soil that holds a settlement together. The wind recognizes neither deed nor refuge.", "center": [0, 0, -1440], "radius": 240, "minLevel": 30, "color": "#bcc6aa", "ground": "#41463b", "kind": "grassland", "seed": 4183 },
-    { "id": "brine-bloom", "name": "BRINE BLOOM", "subtitle": "Life returns without promising to include us.", "description": "South of the floodgate, fungal fans spread over the abandoned salt pans. The growth is alive, invasive, and indifferent. Licensed cultures and feral descendants drink from the same dwindling seep; neither can be persuaded to leave enough.", "center": [400, 0, 1600], "radius": 240, "minLevel": 30, "color": "#9ab5b6", "ground": "#303d43", "kind": "fungal", "seed": 4184 }
+    { "id": "mourning-fen", "name": "MOURNING FEN", "subtitle": "Eastern wetland · pump crews · falling water", "description": "East of Vesper, reed beds and black pools filter the city's runoff. Pump families live on wages paid by the concession draining their drinking water. A slower pump means fewer poisoned nests and fewer paid shifts.", "center": [1440, 0, 320], "radius": 240, "minLevel": 8, "color": "#86b9a0", "ground": "#233e35", "kind": "wetland", "seed": 4181 },
+    { "id": "cinderwood", "name": "CINDERWOOD", "subtitle": "Western canopy · cutting crews · ashfall", "description": "West of the furnaces, charred trunks shelter the last living canopy. A restoration fund pays cutters by the stump and counts its plantations before they germinate. The workers know; their children still need heat.", "center": [-1440, 0, -320], "radius": 240, "minLevel": 18, "color": "#b99b75", "ground": "#383930", "kind": "forest", "seed": 4182 },
+    { "id": "glassroot-steppe", "name": "GLASSROOT STEPPE", "subtitle": "Northern grassland · ceramic kilns · mineral seam", "description": "North of the city, silver grasses root in the mineral seam used to fire Lattice bodies. Mining buys another person's continuity by removing the soil that holds a settlement together. The wind recognizes neither deed nor refuge.", "center": [0, 0, -1440], "radius": 240, "minLevel": 30, "color": "#bcc6aa", "ground": "#41463b", "kind": "grassland", "seed": 4183 },
+    { "id": "brine-bloom", "name": "BRINE BLOOM", "subtitle": "Southern salt pans · sealed cultures · abandoned homes", "description": "South of the floodgate, fungal fans spread over the abandoned salt pans. The growth is alive, invasive, and indifferent. Licensed cultures and feral descendants drink from the same dwindling seep; neither can be persuaded to leave enough.", "center": [400, 0, 1600], "radius": 240, "minLevel": 30, "color": "#9ab5b6", "ground": "#303d43", "kind": "fungal", "seed": 4184 }
   ],
   "platforms": [
     { "id": "north-skyway", "position": [0, 24, -80], "size": [2000, 1.4, 12] },
@@ -56,7 +96,22 @@
     { "id": "steppe-core", "name": "Glassroot soil core", "position": [0, 0, -1510], "color": "#bcc6aa", "kind": "beacon" },
     { "id": "steppe-deed", "name": "Vacant land register", "position": [70, 0, -1440], "color": "#bcc6aa", "kind": "terminal" },
     { "id": "bloom-seep", "name": "Last freshwater seep", "position": [400, 0, 1530], "color": "#9ab5b6", "kind": "beacon" },
-    { "id": "bloom-bank", "name": "Sealed culture bank", "position": [470, 0, 1600], "color": "#9ab5b6", "kind": "terminal" }
+    { "id": "bloom-bank", "name": "Sealed culture bank", "position": [470, 0, 1600], "color": "#9ab5b6", "kind": "terminal" },
+    {"id":"lantern-kitchen","name":"Lantern kitchen tally","position":[-38,0,18],"color":"#efb778","kind":"terminal","neighborhood":"market","evidence":"Fourteen bowls went uncollected yesterday. The kitchen still counted them as meals supplied. Beside each bowl, Nella has written the name of someone who could no longer afford water."},
+    {"id":"commons-water","name":"Commons water meter","position":[36,0,40],"color":"#efb778","kind":"terminal","neighborhood":"market","evidence":"The meter records one household debit and one kitchen debit for every donated jug. The same serial numbers appear in both columns. The concession labels the second payment a charitable handling charge."},
+    {"id":"pantry-ledger","name":"Open pantry ledger","position":[-36,0,-44],"color":"#efb778","kind":"terminal","neighborhood":"market","evidence":"The proposed rota assigns purchasing, cooking, washing, and an open weekly count to different households. Donations cannot be billed back to their donors. The water allotment itself remains unchanged."},
+    {"id":"glass-witness","name":"Unsorted witness shelf","position":[308,0,-320],"color":"#c9a2ec","kind":"terminal","neighborhood":"archive","evidence":"A sealed request asks to preserve a morning spent repairing a coat with a sister. Its index says commercially insignificant. The witness has not consented to deletion."},
+    {"id":"cooling-priority","name":"Cooling priority console","position":[320,0,-305],"color":"#c9a2ec","kind":"terminal","neighborhood":"archive","evidence":"The cooling queue sorts by outstanding payments, then by resale eligibility. Consent is recorded in a column the scheduling routine never reads. Three premium cabinets hold redundant copies."},
+    {"id":"consent-desk","name":"Glass Steps consent desk","position":[333,0,-320],"color":"#c9a2ec","kind":"terminal","neighborhood":"archive","evidence":"The amended rota asks each witness which copies can be released. Cold storage is allocated to irreplaceable records first. It cannot preserve every copy; no clerk may choose a deletion for someone else."},
+    {"id":"cold-flats","name":"Occupied flats register","position":[-332,0,-320],"color":"#e99b6f","kind":"terminal","neighborhood":"furnace","evidence":"Twenty-three occupied flats are listed as vacant overflow. Their residents have written indoor temperatures beside the official zero population. The former concession office receives heat continuously."},
+    {"id":"heat-diverter","name":"Copper heat diverter","position":[-320,0,-305],"color":"#e99b6f","kind":"terminal","neighborhood":"furnace","evidence":"The valve can share the office feed between occupied risers. Its default repair form makes the named technician personally liable for eleven years of deferred maintenance."},
+    {"id":"shift-charter","name":"Copper Walk shift charter","position":[-307,0,-320],"color":"#e99b6f","kind":"terminal","neighborhood":"furnace","evidence":"The charter rotates heat between risers, caps working hours, and records the inherited repair liability as contested. No relief worker signs as the sole debtor."},
+    {"id":"silent-warning","name":"Court warning log","position":[-332,0,320],"color":"#b5d78d","kind":"terminal","neighborhood":"quiet","evidence":"The last flood advisory reached the advertising amplifier. The amplifier was disconnected by unanimous request. No visual or tactile endpoint acknowledged the warning."},
+    {"id":"tactile-relay","name":"Tactile warning relay","position":[-320,0,335],"color":"#b5d78d","kind":"terminal","neighborhood":"quiet","evidence":"The test circuit pairs an amber lamp sequence with pulses through the handrail. A separate steady light marks a failed circuit. The prototype draws power from the court battery."},
+    {"id":"court-assembly","name":"Listening Courts noticeboard","position":[-307,0,320],"color":"#b5d78d","kind":"terminal","neighborhood":"quiet","evidence":"The inspection rota names two neighbors per shift and a manual warning route if the battery fails. The lights and handrail stay public; private rooms keep control of their own speakers."},
+    {"id":"night-platform","name":"Night platform register","position":[310,24,320],"color":"#81dce5","kind":"terminal","neighborhood":"skybridge","evidence":"Forty service-pass holders signed the last departure sheet: cleaners, carers, couriers, and a lift mechanic. The public timetable records no paying passengers and recommends closure."},
+    {"id":"service-counter","name":"Service-pass counter","position":[320,24,309],"color":"#81dce5","kind":"terminal","neighborhood":"skybridge","evidence":"The occupancy counter excludes service passes before counting passengers. A maintenance concession supplies those passes as part of wages. Travel is simultaneously compensation and statistically nonexistent."},
+    {"id":"last-connection","name":"Last Connection duty board","position":[331,24,320],"color":"#81dce5","kind":"terminal","neighborhood":"skybridge","evidence":"The revised rota staffs the late lift and retains fewer, published connections. Service passes count toward demand. A named relief crew inherits each shift, and missed departures must be recorded."}
   ],
   "enemySpawns": [
     { "type": "drone", "position": [-35, 0, 85], "level": 0 },

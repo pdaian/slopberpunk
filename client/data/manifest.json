@@ -16,6 +16,8 @@
     "intro": 1,
     "audio": 1,
     "lore": 1,
-    "models": 1
+    "models": 1,
+    "citylife": 1,
+    "events": 1
   }
 }

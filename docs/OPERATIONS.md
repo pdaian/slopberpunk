@@ -1,13 +1,13 @@
 # Running and verifying Sloperberpunk
 
-From the repository root, `cargo run --release` starts the complete Rust application at `http://localhost:8080`. It serves `/`, `/play.html`, browser modules/assets, `/LICENSE`, the account/community API, and `/api/world` WebSockets on one listener. All characters and gameplay use this server. Set `PORT=80` to serve the same application on port 80. Browser requests remain relative to the page origin.
+From the repository root, `cargo run --release` starts the complete Rust application on `0.0.0.0:8080` (all IPv4 interfaces), available locally at `http://localhost:8080`. It serves `/`, `/play.html`, browser modules/assets, `/LICENSE`, the account/community API, and `/api/world` WebSockets on one listener. All characters and gameplay use this server. Set `PORT=80` to serve the same application on port 80. Browser requests remain relative to the page origin.
 
 ## Configuration
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `PORT` | `8080` | HTTP/WebSocket port, 1–65535; use `80` for standard HTTP |
-| `HOST` | `127.0.0.1` | Bind IPv4 or IPv6 address |
+| `HOST` | `0.0.0.0` | Bind IPv4 or IPv6 address; default listens on all IPv4 interfaces |
 | `SLOPERBERPUNK_BIND` | unset | Explicit `IP:port` (or `[IPv6]:port`), overriding `HOST` and `PORT` |
 | `SLOPERBERPUNK_CLIENT` | `../client` relative to the server Cargo manifest | Public source/assets directory |
 | `SLOPERBERPUNK_DATA` | `server/data` | Private plaintext runtime database |
@@ -18,7 +18,9 @@ From the repository root, `cargo run --release` starts the complete Rust applica
 
 Invalid ports, thread counts, and origins fail startup. Standard origin ports are normalized (`http://localhost:80` becomes `http://localhost`, and HTTPS port 443 is omitted). An explicit origin list replaces the defaults. Bind configuration is checked and the socket is bound before storage or world workers start. Port 80 may require a service-manager capability such as `CAP_NET_BIND_SERVICE` on Linux; the default 8080 works without it.
 
-For public hosting, terminate HTTPS at the deployment's TLS ingress and forward HTTP and WebSocket upgrades directly to this Rust listener. Set `SLOPERBERPUNK_ORIGINS` to the exact public browser origin and `SLOPERBERPUNK_SECURE=1`. Supply connection/header limits and per-client rate limits at the ingress; the server does not trust forwarded client-IP headers. Binding beyond loopback requires `SLOPERBERPUNK_SECURE=1`; this flag enables secure cookies, not a TLS listener. Keep the private data directory outside the public client directory.
+Set `HOST=127.0.0.1` to restrict the listener to local access. Wildcard bind addresses do not expand the browser-origin allowlist; when connecting through another hostname or LAN IP, set `SLOPERBERPUNK_ORIGINS` to the exact browser origin.
+
+For public hosting, terminate HTTPS at the deployment's TLS ingress and forward HTTP and WebSocket upgrades directly to this Rust listener. Set `SLOPERBERPUNK_ORIGINS` to the exact public browser origin and `SLOPERBERPUNK_SECURE=1`. Supply connection/header limits and per-client rate limits at the ingress; the server does not trust forwarded client-IP headers. `SLOPERBERPUNK_SECURE` controls secure cookies independently of the bind address; it does not enable a TLS listener. Keep the private data directory outside the public client directory.
 
 World simulation runs on named OS threads, isolated from HTTP/WebSocket workers. Each thread owns its shard and communicates through bounded channels. Password hashing and database transactions use Tokio's blocking pool; ordered character checkpoints have a dedicated writer. Snapshot generation copies public guild badges once under the social lock, then releases it before spatial filtering and JSON assembly. Tune thread counts to CPU allocation and measured load; the expedition shard and persistence writer are additional threads. On a small host, one world thread is retained even when networking already uses all reported cores.
 

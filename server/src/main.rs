@@ -3,11 +3,14 @@
 #![forbid(unsafe_code)]
 
 mod config;
+mod death;
 mod dungeons;
 mod founders;
 mod ghostline;
+mod quests;
 mod social;
 mod web;
+mod world_events;
 use ghostline::{GhostTrail, Ghostline};
 use social::{SigningIdentity, SocialState};
 
@@ -129,10 +132,16 @@ struct Character {
     yaw: f64,
     health: f64,
     energy: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    death: Option<death::Recovery>,
+    #[serde(default)]
+    resurrection_sickness: f64,
     medkits: u32,
     weapon_rank: u32,
     talents: HashMap<String, u32>,
     active_quests: HashMap<String, u32>,
+    #[serde(default)]
+    quest_stages: HashMap<String, quests::Stage>,
     completed: Vec<String>,
     #[serde(default)]
     dungeon_history: HashMap<String, dungeons::History>,
@@ -169,6 +178,8 @@ struct Objective {
     kind: String,
     target: String,
     count: u32,
+    #[serde(default)]
+    text: String,
 }
 #[derive(Clone, Deserialize)]
 struct Reward {
@@ -187,6 +198,8 @@ struct Quest {
     briefing: String,
     completion: String,
     objective: Objective,
+    #[serde(default)]
+    steps: Vec<Objective>,
     reward: Reward,
 }
 #[derive(Clone, Deserialize)]
@@ -257,19 +270,40 @@ struct Grid {
     exclude_center: f64,
 }
 #[derive(Clone, Deserialize)]
+struct InteriorFurniture {
+    center: Vec3,
+    size: Vec3,
+}
+#[derive(Clone, Deserialize)]
+struct InteriorRoom {
+    furniture: Vec<InteriorFurniture>,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Interiors {
+    height: f64,
+    wall: f64,
+    door_width: f64,
+    door_height: f64,
+    rooms: Vec<InteriorRoom>,
+}
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Map {
     seed: u32,
     bounds: f64,
     spawn: Vec3,
     building_grid: Grid,
+    interiors: Option<Interiors>,
     platforms: Vec<Platform>,
     lifts: Vec<Lift>,
     landmarks: Vec<Landmark>,
     enemy_spawns: Vec<Spawn>,
+    graveyards: Vec<death::Graveyard>,
 }
 struct Content {
     dungeons: dungeons::Catalog,
+    world_events: world_events::Catalog,
     rules: Value,
     races: Vec<Value>,
     factions: Vec<Value>,
@@ -294,6 +328,7 @@ impl Content {
                 "factions",
                 "quests",
                 "dungeons",
+                "events",
                 "talents",
                 "abilities",
                 "enemies",
@@ -312,6 +347,7 @@ impl Content {
         let values: Vec<Value> = read_json(dir.join("quests.json"))?;
         let content = Self {
             dungeons: read_json(dir.join("dungeons.json"))?,
+            world_events: read_json(dir.join("events.json"))?,
             rules: read_json(dir.join("rules.json"))?,
             races: read_json(dir.join("races.json"))?,
             factions: read_json(dir.join("factions.json"))?,
@@ -331,6 +367,9 @@ impl Content {
     }
     fn validate(&self) -> io::Result<()> {
         self.dungeons.validate(self)?;
+        self.world_events.validate(self)?;
+        quests::validate(self)?;
+        death::validate(self)?;
         let ghost_rule = |key| self.rule("ghostline", key);
         if ![
             "historySeconds",
@@ -372,6 +411,33 @@ impl Content {
             return Err(io::Error::other(
                 "Invalid rules, map or duplicate quest IDs",
             ));
+        }
+        if let Some(r) = &self.map.interiors {
+            let width = self.map.building_grid.width_min;
+            if r.rooms.is_empty()
+                || ![r.height, r.wall, r.door_width, r.door_height]
+                    .iter()
+                    .all(|v| v.is_finite() && *v > 0.0)
+                || r.height >= self.map.building_grid.height_min
+                || r.door_height <= self.rule("movement", "height")
+                || r.door_height >= r.height
+                || r.door_width <= self.rule("movement", "radius") * 2.0
+                || r.door_width + r.wall * 2.0 >= width
+                || r.rooms.iter().flat_map(|room| &room.furniture).any(|item| {
+                    !item.center.iter().all(|v| v.is_finite())
+                        || !item.size.iter().all(|v| v.is_finite() && *v > 0.0)
+                        || item.center[1] - item.size[1] / 2.0 < 0.0
+                        || item.center[1] + item.size[1] / 2.0 >= r.height
+                        || [0, 2].iter().any(|&axis| {
+                            item.center[axis].abs() + item.size[axis] / 2.0 >= width / 2.0 - r.wall
+                        })
+                        || item.center[0].abs() - item.size[0] / 2.0 < r.door_width / 2.0
+                })
+            {
+                return Err(io::Error::other(
+                    "Invalid interior dimensions or obstructed aisle",
+                ));
+            }
         }
         for q in &self.quests {
             if q.level > 60
@@ -421,12 +487,18 @@ impl Content {
 }
 
 #[derive(Clone)]
+struct Solid {
+    center: Vec3,
+    size: Vec3,
+}
+#[derive(Clone)]
 struct Building {
     x: f64,
     z: f64,
     width: f64,
     depth: f64,
     height: f64,
+    solids: Vec<Solid>,
 }
 struct World {
     map: Map,
@@ -451,8 +523,46 @@ impl World {
                 let width = g.width_min + lcg(&mut seed) * (g.width_max - g.width_min);
                 let depth = g.width_min + lcg(&mut seed) * (g.width_max - g.width_min);
                 let height = g.height_min + lcg(&mut seed) * (g.height_max - g.height_min);
-                for _ in 0..3 {
+                for _ in 0..2 {
                     lcg(&mut seed);
+                }
+                let decoration = (lcg(&mut seed) * 999999.0).floor() as usize;
+                let mut solids = Vec::new();
+                let mut add = |center: Vec3, size: Vec3| {
+                    solids.push(Solid {
+                        center: [x + center[0], center[1], z + center[2]],
+                        size,
+                    });
+                };
+                if let Some(room) = map
+                    .interiors
+                    .as_ref()
+                    .filter(|r| decoration % 5 != 0 && !r.rooms.is_empty())
+                {
+                    let (h, t, door) = (room.height, room.wall, room.door_width);
+                    add([0.0, (height + h) / 2.0, 0.0], [width, height - h, depth]);
+                    for side in [-1.0, 1.0] {
+                        add([side * (width - t) / 2.0, h / 2.0, 0.0], [t, h, depth]);
+                        for wing in [-1.0, 1.0] {
+                            add(
+                                [
+                                    wing * (width + door) / 4.0,
+                                    h / 2.0,
+                                    side * (depth - t) / 2.0,
+                                ],
+                                [(width - door) / 2.0, h, t],
+                            );
+                        }
+                        add(
+                            [0.0, (h + room.door_height) / 2.0, side * (depth - t) / 2.0],
+                            [door, h - room.door_height, t],
+                        );
+                    }
+                    for item in &room.rooms[decoration % room.rooms.len()].furniture {
+                        add(item.center, item.size);
+                    }
+                } else {
+                    add([0.0, height / 2.0, 0.0], [width, height, depth]);
                 }
                 cells.insert(
                     (ix, iz),
@@ -462,6 +572,7 @@ impl World {
                         width,
                         depth,
                         height,
+                        solids,
                     },
                 );
             }
@@ -472,6 +583,9 @@ impl World {
         }
     }
     fn collides(&self, p: Vec3, radius: f64) -> bool {
+        self.collides_height(p, radius, 2.1)
+    }
+    fn collides_height(&self, p: Vec3, radius: f64, height: f64) -> bool {
         let cx = (p[0] / self.map.building_grid.spacing).floor() as i32;
         let cz = (p[2] / self.map.building_grid.spacing).floor() as i32;
         if p[0].abs() > self.map.bounds || p[2].abs() > self.map.bounds {
@@ -480,11 +594,19 @@ impl World {
         for x in cx - 1..=cx + 1 {
             for z in cz - 1..=cz + 1 {
                 if let Some(b) = self.cells.get(&(x, z)) {
-                    if p[1] < b.height
-                        && p[1] + 2.1 > 0.0
-                        && (p[0] - b.x).abs() < b.width / 2.0 + radius
-                        && (p[2] - b.z).abs() < b.depth / 2.0 + radius
+                    if p[1] >= b.height
+                        || p[1] + height <= 0.0
+                        || (p[0] - b.x).abs() >= b.width / 2.0 + radius
+                        || (p[2] - b.z).abs() >= b.depth / 2.0 + radius
                     {
+                        continue;
+                    }
+                    if b.solids.iter().any(|s| {
+                        p[1] < s.center[1] + s.size[1] / 2.0
+                            && p[1] + height > s.center[1] - s.size[1] / 2.0
+                            && (p[0] - s.center[0]).abs() < s.size[0] / 2.0 + radius
+                            && (p[2] - s.center[2]).abs() < s.size[2] / 2.0 + radius
+                    }) {
                         return true;
                     }
                 }
@@ -509,29 +631,80 @@ impl World {
             .cells
             .get(&((x / spacing).floor() as i32, (z / spacing).floor() as i32))
         {
-            if (x - b.x).abs() <= b.width / 2.0
-                && (z - b.z).abs() <= b.depth / 2.0
-                && previous >= b.height - 0.05
-                && next <= b.height
-            {
-                floor = floor.max(b.height);
+            for solid in &b.solids {
+                let top = solid.center[1] + solid.size[1] / 2.0;
+                if (x - solid.center[0]).abs() <= solid.size[0] / 2.0
+                    && (z - solid.center[2]).abs() <= solid.size[2] / 2.0
+                    && previous >= top - 0.05
+                    && next <= top
+                {
+                    floor = floor.max(top);
+                }
             }
         }
         floor
     }
-    fn visible(&self, a: Vec3, b: Vec3) -> bool {
-        let steps = (dist(a, b) / 2.0).ceil() as u32;
-        (1..steps).all(|i| {
-            let t = f64::from(i) / f64::from(steps);
-            !self.collides(
-                [
-                    a[0] + (b[0] - a[0]) * t,
-                    a[1] + (b[1] - a[1]) * t,
-                    a[2] + (b[2] - a[2]) * t,
-                ],
-                0.0,
-            )
-        })
+    fn ceiling(&self, p: Vec3, next: f64, radius: f64, height: f64) -> f64 {
+        let spacing = self.map.building_grid.spacing;
+        let (cx, cz) = (
+            (p[0] / spacing).floor() as i32,
+            (p[2] / spacing).floor() as i32,
+        );
+        let mut ceiling = f64::INFINITY;
+        for x in cx - 1..=cx + 1 {
+            for z in cz - 1..=cz + 1 {
+                if let Some(b) = self.cells.get(&(x, z)) {
+                    for s in &b.solids {
+                        let bottom = s.center[1] - s.size[1] / 2.0;
+                        if (p[0] - s.center[0]).abs() < s.size[0] / 2.0 + radius
+                            && (p[2] - s.center[2]).abs() < s.size[2] / 2.0 + radius
+                            && p[1] + height <= bottom + 0.001
+                            && next + height >= bottom
+                        {
+                            ceiling = ceiling.min(bottom - height);
+                        }
+                    }
+                }
+            }
+        }
+        ceiling
+    }
+    fn visible(&self, mut a: Vec3, mut b: Vec3) -> bool {
+        a[1] += 1.05;
+        b[1] += 1.05;
+        let spacing = self.map.building_grid.spacing;
+        let min_x = (a[0].min(b[0]) / spacing).floor() as i32 - 1;
+        let max_x = (a[0].max(b[0]) / spacing).floor() as i32 + 1;
+        let min_z = (a[2].min(b[2]) / spacing).floor() as i32 - 1;
+        let max_z = (a[2].max(b[2]) / spacing).floor() as i32 + 1;
+        for x in min_x..=max_x {
+            for z in min_z..=max_z {
+                if let Some(building) = self.cells.get(&(x, z)) {
+                    for solid in &building.solids {
+                        let (mut enter, mut leave) = (0.0_f64, 1.0_f64);
+                        for axis in 0..3 {
+                            let low = solid.center[axis] - solid.size[axis] / 2.0;
+                            let high = solid.center[axis] + solid.size[axis] / 2.0;
+                            let delta = b[axis] - a[axis];
+                            if delta.abs() < 1e-9 {
+                                if a[axis] <= low || a[axis] >= high {
+                                    leave = -1.0;
+                                    break;
+                                }
+                            } else {
+                                let (t0, t1) = ((low - a[axis]) / delta, (high - a[axis]) / delta);
+                                enter = enter.max(t0.min(t1));
+                                leave = leave.min(t0.max(t1));
+                            }
+                        }
+                        if enter < leave {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        true
     }
 }
 
@@ -972,10 +1145,13 @@ async fn create_character(
         yaw: 0.0,
         health: 0.0,
         energy: 0.0,
+        death: None,
+        resurrection_sickness: 0.0,
         medkits: app.content.r("startingMedkits") as u32,
         weapon_rank: 0,
         talents: HashMap::new(),
         active_quests: HashMap::new(),
+        quest_stages: HashMap::new(),
         completed: vec![],
         dungeon_history: HashMap::new(),
         dungeon_return: None,
@@ -1086,6 +1262,10 @@ impl Stats {
                 f64::from(*c.talents.get(&t.id).unwrap_or(&0)) * t.amount,
             );
         }
+        if c.resurrection_sickness > 0.0 {
+            s.damage *= data.rule("death", "sicknessDamageMultiplier");
+            s.speed *= data.rule("death", "sicknessSpeedMultiplier");
+        }
         s
     }
     fn add(&mut self, stat: &str, amount: f64) {
@@ -1107,6 +1287,8 @@ impl Stats {
 struct Enemy {
     id: String,
     instance: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    event: Option<String>,
     #[serde(rename = "type")]
     kind: String,
     name: String,
@@ -1225,7 +1407,7 @@ fn damage_enemy(
         p,
         json!({"type":"effect","kind":"beam","from":from,"position":e.position,"color":a.color}),
     );
-    if e.health <= 0.0 && e.instance.is_none() {
+    if e.health <= 0.0 && e.instance.is_none() && e.event.is_none() {
         e.respawn_at = time + data.rule("combat", "enemyRespawnSeconds");
         progress(p, data, "kill", &e.kind);
         let xp = (data.rule("xp", "killBase")
@@ -1241,21 +1423,7 @@ fn quest_event(p: &Player, data: &Content, q: &Quest, kind: &str) {
     emit(p, json!({"type":kind,"quest":data.quest_values.get(&q.id)}));
 }
 fn progress(p: &mut Player, data: &Content, kind: &str, target: &str) {
-    for q in &data.quests {
-        if q.objective.kind == kind && q.objective.target == target {
-            if let Some(count) = p.c.active_quests.get_mut(&q.id) {
-                if *count < q.objective.count {
-                    *count += 1;
-                    let count = *count;
-                    p.dirty = true;
-                    emit(
-                        p,
-                        json!({"type":"questProgress","quest":data.quest_values.get(&q.id),"progress":count}),
-                    );
-                }
-            }
-        }
-    }
+    quests::progress(p, data, kind, target);
 }
 fn gain_xp(p: &mut Player, data: &Content, amount: u64) -> u64 {
     let (amount, remainder) = founders::xp_reward(&p.c, data, amount);
@@ -1287,8 +1455,12 @@ fn available(q: &Quest, c: &Character) -> bool {
         && !c.active_quests.contains_key(&q.id)
 }
 fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
-    if p.c.health <= 0.0 {
+    let spirit = death::is_spirit(&p.c);
+    if p.c.health <= 0.0 && !spirit {
         return;
+    }
+    if p.c.health > 0.0 {
+        p.c.resurrection_sickness = (p.c.resurrection_sickness - dt).max(0.0);
     }
     if time - p.last_input > 0.3 {
         p.input = Movement {
@@ -1337,7 +1509,11 @@ fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
         rule("sprint")
     } else {
         rule("speed")
-    } * stats.speed;
+    } * if spirit {
+        data.rule("death", "spiritSpeedMultiplier")
+    } else {
+        stats.speed
+    };
     let tx = (-p.c.yaw.sin() * f + p.c.yaw.cos() * side) * speed;
     let tz = (-p.c.yaw.cos() * f - p.c.yaw.sin() * side) * speed;
     let acceleration =
@@ -1368,7 +1544,14 @@ fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
         }
     }
     p.velocity[1] -= rule("gravity") * dt;
-    let next = p.c.position[1] + p.velocity[1] * dt;
+    let mut next = p.c.position[1] + p.velocity[1] * dt;
+    if p.velocity[1] > 0.0 {
+        let ceiling = world.ceiling(p.c.position, next, rule("radius"), rule("height"));
+        if next >= ceiling {
+            next = ceiling;
+            p.velocity[1] = 0.0;
+        }
+    }
     let floor = world.floor(p.c.position[0], p.c.position[2], p.c.position[1], next);
     if next <= floor {
         p.c.position[1] = floor;
@@ -1377,6 +1560,9 @@ fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
     } else {
         p.c.position[1] = next;
         p.grounded = false;
+    }
+    if spirit {
+        return;
     }
     p.c.energy =
         (p.c.energy + (data.rule("player", "energyRegen") + stats.regen) * dt).min(stats.energy);
@@ -1391,7 +1577,9 @@ fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
         .landmarks
         .iter()
         .filter(|l| {
-            p.instance.is_none() && dist(p.c.position, l.position) < data.r("interactionRadius")
+            p.instance.is_none()
+                && dist(p.c.position, l.position) < data.r("interactionRadius")
+                && world.visible(p.c.position, l.position)
         })
         .map(|l| l.id.as_str())
         .collect();
@@ -1497,6 +1685,7 @@ fn start_shard(
 
 struct Shard {
     dungeons: dungeons::State,
+    world_events: Vec<world_events::Incident>,
     lobby: Option<mpsc::Sender<Command>>,
     forwarded: HashSet<String>,
     db: Arc<Database>,
@@ -1533,6 +1722,7 @@ impl Shard {
                 Enemy {
                     id: format!("enemy-{i}"),
                     instance: None,
+                    event: None,
                     kind: s.kind.clone(),
                     name: text(&e["name"]).to_owned(),
                     model: text(&e["model"]).to_owned(),
@@ -1560,6 +1750,12 @@ impl Shard {
         };
         Self {
             dungeons: dungeons::State::default(),
+            world_events: content
+                .world_events
+                .entries
+                .iter()
+                .map(|_| world_events::Incident::default())
+                .collect(),
             lobby: None,
             forwarded: HashSet::new(),
             db,
@@ -1597,6 +1793,7 @@ impl Shard {
                         let global_ready=self.time+(stored.global_ready-clock).max(0.0);let dash_ready=self.time+(stored.dash_ready-clock).max(0.0);
                         let mut c=stored.character;
                         if let Some(destination)=c.dungeon_return.take(){c.position=destination;c.health=Stats::new(&c,&self.content).health;c.revision+=1;}
+                        death::restore(&mut c, &self.content);
                         let id=c.id.clone();let yaw=c.yaw;
                         let previous_position=c.position;
                         self.players.insert(id,Player{instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:false});
@@ -1693,7 +1890,7 @@ impl Shard {
                 }
             }
             nearby.sort_unstable_by(|a, b| a.0.total_cmp(&b.0));
-            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"health":other.c.health,"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id)})).collect();
+            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"velocity":other.velocity,"grounded":other.grounded,"health":other.c.health,"ghost":death::is_spirit(&other.c),"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id)})).collect();
             let enemies: Vec<_> = self
                 .enemies
                 .iter()
@@ -1719,7 +1916,7 @@ impl Shard {
                     .then_with(|| a.owner.cmp(&b.owner))
             });
             ghosts.truncate(self.content.rule("ghostline", "maxVisible") as usize);
-            let _=p.output.try_send(json!({"type":"snapshot","version":DATA_VERSION,"character":p.c,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id)}));
+            let _=p.output.try_send(json!({"type":"snapshot","version":DATA_VERSION,"character":p.c,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id),"worldEvents":self.world_event_snapshot(p)}));
         }
     }
     fn tick(&mut self) {
@@ -1733,7 +1930,7 @@ impl Shard {
         }
         for e in &mut self.enemies {
             if e.health <= 0.0 {
-                if e.instance.is_none() && self.time >= e.respawn_at {
+                if e.instance.is_none() && e.event.is_none() && self.time >= e.respawn_at {
                     e.health = e.max_health;
                     e.position = e.home;
                     e.aggro = None;
@@ -1790,7 +1987,17 @@ impl Shard {
                             let mut next = e.position;
                             next[axis] +=
                                 (p.c.position[axis] - e.position[axis]) / distance * e.speed * 0.05;
-                            if !self.world.collides(next, 0.65) {
+                            if !self.world.collides(next, 0.65)
+                                && (e.event.is_none()
+                                    || (self.world.floor(
+                                        next[0],
+                                        next[2],
+                                        next[1] + 0.1,
+                                        next[1] - 0.2,
+                                    ) - next[1])
+                                        .abs()
+                                        < 0.1)
+                            {
                                 e.position = next;
                             }
                         }
@@ -1810,22 +2017,40 @@ impl Shard {
                         p.dirty = true;
                         emit(p, json!({"type":"hurt","amount":damage-absorbed}));
                         if p.c.health <= 0.0 {
-                            p.dead_at = self.time;
-                            emit(p, json!({"type":"death"}));
+                            death::fallen(p, &self.content, self.time);
                         }
                     }
                 }
             } else if dist(e.position, e.home) > 1.0 {
                 let d = dist(e.position, e.home);
                 for axis in 0..3 {
-                    e.position[axis] +=
-                        (e.home[axis] - e.position[axis]) / d * (e.speed * 0.05).min(d);
+                    let mut next = e.position;
+                    next[axis] += (e.home[axis] - e.position[axis]) / d * (e.speed * 0.05).min(d);
+                    if e.event.is_none()
+                        || (!self.world.collides(next, 0.65)
+                            && (self
+                                .world
+                                .floor(next[0], next[2], next[1] + 0.1, next[1] - 0.2)
+                                - next[1])
+                                .abs()
+                                < 0.1)
+                    {
+                        e.position = next;
+                    }
                 }
             }
         }
         self.tick_ghostlines();
+        self.tick_world_events();
+        for p in self.players.values_mut() {
+            quests::tick(p, &self.content, &self.world);
+        }
     }
     fn action(&mut self, id: &str, value: &Value) {
+        if text(&value["type"]) == "worldEvent" {
+            self.world_event_action(id, value);
+            return;
+        }
         if text(&value["type"]) == "dungeon" {
             self.dungeon_action(id, value);
             return;
@@ -1855,20 +2080,20 @@ impl Shard {
             p.c.intro_seen = true;
             p.dirty = true;
         } else if p.c.health <= 0.0 {
-            if kind == "respawn"
-                && p.instance.is_none()
-                && self.time - p.dead_at >= self.content.rule("player", "respawnSeconds")
-            {
-                let stats = Stats::new(&p.c, &self.content);
-                p.c.position = self.content.map.spawn;
-                p.c.health = stats.health;
-                p.c.energy = stats.energy;
-                p.velocity = [0.0; 3];
-                p.previous_position = p.c.position;
-                p.ghost_trail.clear();
+            if p.instance.is_none() {
+                if kind == "lift" && death::is_spirit(&p.c) {
+                    self.game_action(&mut p, value);
+                } else {
+                    death::action(
+                        &mut p,
+                        &self.content,
+                        &self.world,
+                        kind,
+                        self.time,
+                        now_millis() as f64 / 1000.0,
+                    );
+                }
                 self.ghostlines.remove(id);
-                p.dirty = true;
-                notice(&p, "Signal recovered. Welcome back.");
             }
         } else {
             self.game_action(&mut p, value);
@@ -1994,13 +2219,19 @@ impl Shard {
                     return;
                 };
                 if !data.npcs.iter().any(|n| {
-                    n.id == q.giver && dist(n.position, p.c.position) < data.r("interactionRadius")
+                    n.id == q.giver
+                        && dist(n.position, p.c.position) < data.r("interactionRadius")
+                        && self.world.visible(p.c.position, n.position)
                 }) {
                     notice(p, "Return to the quest giver marked on your map.");
                     return;
                 }
                 if text(&value["operation"]) == "accept" && available(q, &p.c) {
                     p.c.active_quests.insert(id.to_owned(), 0);
+                    if !q.steps.is_empty() {
+                        p.c.quest_stages
+                            .insert(id.to_owned(), quests::Stage::default());
+                    }
                     p.dirty = true;
                     quest_event(p, data, q, "questAccepted");
                 } else if text(&value["operation"]) == "complete"
@@ -2011,6 +2242,7 @@ impl Shard {
                     && !p.c.completed.iter().any(|s| s == id)
                 {
                     p.c.active_quests.remove(id);
+                    p.c.quest_stages.remove(id);
                     p.c.completed.push(id.to_owned());
                     p.c.credits += q.reward.credits;
                     let xp = gain_xp(p, data, q.reward.xp);
@@ -2027,11 +2259,12 @@ impl Shard {
                     return;
                 }
                 if let Some(l) = data.map.landmarks.iter().find(|l| {
-                    l.id == id && dist(l.position, p.c.position) < data.r("interactionRadius")
+                    l.id == id
+                        && dist(l.position, p.c.position) < data.r("interactionRadius")
+                        && self.world.visible(p.c.position, l.position)
                 }) {
                     p.last_interact = self.time;
                     progress(p, data, "interact", &l.id);
-                    progress(p, data, "explore", &l.id);
                     notice(p, &format!("{} · connection established", l.name));
                 } else {
                     notice(p, "Move closer to the terminal.");
@@ -2461,10 +2694,47 @@ mod tests {
         let w = World::new(&d.map);
         assert!(!w.collides(d.map.spawn, 0.65));
         assert!(w.cells.len() > 700);
-        let b = w.cells.values().next().unwrap();
-        assert!(w.collides([b.x, 0.0, b.z], 0.65));
+        for b in w.cells.values() {
+            assert!(w.collides([b.x + b.width / 2.0 - 0.2, 0.0, b.z], 0.65));
+            assert!((w.floor(b.x, b.z, b.height + 1.0, b.height - 1.0) - b.height).abs() < 1e-9);
+        }
         assert_eq!(w.floor(0.0, -80.0, 25.0, 23.0), 24.0);
-        assert_eq!(d.quests.len(), 188);
+        assert_eq!(d.quests.len(), 203);
+    }
+    #[test]
+    fn interiors_have_clear_doors_solid_walls_and_matching_headroom() {
+        let d = content();
+        let w = World::new(&d.map);
+        let r = d.map.interiors.as_ref().unwrap();
+        let rooms: Vec<_> = w.cells.values().filter(|b| b.solids.len() > 1).collect();
+        assert_eq!(rooms.len(), 577);
+        for b in rooms {
+            for side in [-1.0, 1.0] {
+                let door = [b.x, 0.0, b.z + side * b.depth / 2.0];
+                assert!(!w.collides(door, 0.65));
+                assert!(w.collides([b.x + 6.0, 0.0, door[2]], 0.65));
+                assert!((w.ceiling(door, 3.0, 0.65, 2.1) - (r.door_height - 2.1)).abs() < 1e-9);
+            }
+            assert!(w.visible(
+                [b.x, 0.0, b.z - b.depth / 2.0 - 1.0],
+                [b.x, 0.0, b.z + b.depth / 2.0 + 1.0],
+            ));
+            assert!(!w.visible([b.x, 0.0, b.z], [b.x + b.width / 2.0 + 1.0, 0.0, b.z]));
+            for step in 0..200 {
+                let z = b.z - b.depth / 2.0 + f64::from(step) * b.depth / 199.0;
+                assert!(!w.collides([b.x, 0.0, z], 0.65));
+            }
+        }
+    }
+    #[test]
+    fn interior_content_rejects_blocked_aisles_and_low_doors() {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../client");
+        let mut d = Content::load(&path).unwrap();
+        d.map.interiors.as_mut().unwrap().door_height = 1.5;
+        assert!(d.validate().is_err());
+        d.map.interiors.as_mut().unwrap().door_height = 4.2;
+        d.map.interiors.as_mut().unwrap().rooms[0].furniture[0].center[0] = 0.0;
+        assert!(d.validate().is_err());
     }
     #[test]
     fn deterministic_rng_matches_client() {

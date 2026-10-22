@@ -15,7 +15,35 @@ Four procedural nature biomes surround the city, each with two landmarks, a loca
 | Glassroot Steppe | North | Ada Silt / 32 | Replacement bodies need minerals beneath a settlement's root mat; retreat preserves ground at the cost of a home. |
 | Brine Bloom | South | Ilex Marr / 46 | Freedom from a culture patent releases growth that humans cannot safely inhabit; containment and withdrawal leave no final equilibrium. |
 
-Use **M → map** to locate contacts and **J → Basin** to read their chains. The original 176 campaign IDs, level gates, prerequisites, and rewards remain in place; twelve optional basin contracts bring the total to 188. Outcomes are authored quest and dungeon epilogues saved through existing completion records, rather than a new simulation of ecological depletion. Biome scenery is decorative over the existing walkable basin floor, with open crossing paths to contacts and terminals.
+Use **M → Pale Basin** to locate contacts and **J → Basin** to read their chains. The original 176 campaign IDs, level gates, prerequisites, and rewards remain in place; twelve optional basin contracts and fifteen neighborhood contracts bring the total to 203. Basin outcomes are authored quest epilogues saved through existing completion records, rather than a simulation of ecological depletion. Biome scenery is decorative over the existing walkable basin floor, with open crossing paths to contacts and terminals.
+
+## Life on the block
+
+Vesper's residents carry deliveries, repair equipment, serve and eat meals, tend planters, compare records, and wait for connections. Shops have attendants and visiting customers. Residents walk between purposeful stops, change work during the UTC night shift, face nearby conversation partners, and take cover from visible nearby hostile machines before retracing their escape route. Press **E** near a resident to ask about their work and neighborhood; passing conversations also appear briefly in the street.
+
+Five neighborhoods have their own workspaces, 36 named regulars, rotating street scenes, and three-contract stories:
+
+| Neighborhood | Steward / level | Local conflict |
+| --- | --- | --- |
+| Lantern Market / Commons | Nella Rook / 0 | A free kitchen's donated water is billed back to its donors. |
+| Glass Steps / Glass Archive | Elin Voss / 10 | Cooling priority protects profitable memories before consent. |
+| Copper Walk / Cinder Works | Merek Tan / 20 | Empty offices stay warm while occupied flats are erased from the register. |
+| Listening Courts / Quiet Quarter | Sable Ren / 30 | Disconnecting advertisements also disconnected the flood warning. |
+| Last Connection / Upper Transit | Ivo Pell / 40 | Night workers disappear from passenger counts because they use service passes. |
+
+Start with **Nella, just west of the Commons**, or open **J → Neighborhoods**. **M → City / Neighborhoods** marks every steward; Last Connection is on the 24 m skyway, reached by the Transit lift. Inspect the neighborhood terminals for evidence and accept/turn in contracts with the steward. Completed chapters change local dialogue, civilian activities, and service indicators when that character returns, including after reconnecting. These changes reflect that character's saved progress; they do not rewrite the shared city's economy or other players' stories.
+
+Civilian routines use the synchronized clock and stream around the viewer, capped at 64 residents (30 on low quality), with simpler meshes at distance. Local crowd reactions are presentation, not damageable or reward-bearing server actors. Contracts, prerequisites, proximity checks, completion, and one-time rewards use the existing authoritative server and character saves. Live device performance and multiplayer visual acceptance still require playtesting.
+
+The **eight opening contracts and all fifteen neighborhood contracts now have ordered objectives**: compare evidence, respond to a live emergency, monitor a service, and confirm its handover. The journal lists the steps, and the tracker and map follow the current destination. Each step is saved on the server. Contracts accepted before this update retain their original objective and any earned turn-in progress; IDs, prerequisites, level gates, and rewards are unchanged.
+
+The opening now follows **A place at the table**: meet your faction contact, collect Oru’s welcome record, investigate the kitchen shutoff, restore the water, and bring each record home. The guide then leads into Nella’s three-part story about missing meals and double billing. It shows one next action, direction, distance, and keyboard/controller/touch instructions, including what to do during incident retries. Guidance resumes from saved quest progress. Iri, Sera, Bram, Ves, Oru, and Nella have authored dialogue and distinct local speech profiles, with narrated introductions, briefings, objective transitions, and endings. **VOICES** mutes speech; captions, replay controls, and written dialogue remain available. Playback requires an installed local English voice; pitch and pacing still distinguish characters when only one voice is available.
+
+Outside expeditions, **death costs 5% of carried credits, rounded up and capped at 50**. After five seconds, release your spirit at the nearest of nine Remembrance graveyards. Follow the body marker, use lifts if needed, and recover within 12 m with a clear view to return at **50% health and energy**. Spirits move 25% faster than base movement, cannot fight or advance quests, and cannot be damaged. A nearby Remembrance keeper offers a confirmed shortcut: another **10% of remaining credits, capped at 100**, resurrection at **25% health and energy**, and **60 seconds of resurrection sickness** with half damage and 25% slower movement. A character with no credits can still recover. **ESC / controller Menu** opens recovery options, including a return to your assigned graveyard if stranded. Death state and sickness survive reconnects through character saves; sickness counts down during living play. Dungeon ally revives and crew wipes retain their encounter rules.
+
+**Street incidents happen even without an accepted quest.** Approaching a neighborhood starts a 12-second warning followed by a 150-second response window. Lantern Market faces a water shutoff, Glass Steps a cooling failure, Copper Walk a heat seizure, Listening Courts electrical flood surges, and Last Connection a service-pass lockdown. Press **E** at both marked controls, then keep a living runner within the **14 m beacon ring for 12 seconds**. Enforcement incidents require clearing the machines and gain a reinforcement halfway through the deadline. Pressure/electrical incidents mark a damaging circle three seconds before each pulse; move out of the striped area. Leaving the ring or leaving enforcement alive drains the hold meter. Any nearby runner can help, regardless of faction or party.
+
+Success restores service for 75 seconds, changes local work and conversation, and advances matching current objectives for living contributors still nearby. Failure interrupts service and resets the response after 25 seconds; it does not erase completed quest steps. Signals, countdowns, control markers, hazards, and incident machines are shared within the shard, including on reconnect. Incidents restart after a server restart; saved quest steps retain the usual checkpoint guarantee. Incident machines grant no farmable kill XP, credits, or unrelated kill objectives. To try the opening response, accept work from your contact and Oru, check the Commons exchange, and follow the **Water under lock** markers.
 
 ## Ghostline — your past is someone else’s opening
 
@@ -73,7 +101,7 @@ The default port is **8080**. To serve everything on **80** instead:
 PORT=80 cargo run --release
 ```
 
-`HOST` selects the bind IP (default `127.0.0.1`); `SLOPERBERPUNK_BIND=IP:port` overrides both `HOST` and `PORT`. The default browser-origin allowlist follows the configured port, including the port-80 origin without a port suffix. See [operations](docs/OPERATIONS.md) for public HTTPS hosting, low-port permissions, storage, and thread configuration.
+`HOST` selects the bind IP (default `0.0.0.0`, all IPv4 interfaces); use `HOST=127.0.0.1` for local-only access. `SLOPERBERPUNK_BIND=IP:port` overrides both `HOST` and `PORT`. The default browser-origin allowlist follows the configured port, including the port-80 origin without a port suffix. When connecting through another hostname or LAN IP, set `SLOPERBERPUNK_ORIGINS` to the exact browser origin. See [operations](docs/OPERATIONS.md) for public HTTPS hosting, low-port permissions, storage, and thread configuration.
 
 Use **Account** or **Enter Vesper** to register or sign in, then create or resume a server character. Each account supports eight characters. All play requires a connection to this server; characters and progress are stored there. **Settings → Export signed character** downloads a server-signed archive. The first Cargo run resolves dependencies and compiles the application; server startup creates the runtime database.
 
@@ -85,11 +113,12 @@ Use the browser client through a non-Steam browser shortcut in Gaming Mode. The 
 
 ## What is implemented
 
-- A custom WebGL2 renderer with a WebGL1 shader path, flat-shaded geometry, distance fog, emissive windows, animated cargo shuttles, an original signal monument, and a responsive dark-green MMO interface.
+- A custom WebGL2 renderer with a WebGL1 shader path, beveled architecture and character meshes, smooth lineage details, cyan/magenta lighting, height fog, procedural wet pavement, rain, vent steam, wind-driven vegetation, walking residents, cargo traffic, and a dark slate MMO interface. Articulated runners have speed-driven leg and arm motion, planted feet, airborne poses, and moving coat panels.
 - A deterministic **725-building city**, approximately **2.24 km across**, inside a **6.4 km playable basin**. Streets, 24 m skyways, 48 m crowns, rooftop landings, lifts, terminals, NPCs, and enemy spawns come from readable map data.
+- **577 walk-in ground floors** with clinics, repair shops, noodle counters, and transit lounges. Lit entrances open on both sides, with server-validated walls, furniture, and headroom. Map fog reveals nearby streets during the browser session; active objectives remain visible. Green minimap marks identify discovered entrances. Interior geometry streams near the camera, and distant actors use simpler meshes.
 - Keyboard/mouse, touch movement and action controls, and standard-mapped browser gamepads. Movement includes acceleration, sprint, buffered jumping, coyote time, air control, a short dash, wall collision, and first/third-person cameras.
 - Four factions: **The Relay, Glass Covenant, Ash Foundry, and Null Choir**. Four playable lineages: **Afterborn, Lattice, Revenant, and Sporebound**, each with its own lore, passive, and campaign.
-- **188 distinct quests**: 31 per faction at levels 0, 2, …, 60, 13 per lineage at levels 0, 5, …, 60, and twelve shared biome contracts. Prerequisites, NPC proximity, objectives, turn-ins, and one-time rewards are enforced. Each faction campaign provides enough XP to reach level 60 without required grinding; lineage and basin quests supply additional progression.
+- **203 distinct quests**: 31 per faction at levels 0, 2, …, 60, 13 per lineage at levels 0, 5, …, 60, twelve shared biome contracts, and fifteen neighborhood contracts. Prerequisites, NPC proximity, objectives, turn-ins, and one-time rewards are enforced. Each faction campaign provides enough XP to reach level 60 without required grinding; lineage, basin, and neighborhood quests supply additional progression.
 - Percentile-roll combat, target selection, misses and criticals, level scaling, cooldowns, energy, enemy aggression, stuns, respawns, medkits, credits, and ten weapon upgrades. Seven abilities support ranged damage, disruption, healing, shielding, area damage, and **Ghostline movement combos**. Eight talent nodes let players mix Anchor, Sustainer, Disruptor, and Runner roles. Online healing affects nearby allies, and shielding draws nearby enemy attention.
 - A **38-second opening cinematic** with four camera shots, captions, optional narration, replay/skip controls, and an original synthesized score. Its asset is an editable timeline rendered by the game, not a pre-encoded video file.
 - Local narration using explicitly selected installed device voices. No cloud voice API, microphone permission, downloaded recording, or neural voice model is bundled. Text remains available when the device has no local voice.
@@ -108,13 +137,16 @@ client/
   play.html, style.css        Game title, creation, cinematic, HUD, menus
   src/                       Renderer, movement prediction, input, audio, network, UI
   data/                      Map, rules, quests, lore, races, factions, abilities
-  assets/                    Original SVG mark and box-mesh source models
+  assets/                    Original SVG mark and articulated mesh recipes
+  tests/                     Buildless world, movement, geometry, and renderer checks
 server/
   Cargo.toml                 Seven runtime Rust dependencies, pinned versions
   src/main.rs                Service, simulation threads, character storage, tests
   src/config.rs              Listener, origin, and thread configuration with tests
   src/web.rs                 Frontend delivery, security headers, HTTP tests
   src/ghostline.rs           Authoritative route replay, cooperative braids, tests
+  src/quests.rs              Saved ordered objectives and legacy contract compatibility
+  src/world_events.rs        Shared street incidents, hazards, defense, and tests
   src/dungeons.rs            Cross-shard finder, private encounters, ballots, tests
   src/social.rs              Community, auction escrow, signing, and tests
 docs/
@@ -154,6 +186,9 @@ Read-only source checks:
 
 ```sh
 rustfmt --edition 2024 --check server/src/main.rs
+node --experimental-default-type=module client/tests/world.test.mjs
+node --experimental-default-type=module client/tests/citylife.test.mjs
+node --experimental-default-type=module client/tests/quests.test.mjs
 git diff --check
 ```
 

@@ -31,6 +31,8 @@ Optional narration uses the browser's `SpeechSynthesis` interface with an explic
 
 Local speech is a wrapper around installed browser/OS synthesis. **No neural text-to-speech model or portable offline voice is bundled.** Voice quality and available languages depend on the installed engine. The browser's `localService` declaration is the selection criterion; this project does not independently audit the OS voice provider. The game does not need a microphone for narration.
 
+Character narration starts enabled and can be muted with **VOICES** or Settings. Only local English voices are selected for the English script. Speaker profiles assign different pitch, rate, and voice slots; devices with fewer installed voices share the underlying voice while retaining each character's pitch and pacing. Captioned guidance remains available without speech support. Late voice discovery respects dismissed lines and the mute setting. Browser autoplay rules may require a click or replay before speech starts; live voice quality and browser/device acceptance require listening tests.
+
 ## Verification status and acceptance checks
 
 No physical Steam Deck, Android, USB-controller, or cross-browser hardware test results are asserted here. Automated syntax, data, or browser smoke checks should be reported separately with their actual environment and result. A successful desktop preview does not validate SteamOS, Firefox, Android, controller mapping, local voice availability, or a particular frame rate.

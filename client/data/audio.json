@@ -3,8 +3,19 @@
   "title": "Afterlight",
   "bpm": 72,
   "wave": "sine",
-  "bass": [55, 55, 65.406, 48.999],
-  "chords": [[220, 261.626, 329.628], [196, 246.942, 293.665], [174.614, 220, 261.626], [196, 246.942, 329.628]],
-  "melody": [659.255, 0, 523.251, 493.883, 0, 391.995, 440, 0],
-  "effects": { "shot": [180, 48, 0.13], "surge": [620, 90, 0.35], "heal": [330, 880, 0.5], "confirm": [440, 660, 0.18], "hurt": [90, 35, 0.2], "jump": [120, 240, 0.12] }
+  "bass": [55,55,65.406,48.999],
+  "chords": [[220,261.626,329.628],[196,246.942,293.665],[174.614,220,261.626],[196,246.942,329.628]],
+  "melody": [659.255,0,523.251,493.883,0,391.995,440,0],
+  "effects": {"shot":[180,48,0.13],"surge":[620,90,0.35],"heal":[330,880,0.5],"confirm":[440,660,0.18],"hurt":[90,35,0.2],"jump":[120,240,0.12]},
+  "voices": {
+    "narrator": {"name":"Vesper","style":"Measured, reflective","slot":0,"rate":0.91,"pitch":0.86},
+    "iri": {"name":"Iri Vale","style":"Brisk, practical dispatcher","slot":1,"rate":1.08,"pitch":1.1},
+    "sera": {"name":"Sera Quill","style":"Precise, deliberate witness","slot":2,"rate":0.91,"pitch":1.04},
+    "bram": {"name":"Bram Cinder","style":"Low, steady foundry steward","slot":3,"rate":0.96,"pitch":0.7},
+    "ves": {"name":"Ves of the Quiet","style":"Soft, unhurried listener","slot":4,"rate":0.84,"pitch":0.94},
+    "archivist": {"name":"Oru","style":"Warm, patient archivist","slot":5,"rate":0.95,"pitch":0.84},
+    "nella": {"name":"Nella Rook","style":"Warm, direct kitchen keeper","slot":6,"rate":1.04,"pitch":0.98},
+    "merchant": {"name":"Patch","style":"Quick, dry quartermaster","slot":7,"rate":1.12,"pitch":0.9},
+    "keeper": {"name":"Remembrance keeper","style":"Quiet, distant guide","slot":8,"rate":0.8,"pitch":0.75}
+  }
 }

@@ -1,6 +1,6 @@
 // Original synthesized score and device-local narration. GPL-3.0-or-later.
 export class AudioEngine {
-  constructor(score){this.score=score;this.enabled=false;this.narration=false;this.context=null;this.timer=null;this.step=0;this.voices=[];this.refreshVoices=()=>{this.voices=globalThis.speechSynthesis?.getVoices().filter(v=>v.localService)||[];};this.refreshVoices();globalThis.speechSynthesis?.addEventListener('voiceschanged',this.refreshVoices);}
+  constructor(score){this.score=score;this.enabled=false;this.narration=true;this.context=null;this.timer=null;this.step=0;this.voices=[];this.pending=null;this.captionTimer=null;this.onCaption=()=>{};this.refreshVoices=()=>{this.voices=(globalThis.speechSynthesis?.getVoices()||[]).filter(v=>v.localService&&/^en(?:[-_]|$)/i.test(v.lang)).sort((a,b)=>(a.voiceURI||a.name).localeCompare(b.voiceURI||b.name));if(this.pending&&this.voices.length&&this.narration){const pending=this.pending;this.pending=null;this.speak(pending.text,pending.speaker);}};this.refreshVoices();globalThis.speechSynthesis?.addEventListener('voiceschanged',this.refreshVoices);}
   async unlock(){
     const AudioContext=globalThis.AudioContext||globalThis.webkitAudioContext;if(!AudioContext)return;
     this.context ||=new AudioContext();if(this.context.state==='suspended')await this.context.resume();
@@ -21,11 +21,20 @@ export class AudioEngine {
     };play();
   }
   effect(name){if(!this.enabled)return;const e=this.score.effects[name];if(e)this.tone(e[0],e[2],.06,'triangle',e[1]);}
-  speak(text){
-    if(!this.narration||!globalThis.speechSynthesis)return false;
-    this.refreshVoices();const voice=this.voices.find(v=>v.lang.startsWith('en'))||this.voices[0];if(!voice)return false;
-    speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.rate=.93;u.pitch=.86;u.volume=.85;speechSynthesis.speak(u);return true;
+  speak(text,speaker='narrator'){
+    this.stopVoice();if(!text)return false;
+    const profile=this.score.voices?.[speaker]||this.score.voices?.narrator||{name:'Vesper',slot:0,rate:.93,pitch:.86};
+    this.onCaption({text,speaker:profile.name});
+    this.captionTimer=setTimeout(()=>this.stopVoice(),Math.max(8000,text.length*100));
+    if(!this.narration||!globalThis.speechSynthesis||!globalThis.SpeechSynthesisUtterance)return false;
+    this.refreshVoices();const voice=this.voices[(profile.slot||0)%this.voices.length];
+    if(!voice){this.pending={text,speaker};return false;}
+    const u=new globalThis.SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.rate=profile.rate;u.pitch=profile.pitch;u.volume=.85;
+    this.utterance=u;
+    u.onend=()=>{if(this.utterance===u){this.utterance=null;clearTimeout(this.captionTimer);this.captionTimer=setTimeout(()=>this.onCaption(null),1500);}};
+    u.onerror=()=>{if(this.utterance===u)this.utterance=null;};
+    try{globalThis.speechSynthesis.speak(u);return true;}catch{this.utterance=null;return false;}
   }
-  stopVoice(){globalThis.speechSynthesis?.cancel();}
+  stopVoice(){this.utterance=null;this.pending=null;clearTimeout(this.captionTimer);globalThis.speechSynthesis?.cancel();this.onCaption(null);}
   destroy(){clearTimeout(this.timer);this.stopVoice();globalThis.speechSynthesis?.removeEventListener('voiceschanged',this.refreshVoices);this.context?.close();}
 }
