@@ -43,7 +43,7 @@ In menus, use the D-pad to focus controls and **A** to activate them, or use the
 
 For mouse camera control, hold right mouse while moving or double-click the world to request pointer capture; Escape releases capture. The right gamepad stick does not need mouse capture. If browser gamepad access remains unavailable, a Steam Input keyboard/mouse layout can use the README bindings: left stick as WASD, right trackpad as mouse, and buttons for Space/Q/E/Tab and abilities. Provide a right-mouse binding for looking in that layout.
 
-Start with **Settings → Render resolution → High**. If frame pacing is poor, try **Balanced**, then disable **Volumetric light** or use **Low** as needed. These are tuning options, not a measured frame-rate or battery-life promise. Use browser zoom if text is too small. Click/tap the page to unlock audio; narration depends on installed local voices, with dialogue text available when none are exposed. See [audio compatibility](COMPATIBILITY.md#audio-narration-and-the-opening-cinematic).
+Start with **Settings → Render resolution → High**. If frame pacing is poor, try **Balanced**, then disable **Volumetric light** or use **Low** as needed. These are tuning options, not a measured frame-rate or battery-life promise. Use browser zoom if text is too small. Click/tap the page to unlock audio; narration prefers local English voices and can use other browser voices, which may need an internet connection. Use **Settings → TEST VOICE** to check playback; dialogue text remains available if speech fails. See [audio compatibility](COMPATIBILITY.md#audio-narration-and-the-opening-cinematic).
 
 ## Preserve saves and account access
 

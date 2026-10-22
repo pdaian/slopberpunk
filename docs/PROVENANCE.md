@@ -19,7 +19,7 @@ The editable JavaScript, Rust, GLSL, HTML, CSS, SVG, JSON, and documentation are
 | Combat and abilities | Editable rule data and implementation for futuristic weapons and transhuman abilities | Genre concepts; no commercial game's code or rule text imported |
 | Music and effects | Source-defined Web Audio synthesis and sequencing | No sampled recordings or downloaded soundtrack |
 | Opening cinematic | Editable in-engine camera, timing, text, and scene instructions | No film clips or externally sourced video; this is a rendered cinematic, not an encoded movie file |
-| Optional narration | Original dialogue passed to an installed local speech-synthesis voice | Browser/OS voice implementation; no voice model, actor recording, or cloned voice bundled |
+| Optional narration | Original dialogue passed to browser speech synthesis, preferring local English voices | Browser/OS voice implementation, potentially an online service for fallback voices; no voice model, actor recording, or cloned voice bundled |
 
 The implementation is AI-assisted. “Project-authored” identifies where this content was produced; it does not assert that every element has sufficient human authorship to qualify for copyright. External software dependencies are separate from this game-asset inventory and must retain their applicable licenses and notices.
 

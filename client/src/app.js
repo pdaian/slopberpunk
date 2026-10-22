@@ -105,7 +105,7 @@ async function startGame(character,newCharacter=false){
   });
   try{await connection.connect();}catch(error){connection.close();connection=null;simulation=null;setState('landing');toast(error.message);return;}
   $('#network-label').textContent='ONLINE';
-  if(newCharacter||!character.introSeen){introTime=0;introShot=-1;setState('cinematic');audio.unlock().catch(()=>{});}
+  if(newCharacter||!character.introSeen){introTime=0;introShot=-1;setState('cinematic');}
   else{setState('playing');toast('Welcome back. Your journal shows your current objectives.');}
   updateHUD();
 }
@@ -231,7 +231,7 @@ function showLineages(){
 }
 function showGuide(){
   const controls=[['Move','W A S D'],['Look','HOLD RMB / DRAG'],['Capture mouse','DOUBLE CLICK'],['Jump / sprint','SPACE / SHIFT'],['Dash','Q'],['Talk / use / lift','E'],['Cycle targets','TAB'],['Abilities','1–6'],['Ghostline','R'],['Medkit','H'],['Journal / talents','J / T'],['Gear / map','I / M'],['Dungeons / group finder','G'],['Community / guild','C / U'],['Camera / menu','V / ESC']];
-  panel('Controls and gameplay.',`<div class="guide-grid">${controls.map(([a,b])=>`<div class="guide-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><p class="guide-note">CONTROLLER · Left stick moves, right stick looks. A jumps, B dashes, X interacts, Y cycles targets. RT fires; LB surges; RB heals; LT shields. D-pad up uses a medkit, down opens the map, left/right use unlocked abilities. Right-stick press (R3) casts Ghostline. View opens the journal. Menu opens settings. In menus, use the D-pad and A.</p><p class="guide-note">TOUCH · Use the left movement pad and drag the world to look. Tap the action bar to cast. TARGET chooses a nearby enemy; USE talks to contacts, activates terminals, or rides a lift.</p><article class="info-card ghostline-guide"><span class="tag">GHOSTLINE / LEVEL 0 / R · R3 · TOUCH HOTBAR</span><h3>Replay your route to set up a shockwave.</h3><p>Move at least 12 m over 2 seconds, then cast Ghostline. A cyan runner replays up to 6 seconds of your route. After 0.6 seconds, cross it to trigger the blast: a 10 m shockwave hits visible enemies, restores your dash, and returns 20 energy. Another player crossing it adds 50% power and restores both runners. Costs 30 energy; 18-second cooldown. No target needed.</p><p>Try it: sprint past an enemy, press R, turn, and dash back through your afterimage. With a friend, lay your route through their fight and let them make contact. Follow the dotted cyan trail and the moving runner, also shown on the minimap.</p></article><div class="card-grid"><article class="info-card"><h3>Combine talents from any branch.</h3><p>Everyone carries an arc carbine, a disruption pulse, a healing protocol, and a kinetic shield. Earn a talent point every five levels. Specialize in holding ground, restoring allies, breaking enemy rhythm, or moving between them.</p></article><article class="info-card"><h3>Death has a cost.</h3><p>Outside expeditions, death costs 5% of your credits (up to 50). Release your spirit at the nearest graveyard, then follow your body marker. Recover within 12 m with a clear view to return at 50% health and energy. A Remembrance keeper can revive you at the graveyard at 25%, charging another 10% of your credits (up to 100) and giving 60 seconds of resurrection sickness: half damage and 25% slower movement. Spirits can use lifts; ESC / Menu opens recovery options.</p><h3>Every shot is a roll.</h3><p>Position and range matter. A d100 resolves misses and critical hits. Stronger enemies are harder to hit. Watch your energy, interrupt incoming attacks, and save a dash for the way out.</p></article></div><p class="guide-note">Character voices have individual pitch and pacing and use installed local English voices. VOICES toggles speech; dialogue and story captions remain available. Standard USB controllers require browser support and a secure origin. GPL-3.0-or-later. Source and original assets are yours to modify under the license.</p>`,'CONTROLS / SYSTEMS','guide');
+  panel('Controls and gameplay.',`<div class="guide-grid">${controls.map(([a,b])=>`<div class="guide-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><p class="guide-note">CONTROLLER · Left stick moves, right stick looks. A jumps, B dashes, X interacts, Y cycles targets. RT fires; LB surges; RB heals; LT shields. D-pad up uses a medkit, down opens the map, left/right use unlocked abilities. Right-stick press (R3) casts Ghostline. View opens the journal. Menu opens settings. In menus, use the D-pad and A.</p><p class="guide-note">TOUCH · Use the left movement pad and drag the world to look. Tap the action bar to cast. TARGET chooses a nearby enemy; USE talks to contacts, activates terminals, or rides a lift.</p><article class="info-card ghostline-guide"><span class="tag">GHOSTLINE / LEVEL 0 / R · R3 · TOUCH HOTBAR</span><h3>Replay your route to set up a shockwave.</h3><p>Move at least 12 m over 2 seconds, then cast Ghostline. A cyan runner replays up to 6 seconds of your route. After 0.6 seconds, cross it to trigger the blast: a 10 m shockwave hits visible enemies, restores your dash, and returns 20 energy. Another player crossing it adds 50% power and restores both runners. Costs 30 energy; 18-second cooldown. No target needed.</p><p>Try it: sprint past an enemy, press R, turn, and dash back through your afterimage. With a friend, lay your route through their fight and let them make contact. Follow the dotted cyan trail and the moving runner, also shown on the minimap.</p></article><div class="card-grid"><article class="info-card"><h3>Combine talents from any branch.</h3><p>Everyone carries an arc carbine, a disruption pulse, a healing protocol, and a kinetic shield. Earn a talent point every five levels. Specialize in holding ground, restoring allies, breaking enemy rhythm, or moving between them.</p></article><article class="info-card"><h3>Death has a cost.</h3><p>Outside expeditions, death costs 5% of your credits (up to 50). Release your spirit at the nearest graveyard, then follow your body marker. Recover within 12 m with a clear view to return at 50% health and energy. A Remembrance keeper can revive you at the graveyard at 25%, charging another 10% of your credits (up to 100) and giving 60 seconds of resurrection sickness: half damage and 25% slower movement. Spirits can use lifts; ESC / Menu opens recovery options.</p><h3>Every shot is a roll.</h3><p>Position and range matter. A d100 resolves misses and critical hits. Stronger enemies are harder to hit. Watch your energy, interrupt incoming attacks, and save a dash for the way out.</p></article></div><p class="guide-note">Character voices have individual pitch and pacing. Local English voices are preferred; other browser voices may need an internet connection. Use Settings → TEST VOICE to check playback. VOICES toggles speech; dialogue and story captions remain available. Standard USB controllers require browser support and a secure origin. GPL-3.0-or-later. Source and original assets are yours to modify under the license.</p>`,'CONTROLS / SYSTEMS','guide');
 }
 function questObjective(q){return objectiveText(questView(q,simulation.character).step,data);}
 function questCard(q,c,atNpc=false){
@@ -290,7 +290,8 @@ function showMap(region=mapRegion){
   drawMap($('#full-map'),true);
 }
 function showSettings(){
-  panel('Settings.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Original locally synthesized ambient score and effects.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Character voices<small>${audio.voices.length?'Distinct character pitch and pacing using installed English voices. Captions remain available when muted.':'No local English voice detected. Captions are available; install an offline English voice to hear characters.'}</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="setting-row"><label for="setting-quality">Render resolution<small>Lower this on mobile hardware to improve frame pacing.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Volumetric light<small>Atmospheric sunlight and Commons lamp shafts. Low resolution skips lamp shafts.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Look sensitivity</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">Third person camera<small>Toggle at any time with V.</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">EXPORT SIGNED CHARACTER</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">Server character · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS','settings');
+  panel('Settings.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Original locally synthesized ambient score and effects.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Character voices<small id="voice-status" role="status">${esc(audio.voiceMessage)}</small><small>Local English voices are preferred; other browser voices may use an online speech service. No microphone is needed.</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="test-voice">TEST VOICE ♫</button></div><div class="setting-row"><label for="setting-quality">Render resolution<small>Lower this on mobile hardware to improve frame pacing.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Volumetric light<small>Atmospheric sunlight and Commons lamp shafts. Low resolution skips lamp shafts.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Look sensitivity</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">Third person camera<small>Toggle at any time with V.</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">EXPORT SIGNED CHARACTER</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">Server character · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS','settings');
+  updateVoiceButton();
 }
 async function showAccount(mode='login'){
   await sessionReady;
@@ -316,8 +317,8 @@ function wireEvents(){
   $('#reclaim-corpse').onclick=()=>act({type:'reclaimCorpse'});
   $('#return-graveyard').onclick=()=>act({type:'returnToGraveyard'});
   $('#spirit-healer').onclick=showSpiritHealer;
-  $('#repeat-guidance').onclick=()=>{if(currentGuide)audio.speak(currentGuide.line,currentGuide.speaker);};
-  $('#voice-toggle').onclick=()=>{audio.narration=!audio.narration;if(!audio.narration)audio.stopVoice();else if(currentGuide)audio.speak(currentGuide.line,currentGuide.speaker);updateVoiceButton();};
+  $('#repeat-guidance').onclick=()=>{if(currentGuide)replayVoice(currentGuide.line,currentGuide.speaker);};
+  $('#voice-toggle').onclick=()=>{audio.narration=!audio.narration;if(audio.narration&&currentGuide)replayVoice(currentGuide.line,currentGuide.speaker);updateVoiceButton();};
   $('#interaction').onclick=()=>perform('interact');
   $('#character-form').addEventListener('change',()=>{selectedRace=$('input[name="race"]:checked').value;selectedFaction=$('input[name="faction"]:checked').value;updateChoices();});
   $('#character-form').addEventListener('submit',async e=>{
@@ -345,8 +346,9 @@ function wireEvents(){
       else if(action==='learn-talent'){act({type:'talent',id});setTimeout(refreshPanel,250);}
       else if(action==='buy'){act({type:'buy',item:id});setTimeout(refreshPanel,250);}
       else if(action==='use-medkit'){act({type:'medkit'});setTimeout(showInventory,250);}
-      else if(action==='speak'){audio.narration=true;updateVoiceButton();if(!audio.speak(npcDialogue(data.npcs.find(n=>n.id===id)),id))toast('No local English speech voice is available. Dialogue remains on screen.');}
-      else if(action==='quest-voice'){const q=data.quests.find(q=>q.id===id);if(q)audio.speak(simulation.character.completed.includes(id)?q.completion:q.briefing,q.giver);}
+      else if(action==='speak')replayVoice(npcDialogue(data.npcs.find(n=>n.id===id)),id);
+      else if(action==='test-voice')replayVoice('Welcome to Vesper. Character voices are ready.');
+      else if(action==='quest-voice'){const q=data.quests.find(q=>q.id===id);if(q)replayVoice(simulation.character.completed.includes(id)?q.completion:q.briefing,q.giver);}
       else if(action==='healer-confirm'){act({type:'spiritHealer'});closePanel();}
       else if(action==='return-graveyard'){act({type:'returnToGraveyard'});closePanel();}
       else if(action==='reclaim-corpse'){act({type:'reclaimCorpse'});closePanel();}
@@ -378,13 +380,13 @@ function wireEvents(){
   $('#dialog-content').addEventListener('change',async e=>{
     const t=e.target;
     if(t.id==='setting-music'){if(t.checked!==audio.enabled)await audio.toggle();updateMusicButton();}
-    if(t.id==='setting-voice'){audio.narration=t.checked;updateVoiceButton();if(t.checked&&!audio.voices.length)toast('No local English voice is available. NPC dialogue stays on screen.');if(!t.checked)audio.stopVoice();}
+    if(t.id==='setting-voice'){audio.narration=t.checked;if(t.checked)replayVoice('Character voices are ready.');updateVoiceButton();}
     if(t.id==='setting-quality')renderer.quality=Number(t.value);
     if(t.id==='setting-volume')renderer.volumetric=t.checked;
     if(t.id==='setting-sensitivity')input.sensitivity=Number(t.value);
     if(t.id==='setting-camera')thirdPerson=t.checked;
   });
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){audio.stopVoice();if(connection)connection.send({type:'move',forward:0,strafe:0,yaw,jump:false,dash:false,sprint:false,sequence:++connection.sequence});}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){if(connection)connection.send({type:'move',forward:0,strafe:0,yaw,jump:false,dash:false,sprint:false,sequence:++connection.sequence});}});
   window.addEventListener('graphicslost',()=>{input.clear();toast('Graphics context lost. The renderer will reload when your device restores it.');});
 }
 function updateMusicButton(){$('#music-button').innerHTML=`<span>♫</span> SOUND ${audio.enabled?'ON':'OFF'}`;$('#music-button').setAttribute('aria-pressed',String(audio.enabled));}
@@ -422,9 +424,17 @@ function findNearest(){
   for(const object of cityLife.actors){const d=distance(p,object.position);if(d<residentRange&&world.lineOfSight(p,object.position)){residentRange=d;best={kind:'resident',object};}}
   return best;
 }
+function replayVoice(text,speaker='narrator'){
+  audio.narration=true;audio.unlock().catch(()=>{});
+  if(!audio.speak(text,speaker))toast(audio.voiceMessage);
+  const setting=$('#setting-voice');if(setting)setting.checked=true;
+  updateVoiceButton();
+}
 function updateVoiceButton(){
   $('#voice-toggle').textContent=`VOICES ${audio.narration?'ON':'OFF'}`;
   $('#voice-toggle').setAttribute('aria-pressed',String(audio.narration));
+  $('#voice-toggle').title=audio.voiceMessage;
+  const status=$('#voice-status');if(status)status.textContent=audio.voiceMessage;
 }
 function updateStoryGuide(){
   const c=simulation.character;
@@ -438,7 +448,7 @@ function updateStoryGuide(){
   if($('#story-instruction').textContent!==instruction)$('#story-instruction').textContent=instruction;
   $('#story-direction').textContent=d?`${bearing(c.position,d.position,yaw)} ${Math.ceil(distance(c.position,d.position))} m · ${d.name}${Math.abs(d.position[1]-c.position[1])>5?' · follow the marked stairs, ramps, or lifts':''}`:'';
   $('#story-hint').textContent=g.hint;
-  if(g.key!==storyCue&&!$('#panel-dialog').open&&!audio.utterance){storyCue=g.key;audio.speak(g.line,g.speaker);}
+  if(g.key!==storyCue&&!$('#panel-dialog').open&&!audio.speaking){storyCue=g.key;audio.speak(g.line,g.speaker);}
 }
 function showSpiritHealer(){
   const view=recoveryView(simulation.character,data,world,worldClock.now());
@@ -656,6 +666,7 @@ async function boot(){
   const values=await Promise.all(names.map(async name=>{const response=await fetch(`/data/${name}.json`);if(!response.ok)throw new Error(`Could not load ${name}.`);return response.json();}));data=Object.fromEntries(names.map((n,i)=>[n,values[i]]));
   validateDungeons(data.dungeons,data);
   const models=await fetch('/assets/models.json').then(r=>r.json());world=new World(data.world);validateWorldEvents(data.events,data,world);validateCityLife(data.citylife,data,world);cityLife=new CityLife(world,data.citylife);renderer=new Renderer($('#world'),world,models,cityLife);renderer.reducedMotion=reducedMotion;audio=new AudioEngine(data.audio);
+  audio.onVoiceStatus=status=>{updateVoiceButton();if(['blocked','unavailable','error'].includes(status))toast(audio.voiceMessage);};
   audio.onCaption=caption=>{$('#voice-caption').hidden=!caption||state!=='playing'||$('#panel-dialog').open;if(caption){$('#voice-speaker').textContent=caption.speaker;$('#voice-line').textContent=caption.text;}};
   community=new Community({character:()=>simulation?.character,online:()=>Boolean(connection?.open),showPanel:panel,isOpen:()=>dialogPage==='community'&&$('#panel-dialog').open,toast,races:data.races,now:()=>worldClock.now()});
   input=new Input($('#world'),perform,(dx,dy)=>{yaw-=dx;pitch=clamp(pitch+dy,-.45,1.05);});
