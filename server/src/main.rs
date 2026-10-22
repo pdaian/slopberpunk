@@ -9,6 +9,7 @@ mod founders;
 mod ghostline;
 mod quests;
 mod social;
+mod terrain;
 mod web;
 mod world_events;
 use ghostline::{GhostTrail, Ghostline};
@@ -286,6 +287,8 @@ struct Interiors {
     door_width: f64,
     door_height: f64,
     rooms: Vec<InteriorRoom>,
+    #[serde(default)]
+    upper_rooms: Vec<InteriorRoom>,
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -296,6 +299,8 @@ struct Map {
     building_grid: Grid,
     interiors: Option<Interiors>,
     platforms: Vec<Platform>,
+    #[serde(default)]
+    routes: Vec<terrain::Route>,
     lifts: Vec<Lift>,
     landmarks: Vec<Landmark>,
     enemy_spawns: Vec<Spawn>,
@@ -366,6 +371,10 @@ impl Content {
         Ok(content)
     }
     fn validate(&self) -> io::Result<()> {
+        if self.map.routes.len() > 128 || self.map.routes.iter().any(|r| !r.valid(self.map.bounds))
+        {
+            return Err(io::Error::other("Invalid city stairs, ramp, or hill"));
+        }
         self.dungeons.validate(self)?;
         self.world_events.validate(self)?;
         quests::validate(self)?;
@@ -418,21 +427,26 @@ impl Content {
                 || ![r.height, r.wall, r.door_width, r.door_height]
                     .iter()
                     .all(|v| v.is_finite() && *v > 0.0)
-                || r.height >= self.map.building_grid.height_min
+                || r.height * 3.0 >= self.map.building_grid.height_min
                 || r.door_height <= self.rule("movement", "height")
                 || r.door_height >= r.height
                 || r.door_width <= self.rule("movement", "radius") * 2.0
                 || r.door_width + r.wall * 2.0 >= width
-                || r.rooms.iter().flat_map(|room| &room.furniture).any(|item| {
-                    !item.center.iter().all(|v| v.is_finite())
-                        || !item.size.iter().all(|v| v.is_finite() && *v > 0.0)
-                        || item.center[1] - item.size[1] / 2.0 < 0.0
-                        || item.center[1] + item.size[1] / 2.0 >= r.height
-                        || [0, 2].iter().any(|&axis| {
-                            item.center[axis].abs() + item.size[axis] / 2.0 >= width / 2.0 - r.wall
-                        })
-                        || item.center[0].abs() - item.size[0] / 2.0 < r.door_width / 2.0
-                })
+                || r.rooms
+                    .iter()
+                    .chain(&r.upper_rooms)
+                    .flat_map(|room| &room.furniture)
+                    .any(|item| {
+                        !item.center.iter().all(|v| v.is_finite())
+                            || !item.size.iter().all(|v| v.is_finite() && *v > 0.0)
+                            || item.center[1] - item.size[1] / 2.0 < 0.0
+                            || item.center[1] + item.size[1] / 2.0 >= r.height
+                            || [0, 2].iter().any(|&axis| {
+                                item.center[axis].abs() + item.size[axis] / 2.0
+                                    >= width / 2.0 - r.wall
+                            })
+                            || item.center[0].abs() - item.size[0] / 2.0 < r.door_width / 2.0
+                    })
             {
                 return Err(io::Error::other(
                     "Invalid interior dimensions or obstructed aisle",
@@ -503,6 +517,7 @@ struct Building {
 struct World {
     map: Map,
     cells: HashMap<(i32, i32), Building>,
+    routes: HashMap<(i32, i32), Vec<terrain::Route>>,
 }
 fn lcg(seed: &mut u32) -> f64 {
     *seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
@@ -511,6 +526,7 @@ fn lcg(seed: &mut u32) -> f64 {
 impl World {
     fn new(map: &Map) -> Self {
         let mut cells = HashMap::new();
+        let mut routes = map.routes.clone();
         let g = &map.building_grid;
         let mut seed = map.seed;
         for ix in g.min..=g.max {
@@ -540,26 +556,95 @@ impl World {
                     .filter(|r| decoration % 5 != 0 && !r.rooms.is_empty())
                 {
                     let (h, t, door) = (room.height, room.wall, room.door_width);
-                    add([0.0, (height + h) / 2.0, 0.0], [width, height - h, depth]);
-                    for side in [-1.0, 1.0] {
-                        add([side * (width - t) / 2.0, h / 2.0, 0.0], [t, h, depth]);
-                        for wing in [-1.0, 1.0] {
+                    let base = h * 3.0;
+                    let split = base + (height - base) * 0.55;
+                    let setback = (decoration % 4) as f64 * 0.08;
+                    add(
+                        [0.0, (base + split) / 2.0, 0.0],
+                        [width, split - base, depth],
+                    );
+                    add(
+                        [0.0, (split + height) / 2.0, 0.0],
+                        [
+                            width * (1.0 - setback),
+                            height - split,
+                            depth * (1.0 - setback),
+                        ],
+                    );
+                    for floor in 0..3 {
+                        let y = f64::from(floor) * h;
+                        for side in [-1.0, 1.0] {
+                            add([side * (width - t) / 2.0, y + h / 2.0, 0.0], [t, h, depth]);
+                            for wing in [-1.0, 1.0] {
+                                add(
+                                    [
+                                        wing * (width + door) / 4.0,
+                                        y + h / 2.0,
+                                        side * (depth - t) / 2.0,
+                                    ],
+                                    [(width - door) / 2.0, h, t],
+                                );
+                            }
                             add(
                                 [
-                                    wing * (width + door) / 4.0,
-                                    h / 2.0,
+                                    0.0,
+                                    y + (h + room.door_height) / 2.0,
                                     side * (depth - t) / 2.0,
                                 ],
-                                [(width - door) / 2.0, h, t],
+                                [door, h - room.door_height, t],
+                            );
+                            if floor > 0 {
+                                add(
+                                    [0.0, y + room.door_height / 2.0, side * (depth - t) / 2.0],
+                                    [door, room.door_height, t],
+                                );
+                            }
+                        }
+                        if floor > 0 {
+                            let side = if floor == 1 { 1.0 } else { -1.0 };
+                            add([-side * 2.5, y - 0.175, 0.0], [width - 5.0, 0.35, depth]);
+                            for end in [-1.0, 1.0] {
+                                add(
+                                    [
+                                        side * (width / 2.0 - 2.5),
+                                        y - 0.175,
+                                        end * (depth / 2.0 - 2.0),
+                                    ],
+                                    [5.0, 0.35, 4.0],
+                                );
+                            }
+                        }
+                        let furniture = if floor > 0 {
+                            room.upper_rooms.get((floor - 1) as usize)
+                        } else {
+                            None
+                        }
+                        .unwrap_or(&room.rooms[decoration % room.rooms.len()]);
+                        for item in &furniture.furniture {
+                            add(
+                                [item.center[0], y + item.center[1], item.center[2]],
+                                item.size,
                             );
                         }
-                        add(
-                            [0.0, (h + room.door_height) / 2.0, side * (depth - t) / 2.0],
-                            [door, h - room.door_height, t],
-                        );
                     }
-                    for item in &room.rooms[decoration % room.rooms.len()].furniture {
-                        add(item.center, item.size);
+                    for floor in 0..2 {
+                        let side = if floor == 0 { 1.0 } else { -1.0 };
+                        let stair_x = x + side * (width / 2.0 - 2.9);
+                        routes.push(terrain::Route {
+                            start: [
+                                stair_x,
+                                f64::from(floor) * h,
+                                z - side * (depth / 2.0 - 4.0),
+                            ],
+                            end: [
+                                stair_x,
+                                f64::from(floor + 1) * h,
+                                z + side * (depth / 2.0 - 4.0),
+                            ],
+                            width: 3.8,
+                            kind: "stairs".into(),
+                            steps: 32,
+                        });
                     }
                 } else {
                     add([0.0, height / 2.0, 0.0], [width, height, depth]);
@@ -577,10 +662,81 @@ impl World {
                 );
             }
         }
+        let mut route_cells: HashMap<(i32, i32), Vec<terrain::Route>> = HashMap::new();
+        for route in routes {
+            let pad = route.width / 2.0;
+            for x in ((route.start[0].min(route.end[0]) - pad) / g.spacing).floor() as i32
+                ..=((route.start[0].max(route.end[0]) + pad) / g.spacing).floor() as i32
+            {
+                for z in ((route.start[2].min(route.end[2]) - pad) / g.spacing).floor() as i32
+                    ..=((route.start[2].max(route.end[2]) + pad) / g.spacing).floor() as i32
+                {
+                    route_cells.entry((x, z)).or_default().push(route.clone());
+                }
+            }
+        }
         Self {
             map: map.clone(),
             cells,
+            routes: route_cells,
         }
+    }
+    fn routes_at(&self, x: f64, z: f64) -> &[terrain::Route] {
+        let spacing = self.map.building_grid.spacing;
+        self.routes
+            .get(&((x / spacing).floor() as i32, (z / spacing).floor() as i32))
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+    }
+    fn step_position(
+        &self,
+        p: Vec3,
+        axis: usize,
+        amount: f64,
+        grounded: bool,
+        radius: f64,
+        height: f64,
+    ) -> Option<Vec3> {
+        let mut next = p;
+        next[axis] += amount;
+        if grounded {
+            let floor = self.floor(next[0], next[2], p[1] + 0.42, p[1] - 0.55);
+            if floor >= p[1] - 0.55 && floor <= p[1] + 0.42 {
+                next[1] = floor;
+            }
+        }
+        (!self.collides_height(next, radius, height)).then_some(next)
+    }
+    // A content update may put a saved character or corpse inside new furniture
+    // or an embankment. Preserve valid positions; recover blocked ones locally.
+    fn clear_saved_position(&self, p: Vec3) -> Vec3 {
+        if !self.collides(p, 0.65) {
+            return p;
+        }
+        for route in self.routes_at(p[0], p[2]) {
+            if let Some(y) = route.height(p[0], p[2]) {
+                let next = [p[0], y, p[2]];
+                if !self.collides(next, 0.65) {
+                    return next;
+                }
+            }
+        }
+        let spacing = self.map.building_grid.spacing;
+        if let (Some(b), Some(room)) = (
+            self.cells.get(&(
+                (p[0] / spacing).floor() as i32,
+                (p[2] / spacing).floor() as i32,
+            )),
+            &self.map.interiors,
+        ) {
+            let y = (p[1] / room.height).floor().clamp(0.0, 2.0) * room.height;
+            for next in [[b.x, y, p[2]], [b.x, y, b.z]] {
+                if !self.collides(next, 0.65) {
+                    return next;
+                }
+            }
+        }
+        self.map.spawn
     }
     fn collides(&self, p: Vec3, radius: f64) -> bool {
         self.collides_height(p, radius, 2.1)
@@ -612,7 +768,11 @@ impl World {
                 }
             }
         }
-        false
+        self.routes_at(p[0], p[2]).iter().any(|route| {
+            route
+                .height(p[0], p[2])
+                .is_some_and(|top| p[1] < top - 1e-7 && p[1] + height > route.bottom(top))
+        })
     }
     fn floor(&self, x: f64, z: f64, previous: f64, next: f64) -> f64 {
         let mut floor = self
@@ -624,6 +784,12 @@ impl World {
                     && (z - p.position[2]).abs() <= p.size[2] / 2.0
                     && previous >= p.position[1] - 0.05
                     && next <= p.position[1]
+                    && !self.routes_at(x, z).iter().any(|r| {
+                        r.end[1] == p.position[1]
+                            && r.start[1] < r.end[1]
+                            && r.height(x, z)
+                                .is_some_and(|y| y >= p.position[1] - 3.5 && y < p.position[1])
+                    })
             })
             .fold(0.0_f64, |a, p| a.max(p.position[1]));
         let spacing = self.map.building_grid.spacing;
@@ -638,6 +804,13 @@ impl World {
                     && previous >= top - 0.05
                     && next <= top
                 {
+                    floor = floor.max(top);
+                }
+            }
+        }
+        for route in self.routes_at(x, z) {
+            if let Some(top) = route.height(x, z) {
+                if previous >= top - 0.05 && next <= top {
                     floor = floor.max(top);
                 }
             }
@@ -664,6 +837,14 @@ impl World {
                             ceiling = ceiling.min(bottom - height);
                         }
                     }
+                }
+            }
+        }
+        for route in self.routes_at(p[0], p[2]) {
+            if let Some(top) = route.height(p[0], p[2]) {
+                let bottom = route.bottom(top);
+                if p[1] + height <= bottom + 0.001 && next + height >= bottom {
+                    ceiling = ceiling.min(bottom - height);
                 }
             }
         }
@@ -701,6 +882,13 @@ impl World {
                             return false;
                         }
                     }
+                }
+                if self
+                    .routes
+                    .get(&(x, z))
+                    .is_some_and(|routes| routes.iter().any(|r| r.blocks_ray(a, b)))
+                {
+                    return false;
                 }
             }
         }
@@ -1530,13 +1718,21 @@ fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
         .max(1.0) as u32;
     for _ in 0..steps {
         for axis in [0, 2] {
-            let mut next = p.c.position;
-            next[axis] += p.velocity[axis] * dt / f64::from(steps);
+            let next = world.step_position(
+                p.c.position,
+                axis,
+                p.velocity[axis] * dt / f64::from(steps),
+                p.grounded,
+                rule("radius"),
+                rule("height"),
+            );
             let arena = &data.dungeons.rules;
-            let in_bounds = p.instance.is_none()
-                || (next[0] - arena.arena[0]).abs() <= arena.arena_radius
-                    && (next[2] - arena.arena[2]).abs() <= arena.arena_radius;
-            if in_bounds && !world.collides(next, rule("radius")) {
+            let in_bounds = next.is_some_and(|next| {
+                p.instance.is_none()
+                    || (next[0] - arena.arena[0]).abs() <= arena.arena_radius
+                        && (next[2] - arena.arena[2]).abs() <= arena.arena_radius
+            });
+            if let Some(next) = next.filter(|_| in_bounds) {
                 p.c.position = next;
             } else {
                 p.velocity[axis] = 0.0;
@@ -1794,9 +1990,13 @@ impl Shard {
                         let mut c=stored.character;
                         if let Some(destination)=c.dungeon_return.take(){c.position=destination;c.health=Stats::new(&c,&self.content).health;c.revision+=1;}
                         death::restore(&mut c, &self.content);
+                        let cleared=self.world.clear_saved_position(c.position);
+                        let mut relocated=cleared!=c.position;c.position=cleared;
+                        if let Some(recovery)=&mut c.death{let corpse=self.world.clear_saved_position(recovery.corpse);relocated|=corpse!=recovery.corpse;recovery.corpse=corpse;}
+                        if relocated{c.revision+=1;}
                         let id=c.id.clone();let yaw=c.yaw;
                         let previous_position=c.position;
-                        self.players.insert(id,Player{instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:false});
+                        self.players.insert(id,Player{instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:relocated});
                         let _=reply.send(Ok(()));self.snapshots();
                     }
                     Some(Command::Transfer{player,source_time,request,reply})=>self.accept_dungeon_transfer(player,source_time,request,reply),
@@ -2735,6 +2935,74 @@ mod tests {
         d.map.interiors.as_mut().unwrap().door_height = 4.2;
         d.map.interiors.as_mut().unwrap().rooms[0].furniture[0].center[0] = 0.0;
         assert!(d.validate().is_err());
+    }
+    #[test]
+    fn walking_routes_connect_levels_in_both_directions() {
+        let d = content();
+        let w = World::new(&d.map);
+        let h = d.map.interiors.as_ref().unwrap().height;
+        for building in w.cells.values().filter(|b| b.solids.len() > 1) {
+            for floor in [1.0, 2.0] {
+                assert!(!w.collides([building.x, h * floor, building.z], 0.65));
+                assert!(
+                    (w.floor(building.x, building.z, h * floor + 0.1, h * floor - 0.1) - h * floor)
+                        .abs()
+                        < 1e-7
+                );
+            }
+        }
+        for routes in w.routes.values() {
+            for route in routes {
+                for reverse in [false, true] {
+                    let (mut p, end) = if reverse {
+                        (route.end, route.start)
+                    } else {
+                        (route.start, route.end)
+                    };
+                    let axis = if p[0] == end[0] { 2 } else { 0 };
+                    while (p[axis] - end[axis]).abs() > 1e-7 {
+                        let delta = (end[axis] - p[axis]).clamp(-0.25, 0.25);
+                        p = w
+                            .step_position(p, axis, delta, true, 0.65, 2.1)
+                            .expect("blocked stair or ramp");
+                    }
+                    assert!((p[1] - end[1]).abs() < 0.05);
+                }
+            }
+        }
+        let route = d.map.routes.iter().find(|r| r.kind == "ramp").unwrap();
+        let (x, z) = (
+            (route.start[0] + route.end[0]) / 2.0,
+            (route.start[2] + route.end[2]) / 2.0,
+        );
+        let y = route.height(x, z).unwrap();
+        assert!(!w.visible([x, 0.0, z], [x, y, z]));
+        assert!(!w.collides([x, 0.0, z], 0.65));
+        assert!((w.ceiling([x, y - 3.0, z], y, 0.65, 2.1) - (y - 0.35 - 2.1)).abs() < 1e-7);
+    }
+    #[test]
+    fn content_updates_do_not_leave_saved_positions_inside_geometry() {
+        let d = content();
+        let w = World::new(&d.map);
+        let hill = d
+            .map
+            .routes
+            .iter()
+            .find(|r| r.kind == "hill" && r.start[1] > 0.0)
+            .unwrap();
+        let p = [
+            (hill.start[0] + hill.end[0]) / 2.0,
+            0.0,
+            (hill.start[2] + hill.end[2]) / 2.0,
+        ];
+        assert!(w.collides(p, 0.65));
+        let recovered = w.clear_saved_position(p);
+        assert!(!w.collides(recovered, 0.65));
+        assert_eq!(recovered[1], hill.height(p[0], p[2]).unwrap());
+        assert_eq!(w.clear_saved_position(d.map.spawn), d.map.spawn);
+        let b = w.cells.values().find(|b| b.solids.len() > 1).unwrap();
+        let blocked = [b.x + b.width / 2.0 - 0.2, 0.0, b.z];
+        assert!(!w.collides(w.clear_saved_position(blocked), 0.65));
     }
     #[test]
     fn deterministic_rng_matches_client() {

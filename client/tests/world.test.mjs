@@ -2,10 +2,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { World } from '../src/world.js';
+import { World, routeHeight, routeBlocksRay } from '../src/world.js';
 import { Prediction } from '../src/prediction.js';
 import { CharacterMeshes, motionPose } from '../src/character.js';
-import { box, bevelBox, ellipsoid, transformMesh } from '../src/geometry.js';
+import { box, bevelBox, ellipsoid, slope, transformMesh } from '../src/geometry.js';
 import { Renderer } from '../src/renderer.js';
 import { CityLife } from '../src/citylife.js';
 
@@ -20,7 +20,79 @@ test('interiors preserve the original deterministic city footprint',()=>{
   const legacy=new World({...data.world,interiors:undefined});
   assert.equal(world.buildings.length,725);assert.equal(rooms.length,577);
   for(let i=0;i<725;i++)for(const key of ['x','z','w','d','h','shade','accent','seed'])assert.equal(world.buildings[i][key],legacy.buildings[i][key]);
-  assert.equal(new Set(rooms.map(b=>b.interior.name)).size,4);
+  assert.equal(new Set(rooms.map(b=>b.interior.name)).size,8);
+});
+
+test('every address has a stable identity and a district-specific purpose',()=>{
+  assert.equal(new Set(world.buildings.map(b=>b.identity.name)).size,725);
+  assert.equal(new Set(world.buildings.map(b=>b.identity.address)).size,725);
+  assert.equal(new Set(world.buildings.map(b=>b.identity.detail)).size,8);
+  for(const b of world.buildings){
+    assert.ok(b.identity.purpose&&b.identity.history&&b.identity.material&&b.identity.role);
+    assert.equal(world.district([b.x,40,b.z]).id,b.identity.district,'height must not rename a neighborhood');
+  }
+});
+
+test('stairs, ramps and hills are traversable in both directions without jumping',()=>{
+  for(const route of world.routes){
+    for(const reverse of [false,true]){
+      const start=reverse?route.end:route.start,end=reverse?route.start:route.end;
+      const sim=player(start),dx=end[0]-start[0],dz=end[2]-start[2],length=Math.hypot(dx,dz);
+      sim.character.yaw=Math.atan2(-dx,-dz);
+      const limit=Math.ceil(length/(data.rules.movement.speed*.05))*3+20;
+      let progress=0;
+      for(let frame=0;frame<limit&&progress<length-.05;frame++){
+        sim.tick(.05,{forward:1,sprint:frame%100>50,dash:frame%100===60});
+        const p=sim.character.position;progress=((p[0]-start[0])*dx+(p[2]-start[2])*dz)/length;
+        assert.equal(world.collides(...p),false,`${route.id}: entered geometry at ${p}`);
+      }
+      assert.ok(progress>=length-.05,`${route.id}: ${reverse?'descent':'ascent'} stopped at ${sim.character.position}`);
+      assert.ok(Math.abs(sim.character.position[1]-end[1])<.45,`${route.id}: missed landing`);
+    }
+  }
+});
+
+test('ramps have solid undersides, block cross-floor sightlines, and allow an underpass',()=>{
+  const route=data.world.routes.find(r=>r.id==='commons-ramp'),x=route.start[0],z=(route.start[2]+route.end[2])/2,y=routeHeight(route,x,z);
+  assert.equal(world.collides(x,y,z),false);assert.ok(world.collides(x,y-.2,z));
+  assert.equal(world.collides(x,0,z),false);
+  near(world.ceilingAt(x,z,y-3,y,.65,2.1),y-.35-2.1);
+  assert.equal(world.lineOfSight([x,0,z],[x,y,z]),false);
+  assert.equal(routeBlocksRay(route,[x,y+1,z],[x,y+1,z+1]),false);
+  const sim=player([x,y,z]);sim.tick(.05,{jump:true});
+  assert.ok(sim.character.position[1]>y);assert.equal(sim.grounded,false,'jump must leave the slope');
+  for(let i=0;i<120;i++)sim.tick(.025,{});
+  near(sim.character.position[1],y);
+});
+
+test('malformed routes cannot introduce invalid heights or unwalkable steps',()=>{
+  const base=data.world.routes.find(r=>r.kind==='stairs');
+  for(const patch of [{end:base.start},{end:[base.end[0]+4,base.end[1],base.end[2]]},{steps:0},{steps:1},{width:Infinity},{kind:'missing'},{start:[0,-1,0]}]){
+    assert.throws(()=>new World({...data.world,routes:[{...base,...patch}]}),/Invalid city/);
+  }
+});
+
+test('sloped slabs and embankments have outward faces and finite unit normals',()=>{
+  for(const filled of [true,false])for(const reverse of [true,false]){
+    const a=[0,0,0],b=[0,8,32],v=[];slope(v,reverse?b:a,reverse?a:b,6,'#56664b',filled);
+    assert.ok(v.length>0&&v.every(Number.isFinite));
+    const center=[0,filled?2:3.825,16];
+    for(let i=0;i<v.length;i+=30){
+      const a=v.slice(i,i+3),b=v.slice(i+10,i+13),c=v.slice(i+20,i+23),n=v.slice(i+3,i+6);
+      near(Math.hypot(...n),1);
+      assert.ok(n.reduce((sum,x,j)=>sum+x*((a[j]+b[j]+c[j])/3-center[j]),0)>0,'inward slope face');
+    }
+  }
+});
+
+test('upper floors have usable rooms, closed windows and stairwell openings',()=>{
+  const h=data.world.interiors.height;
+  for(const b of rooms)for(const floor of [1,2]){
+    near(world.floorAt(b.x,b.z,floor*h+.1,floor*h-.1),floor*h);
+    assert.equal(world.interiorAt([b.x,floor*h,b.z]),b);
+    assert.equal(world.collides(b.x,floor*h,b.z),false);
+    assert.ok(world.collides(b.x,floor*h,b.z+b.d/2),'upper window must stop a player');
+  }
 });
 
 test('every furnished ground floor has two accessible doors and an unobstructed aisle',()=>{

@@ -4,12 +4,12 @@
   "names": { "first": ["Neri", "Sol", "Em", "Tavi", "Jun", "Rook", "Lio", "Ansa", "Kit", "Mina", "Daro", "Nim"], "last": ["Reed", "Venn", "Coil", "Moss", "Ash", "Vale", "Silt", "Quill", "Marr", "Wren", "Slate", "Bell"] },
   "roles": {
     "cook": { "title": "Kitchen worker", "activity": "serve", "nightActivity": "work", "work": "Serving the next bowl", "rest": "Cleaning up between shifts", "line": "Bring the bowl back. We can replace the food more easily than the ceramic." },
-    "courier": { "title": "Neighborhood courier", "activity": "carry", "work": "Delivering supplies", "rest": "Finishing the last delivery", "line": "I know which doors open late. The route planner only knows which ones pay." },
+    "courier": { "title": "Neighborhood courier", "activity": "carry", "work": "Delivering supplies", "rest": "Finishing the last delivery", "line": "The clinic stays open late. I take its parcels upstairs before the meal delivery." },
     "technician": { "title": "Maintenance worker", "activity": "repair", "nightActivity": "work", "work": "Repairing a shared service", "rest": "Checking the night circuit", "line": "Keep the old part until the new one works. That's the whole apprenticeship." },
     "patient": { "title": "Clinic visitor", "activity": "wait", "work": "Waiting for an appointment", "rest": "Waiting for the night medic", "line": "I traded a shift to get here. The attendant says I can stay until someone sees me." },
     "medic": { "title": "Clinic attendant", "activity": "work", "work": "Preparing the next appointment", "rest": "Covering the night clinic", "line": "You can come in without a balance. We ask your name before your account." },
     "archivist": { "title": "Records clerk", "activity": "work", "nightActivity": "wait", "work": "Comparing witness records", "rest": "Sealing the day's records", "line": "A blank entry can mean someone refused. Don't fill it in for them." },
-    "neighbor": { "title": "Local resident", "activity": "talk", "nightActivity": "wait", "work": "Catching up with a neighbor", "rest": "Waiting for someone to come home", "line": "I used to recognize this block by the signs. Now I recognize the people waiting under them." },
+    "neighbor": { "title": "Local resident", "activity": "talk", "nightActivity": "wait", "work": "Catching up with a neighbor", "rest": "Waiting for someone to come home", "line": "I live upstairs. I’m waiting for my neighbor to come back from the late shift." },
     "customer": { "title": "Shift worker", "activity": "eat", "work": "Taking a meal break", "rest": "Eating after the late shift", "line": "Five minutes with something hot. Then I can think about tomorrow." },
     "gardener": { "title": "Courtyard caretaker", "activity": "tend", "nightActivity": "wait", "work": "Tending the shared planters", "rest": "Saving water for the morning", "line": "That tray is seedlings. This one is what we couldn't keep alive. We count both." },
     "commuter": { "title": "Transit regular", "activity": "wait", "nightActivity": "talk", "work": "Checking the departure board", "rest": "Waiting for the night connection", "line": "If the lift is running, I get home before my daughter wakes. That's my timetable." }
@@ -19,85 +19,85 @@
       "id": "market", "name": "Lantern Market", "contact": "nella", "color": "#efb778", "motif": "market",
       "premise": "The free kitchen feeds the Commons, but its donated water is being billed to the same families twice. Nella keeps serving while the bowls, debts, and queues pile up.",
       "sites": ["lantern-kitchen", "commons-water", "pantry-ledger"],
-      "residents": [{"name":"Neri Bell","role":"cook"},{"name":"Sol Reed","role":"courier"},{"name":"Em Marr","role":"customer"},{"name":"Tavi Coil","role":"technician"},{"name":"Jun Moss","role":"neighbor"},{"name":"Rook Venn","role":"customer"},{"name":"Mina Wren","role":"cook"},{"name":"Kit Slate","role":"courier"}],
+      "residents": [{"name":"Neri Bell","role":"cook","line":"The early pot needs another ten minutes. Mina has the next shift."},{"name":"Sol Reed","role":"courier","line":"I’ve got water for the kitchen, then two parcels for Lantern Lane."},{"name":"Em Marr","role":"customer","line":"They kept my portion when my shift ran late. I brought the bowl back."},{"name":"Tavi Coil","role":"technician","line":"The washing tap drips after you close it. I’m looking for the right washer."},{"name":"Jun Moss","role":"neighbor","line":"We’re collecting stools for the upstairs room. Mine only needs one leg fixed."},{"name":"Rook Venn","role":"customer","line":"I can carry the empty jugs back after lunch."},{"name":"Mina Wren","role":"cook","line":"Nella gets an hour off when I take over. Please leave the large pot on."},{"name":"Kit Slate","role":"courier","line":"These parcels are for upstairs. The stairwell is quicker than waiting for a lift."}],
       "events": [
-        {"name":"The long lunch", "detail":"The kitchen crew serves the shift queue.", "activity":"serve"},
+        {"name":"Meal service", "detail":"The kitchen crew serves the shift queue.", "activity":"serve"},
         {"name":"Water delivery", "detail":"Carriers unload the Commons' water allotment.", "activity":"carry"},
-        {"name":"The bowl exchange", "detail":"Neighbors wash and return the kitchen's ceramics.", "activity":"work"}
+        {"name":"Bowl washing", "detail":"Neighbors wash and return the kitchen's ceramics.", "activity":"work"}
       ],
       "stages": [
-        {"status":"A queue that never gets shorter", "line":"They call it donated water. Nella has the receipts from the families who paid for it.", "activity":"wait"},
-        {"quest":"neighborhood-market-00", "contactLine":"Fourteen missing diners. I know every one of them. Now we need to find out why donating water made their bills grow.", "status":"The missing bowls have names", "line":"You counted the empty places. Nella kept those portions warm anyway.", "activity":"talk"},
-        {"quest":"neighborhood-market-01", "contactLine":"The receipts match. I'll keep them beside the counter until the kitchen has a rota that everyone can read.", "status":"The second bill is public", "line":"The meter counted every jug twice. Now the whole queue has seen the reading.", "activity":"work"},
-        {"quest":"neighborhood-market-02", "contactLine":"Take a bowl. I'm off the counter for an hour; Mina has the next shift. We still ration the water, but we don't bill the donors twice.", "status":"The kitchen belongs to its queue", "line":"We take turns at the counter now. The water is still rationed, but nobody charges us for donating it.", "activity":"serve"}
+        {"status":"Kitchen water shut off", "line":"They call it donated water. Nella has the receipts from the families who paid for it.", "activity":"wait"},
+        {"quest":"neighborhood-market-00", "contactLine":"Fourteen missing diners. I know every one of them. Now we need to find out why donating water made their bills grow.", "status":"Missing diners identified", "line":"You counted the empty places. Nella kept those portions warm anyway.", "activity":"talk"},
+        {"quest":"neighborhood-market-01", "contactLine":"The receipts match. I'll keep them beside the counter until the kitchen has a rota that everyone can read.", "status":"Double billing confirmed", "line":"The meter counted every jug twice. Now the whole queue has seen the reading.", "activity":"work"},
+        {"quest":"neighborhood-market-02", "contactLine":"Take a bowl. I'm off the counter for an hour; Mina has the next shift. We still ration the water, but we don't bill the donors twice.", "status":"Kitchen shifts shared", "line":"We take turns at the counter now. The water is still rationed, but nobody charges us for donating it.", "activity":"serve"}
       ]
     },
     {
       "id": "archive", "name": "Glass Steps", "contact": "elin", "color": "#c9a2ec", "motif": "archive",
       "premise": "A cooling failure makes the clinics choose which memories stay readable. Elin suspects the priority list ranks a person's remaining payments above their wishes.",
       "sites": ["glass-witness", "cooling-priority", "consent-desk"],
-      "residents": [{"name":"Daro Quill","role":"archivist"},{"name":"Ansa Vale","role":"medic"},{"name":"Nim Slate","role":"technician"},{"name":"Lio Bell","role":"neighbor"},{"name":"Iva Reed","role":"courier"},{"name":"Esme Coil","role":"archivist"},{"name":"Sen Marr","role":"customer"}],
+      "residents": [{"name":"Daro Quill","role":"archivist","line":"The names match, but the dates don’t. I need to check the original form."},{"name":"Ansa Vale","role":"medic","line":"The next patient needs the written instructions. Leave a copy on the desk."},{"name":"Nim Slate","role":"technician","line":"This cooling cell is warm already. I’ll swap it before the next appointment."},{"name":"Lio Bell","role":"neighbor","line":"My mother asked to keep that recording. I’m waiting for the clerk to confirm it."},{"name":"Iva Reed","role":"courier","line":"These consent forms are sealed. I just need someone to sign for the delivery."},{"name":"Esme Coil","role":"archivist","line":"The reading room is upstairs. Bring the paper copies back before my shift ends."},{"name":"Sen Marr","role":"customer","line":"I’ve got time for lunch if the cooling check finishes on schedule."}],
       "events": [
         {"name":"Open witness hour", "detail":"Clerks compare copies with the people who remember them.", "activity":"talk"},
         {"name":"Coolant rotation", "detail":"The maintenance crew changes the archive's cooling cells.", "activity":"repair"},
         {"name":"Consent collection", "detail":"Couriers collect sealed permissions from the clinics.", "activity":"work"}
       ],
       "stages": [
-        {"status":"A person's last week is warming", "line":"The premium vault is cold. My mother's shelf isn't. They say the order is automatic.", "activity":"wait"},
-        {"quest":"neighborhood-archive-00", "contactLine":"That ordinary morning matters to its witness. I won't let the index choose for her. Check the cooling order next.", "status":"A witness contradicts the index", "line":"She asked to keep one ordinary morning. The index marked it disposable.", "activity":"talk"},
-        {"quest":"neighborhood-archive-01", "contactLine":"The queue sorts by money before it reads consent. We can free duplicate space, but only if its witnesses agree.", "status":"Cooling by credit score", "line":"Elin found the payment column. We weren't imagining which shelves warmed first.", "activity":"repair"},
-        {"quest":"neighborhood-archive-02", "contactLine":"The cold space rotates now. People signed away copies, not their right to refuse. I keep both kinds of answer here.", "status":"Consent before collateral", "line":"We rotate the cold space by consent now. I gave up a copy so someone else could keep their only one.", "activity":"work"}
+        {"status":"Uneven cooling", "line":"The premium vault is cold. My mother's shelf isn't. They say the order is automatic.", "activity":"wait"},
+        {"quest":"neighborhood-archive-00", "contactLine":"That ordinary morning matters to its witness. I won't let the index choose for her. Check the cooling order next.", "status":"Rejected record found", "line":"She asked to keep one ordinary morning. The index marked it disposable.", "activity":"talk"},
+        {"quest":"neighborhood-archive-01", "contactLine":"The queue sorts by money before it reads consent. We can free duplicate space, but only if its witnesses agree.", "status":"Payment priority confirmed", "line":"Elin found the payment column. We weren't imagining which shelves warmed first.", "activity":"repair"},
+        {"quest":"neighborhood-archive-02", "contactLine":"The cold space rotates now. People signed away copies, not their right to refuse. I keep both kinds of answer here.", "status":"Consent-based storage", "line":"We rotate the cold space by consent now. I gave up a copy so someone else could keep their only one.", "activity":"work"}
       ]
     },
     {
       "id": "furnace", "name": "Copper Walk", "contact": "merek", "color": "#e99b6f", "motif": "workshop",
       "premise": "An unfinished heat line warms an empty concession office while occupied flats freeze. Merek's repair crew can redirect it, if they can protect the next shift from inheriting the debt.",
       "sites": ["cold-flats", "heat-diverter", "shift-charter"],
-      "residents": [{"name":"Ona Ash","role":"technician"},{"name":"Tess Coil","role":"technician"},{"name":"Vale Moss","role":"courier"},{"name":"Ren Wren","role":"customer"},{"name":"Pell Slate","role":"neighbor"},{"name":"Ada Bell","role":"cook"},{"name":"Caro Venn","role":"technician"}],
+      "residents": [{"name":"Ona Ash","role":"technician","line":"This coupling has been repaired twice. The pressure test comes before we fit it."},{"name":"Tess Coil","role":"technician","line":"Hold the light here. I can’t read the stamp through the soot."},{"name":"Vale Moss","role":"courier","line":"I’ve brought two valves. The depot is still looking for a third."},{"name":"Ren Wren","role":"customer","line":"I’m on break until the next crew signs in. There’s soup left if you want some."},{"name":"Pell Slate","role":"neighbor","line":"My flat gets heat after six. I’m checking whether upstairs is on the same schedule."},{"name":"Ada Bell","role":"cook","line":"The night crew takes its food in tins. Leave the lids by the sink."},{"name":"Caro Venn","role":"technician","line":"An apprentice shouldn’t sign for damage older than they are. I’m checking the form."}],
       "events": [
-        {"name":"Tools on the table", "detail":"Repair crews rebuild the block's worn heat couplings.", "activity":"repair"},
+        {"name":"Coupling repairs", "detail":"Repair crews rebuild the block's worn heat couplings.", "activity":"repair"},
         {"name":"Protected break", "detail":"The outgoing crew eats while the relief crew checks in.", "activity":"eat"},
         {"name":"Shared parts run", "detail":"Couriers bring reclaimed parts to the public workbench.", "activity":"carry"}
       ],
       "stages": [
-        {"status":"Warm pipes, cold rooms", "line":"Put your hand on the office wall. Warm. Nobody's worked there in eleven years.", "activity":"repair"},
-        {"quest":"neighborhood-furnace-00", "contactLine":"Twenty-three occupied flats. They were never empty; they were outside the account. Let's see where their heat went.", "status":"The cold flats are counted", "line":"Merek wrote down every flat. Including the ones the housing register calls empty.", "activity":"talk"},
-        {"quest":"neighborhood-furnace-01", "contactLine":"We can reach the bypass. We also need a rota that doesn't leave the youngest worker holding eleven years of repair debt.", "status":"The diverter can be reached", "line":"The bypass is ready. We won't put an apprentice's name on the repair bond.", "activity":"repair"},
-        {"quest":"neighborhood-furnace-02", "contactLine":"The office is cold and the risers take turns. My crew's eating. For once, I can tell you who's coming to relieve them.", "status":"Heat on a shared rota", "line":"My room is warm for six hours. The next six belong to the upstairs family. I'll take a fair clock over that empty office.", "activity":"eat"}
+        {"status":"Occupied flats without heat", "line":"Put your hand on the office wall. Warm. Nobody's worked there in eleven years.", "activity":"repair"},
+        {"quest":"neighborhood-furnace-00", "contactLine":"Twenty-three occupied flats. They were never empty; they were outside the account. Let's see where their heat went.", "status":"Residents counted", "line":"Merek wrote down every flat. Including the ones the housing register calls empty.", "activity":"talk"},
+        {"quest":"neighborhood-furnace-01", "contactLine":"We can reach the bypass. We also need a rota that doesn't leave the youngest worker holding eleven years of repair debt.", "status":"Bypass inspected", "line":"The bypass is ready. We won't put an apprentice's name on the repair bond.", "activity":"repair"},
+        {"quest":"neighborhood-furnace-02", "contactLine":"The office is cold and the risers take turns. My crew's eating. For once, I can tell you who's coming to relieve them.", "status":"Heating shifts shared", "line":"My room is warm for six hours. The next six belong to the upstairs family. I'll take a fair clock over that empty office.", "activity":"eat"}
       ]
     },
     {
       "id": "quiet", "name": "Listening Courts", "contact": "sable", "color": "#b5d78d", "motif": "garden",
       "premise": "The court won silence from its advertisements and lost its flood warning with them. Sable is building a warning that can be seen and felt without turning every home into a loudspeaker.",
       "sites": ["silent-warning", "tactile-relay", "court-assembly"],
-      "residents": [{"name":"Milo Moss","role":"gardener"},{"name":"Tala Reed","role":"neighbor"},{"name":"Osei Bell","role":"technician"},{"name":"Kea Marr","role":"gardener"},{"name":"Noa Quill","role":"neighbor"},{"name":"Rin Venn","role":"courier"},{"name":"Uma Slate","role":"customer"}],
+      "residents": [{"name":"Milo Moss","role":"gardener","line":"That tray needs shade. We lost three seedlings in yesterday’s heat."},{"name":"Tala Reed","role":"neighbor","line":"I wrote the meeting time on the board. Could you check it’s readable from the path?"},{"name":"Osei Bell","role":"technician","line":"The lamp works. Now I’m checking whether the handrail pulses at the same time."},{"name":"Kea Marr","role":"gardener","line":"These cuttings go to the next courtyard once they have roots."},{"name":"Noa Quill","role":"neighbor","line":"I like the quiet here. I still want to know when the floodwater rises."},{"name":"Rin Venn","role":"courier","line":"Two grocery boxes for the clinic, then I’m taking the garden stairs."},{"name":"Uma Slate","role":"customer","line":"I’m waiting for my father. He stops at every planter on the way here."}],
       "events": [
         {"name":"Courtyard tending", "detail":"Caretakers share the day's water between the planters.", "activity":"tend"},
-        {"name":"A quiet assembly", "detail":"Neighbors compare written notices around the court.", "activity":"talk"},
+        {"name":"Courtyard meeting", "detail":"Neighbors compare written notices around the court.", "activity":"talk"},
         {"name":"Warning inspection", "detail":"Technicians check the court's visual and tactile signals.", "activity":"repair"}
       ],
       "stages": [
-        {"status":"The warning went quiet too", "line":"We took the advertisements down. Nobody told us the flood warning shared their wire.", "activity":"wait"},
-        {"quest":"neighborhood-quiet-00", "contactLine":"The advisory arrived. None of our neighbors received it. We need a warning people can see and feel, including when it fails.", "status":"An unwitnessed warning", "line":"Sable kept the missed alarm in the minutes. Winning quiet didn't make us safe.", "activity":"talk"},
-        {"quest":"neighborhood-quiet-01", "contactLine":"The lamp and rail agree. A successful test won't check tomorrow's battery. Put names on the inspection rota.", "status":"A signal you can feel", "line":"Try the rail when the lamp pulses. My father can feel that through his gloves.", "activity":"repair"},
-        {"quest":"neighborhood-quiet-02", "contactLine":"Two neighbors check the battery each shift. The lamps and rail belong to the court. Your room's speaker still belongs to you.", "status":"Quiet, with a way to warn", "line":"The rail and lamps take turns being checked. We kept the quiet, and made someone responsible for the warning.", "activity":"tend"}
+        {"status":"Flood warning disconnected", "line":"We took the advertisements down. Nobody told us the flood warning shared their wire.", "activity":"wait"},
+        {"quest":"neighborhood-quiet-00", "contactLine":"The advisory arrived. None of our neighbors received it. We need a warning people can see and feel, including when it fails.", "status":"Failed warning traced", "line":"Sable kept the missed alarm in the minutes. Winning quiet didn't make us safe.", "activity":"talk"},
+        {"quest":"neighborhood-quiet-01", "contactLine":"The lamp and rail agree. A successful test won't check tomorrow's battery. Put names on the inspection rota.", "status":"Lamp and rail tested", "line":"Try the rail when the lamp pulses. My father can feel that through his gloves.", "activity":"repair"},
+        {"quest":"neighborhood-quiet-02", "contactLine":"Two neighbors check the battery each shift. The lamps and rail belong to the court. Your room's speaker still belongs to you.", "status":"Inspection shifts assigned", "line":"The rail and lamps take turns being checked. We kept the quiet, and made someone responsible for the warning.", "activity":"tend"}
       ]
     },
     {
       "id": "skybridge", "name": "Last Connection", "contact": "ivo", "color": "#81dce5", "motif": "transit",
       "premise": "The night connection is listed as empty because its cleaners and carers travel on service passes. Ivo has one shift to make the people who keep the towers alive visible to the timetable.",
       "sites": ["night-platform", "service-counter", "last-connection"],
-      "residents": [{"name":"Miri Vale","role":"commuter"},{"name":"Ari Slate","role":"technician"},{"name":"Joss Bell","role":"courier"},{"name":"Teo Reed","role":"commuter"},{"name":"Lena Quill","role":"medic"},{"name":"Rem Ash","role":"customer"},{"name":"Eli Moss","role":"commuter"}],
+      "residents": [{"name":"Miri Vale","role":"commuter","line":"I need the last lift to get home before my daughter wakes up."},{"name":"Ari Slate","role":"technician","line":"The call button sticks when it rains. I’ve got a new seal in my kit."},{"name":"Joss Bell","role":"courier","line":"The clinic parcels go first. I’ll bring the empty boxes back on the return trip."},{"name":"Teo Reed","role":"commuter","line":"That board used to say nobody rode this service. We were standing right here."},{"name":"Lena Quill","role":"medic","line":"My shift ends when the relief medic arrives. I hope their connection is running."},{"name":"Rem Ash","role":"customer","line":"This is my first hot meal since the afternoon shift."},{"name":"Eli Moss","role":"commuter","line":"I’m keeping a paper timetable until they fix the board."}],
       "events": [
         {"name":"Shift connection", "detail":"Commuters gather at the skyway's departure board.", "activity":"wait"},
         {"name":"Platform service", "detail":"The transit crew checks lights between departures.", "activity":"repair"},
-        {"name":"The last handover", "detail":"Night workers exchange supplies before the long walk home.", "activity":"carry"}
+        {"name":"Night shift deliveries", "detail":"Night workers exchange supplies before the long walk home.", "activity":"carry"}
       ],
       "stages": [
-        {"status":"An empty service full of people", "line":"Forty of us used that connection. The counter said zero. Service passes don't count as passengers.", "activity":"wait"},
-        {"quest":"neighborhood-skybridge-00", "contactLine":"Forty names on an empty service. Find where the counter loses them; I want that rule beside the closure notice.", "status":"The platform has witnesses", "line":"Ivo has our names. I didn't think I'd ever be relieved to appear on another list.", "activity":"talk"},
-        {"quest":"neighborhood-skybridge-01", "contactLine":"They accepted work as a fare, then excluded that fare from demand. Now we need a timetable someone is paid to keep.", "status":"The invisible fares are counted", "line":"Cleaning the tower buys a service pass. Apparently it didn't buy the right to need a way home.", "activity":"work"},
-        {"quest":"neighborhood-skybridge-02", "contactLine":"The late lift has a named crew and a relief time. Fewer trips than we asked for, but the last one is on the board. People can plan around it.", "status":"One last connection kept open", "line":"The late lift stays staffed now. Fewer trips, shared duty. I can tell my daughter when I'll be home.", "activity":"talk"}
+        {"status":"Night service threatened", "line":"Forty of us used that connection. The counter said zero. Service passes don't count as passengers.", "activity":"wait"},
+        {"quest":"neighborhood-skybridge-00", "contactLine":"Forty names on an empty service. Find where the counter loses them; I want that rule beside the closure notice.", "status":"Passengers counted", "line":"Ivo has our names. I didn't think I'd ever be relieved to appear on another list.", "activity":"talk"},
+        {"quest":"neighborhood-skybridge-01", "contactLine":"They accepted work as a fare, then excluded that fare from demand. Now we need a timetable someone is paid to keep.", "status":"Service passes included", "line":"Cleaning the tower buys a service pass. Apparently it didn't buy the right to need a way home.", "activity":"work"},
+        {"quest":"neighborhood-skybridge-02", "contactLine":"The late lift has a named crew and a relief time. Fewer trips than we asked for, but the last one is on the board. People can plan around it.", "status":"Late shift staffed", "line":"The late lift stays staffed now. Fewer trips, shared duty. I can tell my daughter when I'll be home.", "activity":"talk"}
       ]
     }
   ]

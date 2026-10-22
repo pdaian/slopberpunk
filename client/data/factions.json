@@ -4,8 +4,8 @@
     "name": "The Relay",
     "shortName": "RELAY",
     "color": "#47e5e2",
-    "motto": "A route belongs to everyone who needs it.",
-    "description": "Couriers and lift stewards fight hereditary tolls and private route keys. Their public roads carry medicine and drilling rigs across the same wounded basin. Iri seeks access without ownership, knowing that opening a route can accelerate the destruction of the place it reaches.",
+    "motto": "Keep the routes open.",
+    "description": "Couriers and lift crews work to remove tolls and open public roads. Iri needs help moving food and medicine, repairing crossings, and stopping collectors. Those same roads also let drilling companies reach the basin.",
     "giver": "iri",
     "role": "Mobility, rescue, and shared infrastructure"
   },
@@ -14,8 +14,8 @@
     "name": "Glass Covenant",
     "shortName": "COVENANT",
     "color": "#be9aff",
-    "motto": "A memory is a person before it is a record.",
-    "description": "Keepers of memory and consent, the Covenant refuses to turn a life into a saleable record. Its cooling vaults still draw water from dying wetlands, and its patrons buy restoration credits in forests already gone. Sera must decide what truth can survive when preservation itself consumes the world it describes.",
+    "motto": "Ask before using someone’s memories.",
+    "description": "Archivists protect personal memories from sale and unauthorized copying. Sera needs help checking permissions and exposing forged records. Keeping the vaults cold uses water that nearby households also need.",
     "giver": "sera",
     "role": "Control, protection, and memory stewardship"
   },
@@ -24,8 +24,8 @@
     "name": "Ash Foundry",
     "shortName": "FOUNDRY",
     "color": "#ffad66",
-    "motto": "No hand is fuel.",
-    "description": "Welders and heat engineers fight the machinery that makes every emergency another unpaid shift. Bram wants common ownership and a smaller furnace, but fewer cuts in Cinderwood also mean fewer wages and colder rooms. A worker's freedom cannot be made conditional on endless output; a city accustomed to that output will resist the limit.",
+    "motto": "Everyone gets a break.",
+    "description": "Welders and heat engineers want safe shifts, paid rest, and shared control of the furnaces. Bram needs help repairing the city and ending inherited work debts. Cutting fuel use protects the forest but leaves some homes cold.",
     "giver": "bram",
     "role": "Frontline defense, fabrication, and recovery"
   },
@@ -34,8 +34,8 @@
     "name": "Null Choir",
     "shortName": "CHOIR",
     "color": "#c0ef72",
-    "motto": "Listening begins where compulsion ends.",
-    "description": "Interpreters and acoustic workers defend chosen speech, quiet, and withdrawal. They oppose the sale of every listening hour, then confront a basin where silence also records extinction. Ves can give people an exit from a broadcast, but no exit from the material consequences of staying alive.",
+    "motto": "Let people choose what they hear.",
+    "description": "Interpreters and communications workers remove forced broadcasts and build accessible warnings. Ves needs help separating alarms from advertisements. Floods and shortages still threaten the neighborhoods after their speakers are switched off.",
     "giver": "ves",
     "role": "Disruption, concealment, and coordinated support"
   }

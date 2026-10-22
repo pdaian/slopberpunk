@@ -2,11 +2,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { World } from '../src/world.js';
+import { World, routeHeight } from '../src/world.js';
 import { CityLife, CITY_ACTIVITIES, cityStage, cityEvent, createRoutine, routineAt, validateCityLife } from '../src/citylife.js';
 import { availableQuest } from '../src/prediction.js';
 import { CharacterMeshes, activityPose, motionPose } from '../src/character.js';
-import { neighborhoodDetails, civilianProps } from '../src/scenery.js';
+import { neighborhoodDetails, civilianProps, streetScene } from '../src/scenery.js';
 import { distance } from '../src/math.js';
 
 const read = name => JSON.parse(readFileSync(new URL(`../data/${name}.json`, import.meta.url)));
@@ -63,19 +63,43 @@ test('invalid content fails before starting the scene', () => {
 });
 
 test('all authored and generated routes clear walls, furniture, and skyway edges', () => {
-  const life = create(), residents = [...life.locals, ...world.buildings.flatMap(b => life.blockResidents(b))];
+  const life = create(), residents = [...life.locals, ...life.travellers, ...world.buildings.flatMap(b => life.blockResidents(b))];
   assert.equal(life.locals.length, 36);
   assert.equal(new Set(residents.map(r => r.id)).size, residents.length);
   let samples = 0;
-  for (const resident of residents) for (const segment of resident.routine.segments) {
+  for (const resident of residents) for (const routine of [resident.routine,...resident.scenes||[]]) for (const segment of routine.segments) {
     const count = Math.max(1, Math.ceil(distance(segment.from, segment.to) / .5));
     for (let i = 0; i <= count; i++) {
       const p = segment.from.map((n, j) => n + (segment.to[j] - n) * i / count);
+      if(segment.route)p[1]=routeHeight(segment.route,p[0],p[2])??p[1];
       assert.equal(world.collides(...p, .55), false, `Blocked route: ${resident.id} at ${p}`);
       near(world.floorAt(p[0], p[2], p[1] + .1, p[1] - .2), p[1]);samples++;
     }
   }
   assert.ok(samples > 600000);
+});
+
+test('upper floors stay populated and street scenes return continuously to their meeting point',()=>{
+  const life=create(),b=world.buildings.find(b=>b.interior),h=data.world.interiors.height;
+  const actors=life.update(epoch,[b.x,h*2,b.z]);
+  assert.ok(actors.some(a=>a.position[1]===h*2&&a.building?.address===b.identity.address));
+  assert.ok(life.blockResidents(b).some(r=>r.routine.segments.some(s=>s.route)));
+  for(const resident of life.locals.filter(r=>r.scenes))for(const scene of resident.scenes){
+    near(scene.duration,180);
+    assert.ok(distance(routineAt(scene,179.999).position,routineAt(scene,0).position)<.01);
+    assert.ok(scene.segments.some(s=>s.activity==='scene'));
+  }
+});
+
+test('every street scene has visible props, bounded effects, and a stable reduced-motion pose',()=>{
+  for(const n of data.citylife.neighborhoods)for(let i=0;i<n.events.length;i++)for(const quality of [.5,1]){
+    const now=epoch+i*180000,index=n.events.indexOf(cityEvent(n,now)),site=data.world.landmarks.find(l=>l.id===n.sites[index]);
+    const v=[],mist=[];streetScene(v,mist,n,data.world,now,10,false,quality,site.position);
+    assert.ok(v.length>0&&v.every(Number.isFinite)&&mist.every(Number.isFinite));
+    assert.ok(v.length+mist.length<25000,'street scene exceeds its small geometry budget');
+    const still=(time)=>{const v=[],mist=[];streetScene(v,mist,n,data.world,now,time,true,quality,site.position);return[v,mist];};
+    assert.deepEqual(still(10),still(20),'reduced motion must stop local animation');
+  }
 });
 
 test('routines pause at a destination, walk at a fixed speed, and loop continuously', () => {

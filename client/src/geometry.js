@@ -35,6 +35,15 @@ function triangle(v, a, b, c, center, col, glow, yaw) {
   for (const p of [a,b,c]) v.push(center[0]+p[0]*cs+p[2]*sn, center[1]+p[1], center[2]-p[0]*sn+p[2]*cs,
     n[0]*cs+n[2]*sn, n[1], -n[0]*sn+n[2]*cs, ...col, glow);
 }
+
+// A walking slab with a continuous slope, or a filled embankment down to ground.
+export function slope(v, start, end, width, hex, filled = false) {
+  const length=Math.hypot(end[0]-start[0],end[2]-start[2]),yaw=Math.atan2(end[0]-start[0],end[2]-start[2]);
+  const low=filled?[0,0]:[start[1]-.35,end[1]-.35];
+  const y=(start[1]+end[1]+low[0]+low[1])/4,center=[(start[0]+end[0])/2,y,(start[2]+end[2])/2],col=color(hex);
+  const p=[[-width/2,low[0]-y,-length/2],[width/2,low[0]-y,-length/2],[width/2,low[1]-y,length/2],[-width/2,low[1]-y,length/2],[-width/2,start[1]-y,-length/2],[width/2,start[1]-y,-length/2],[width/2,end[1]-y,length/2],[-width/2,end[1]-y,length/2]];
+  for(const face of [[0,1,2,3],[4,7,6,5],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]])for(const ids of [[0,1,2],[0,2,3]])triangle(v,...ids.map(i=>p[face[i]]),center,col,0,yaw);
+}
 export function bevelBox(v, center, size, hex, glow = 0, yaw = 0, bevel = .12, taper = 1) {
   const [x,y,z]=size.map(n=>n/2), r=Math.min(bevel,x*.4,y*.4,z*.4), col=Array.isArray(hex)?hex:color(hex);
   const ring=(hx,hz,h,b)=>[[hx-b,h,hz],[-hx+b,h,hz],[-hx,h,hz-b],[-hx,h,-hz+b],[-hx+b,h,-hz],[hx-b,h,-hz],[hx,h,-hz+b],[hx,h,hz-b]];

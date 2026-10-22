@@ -1,6 +1,7 @@
 // Local civilian presentation; contracts and lasting progress remain server-authoritative.
 // GPL-3.0-or-later. See LICENSE.
 import { distance, mix3 } from './math.js';
+import { routeHeight } from './world.js';
 
 const mod = (n, d) => ((n % d) + d) % d;
 const races = ['human', 'lattice', 'revenant', 'bloom'];
@@ -27,7 +28,7 @@ export function createRoutine(stops, speed = 1.45) {
     }
     const travel = distance(stop.position, next.position) / speed;
     if (travel > 0) {
-      segments.push({ start: duration, end: duration + travel, from: stop.position, to: next.position, activity: 'walk', yaw: Math.atan2(next.position[0] - stop.position[0], next.position[2] - stop.position[2]) });
+      segments.push({ start: duration, end: duration + travel, from: stop.position, to: next.position, route: stop.route, activity: 'walk', yaw: Math.atan2(next.position[0] - stop.position[0], next.position[2] - stop.position[2]) });
       duration += travel;
     }
   }
@@ -39,6 +40,7 @@ export function routineAt(routine, seconds) {
   const t = mod(seconds, routine.duration);
   const segment = routine.segments.find(s => t < s.end) || routine.segments.at(-1);
   const position = mix3(segment.from, segment.to, (t - segment.start) / (segment.end - segment.start));
+  if(segment.route)position[1]=routeHeight(segment.route,position[0],position[2])??position[1];
   const velocity = segment.to.map((n, i) => (n - segment.from[i]) / (segment.end - segment.start));
   return { position, velocity, yaw: segment.yaw, activity: segment.activity };
 }
@@ -98,9 +100,21 @@ export class CityLife {
           stops.push(stop(p, j === 0 ? 'duty' : j === 1 ? 'story' : 'talk', 14 + index % 4 * 5, Math.PI));
           stops.push(stop([center[0] + lane, center[1], p[2]]));
         }
-        this.locals.push(this.resident(`local-${n.id}-${index}`, resident.name, resident.role, n.id, index * 83 + center[0] * 7 + 1234, createRoutine(stops, 1.3 + index % 3 * .15), true));
+        const actor=this.resident(`local-${n.id}-${index}`, resident.name, resident.role, n.id, index * 83 + center[0] * 7 + 1234, createRoutine(stops, 1.3 + index % 3 * .15), true);
+        actor.personal=resident.line;
+        if(index%3===0)actor.scenes=n.events.map((event,i)=>{
+          const site=world.data.landmarks.find(l=>l.id===n.sites[i%n.sites.length]),home=[center[0]+lane,center[1],center[2]+2.8];
+          const corner=[home[0],home[1],site.position[2]+2.8],work=[site.position[0]+lane,site.position[1],site.position[2]+2.8];
+          const seconds=180-2*(distance(home,corner)+distance(corner,work))/1.45;
+          return createRoutine([stop(home),stop(corner),stop(work,'scene',seconds,Math.PI),stop(corner)],1.45);
+        });
+        this.locals.push(actor);
       });
     }
+    this.travellers=(world.data.routes||[]).filter(r=>r.kind!=='hill'||r.start[1]!==r.end[1]).map((route,i)=>{
+      const resident=this.resident(`route-${route.id}`,`${content.names.first[i%content.names.first.length]} ${content.names.last[(i+4)%content.names.last.length]}`,'courier',world.district(route.start).id,3300+i*53,createRoutine([{...stop(route.start,'carry',8),route},{...stop(route.end,'work',16),route}],1.35));
+      resident.personal=`I carry supplies along ${route.name.toLowerCase()}. The handrails help when the steps are wet.`;return resident;
+    });
   }
   resident(id, name, role, neighborhood, seed, routine, local = false) {
     return { id, name, role, neighborhood, seed: Math.abs(seed), routine, local, model: 'humanoid', race: races[mod(seed, races.length)], color: this.neighborhoods.get(neighborhood)?.color || '#95aab6' };
@@ -113,15 +127,24 @@ export class CityLife {
     const x0 = b.x - b.w / 2 - 3.5, x1 = b.x + b.w / 2 + 3.5, z0 = b.z - b.d / 2 - 3.5, z1 = b.z + b.d / 2 + 3.5;
     const routes = [
       ['courier', [point(x0, z0, 'carry', 7), point(x1, z0, 'carry', 5), point(x1, z1), point(b.x, z1, 'carry', 12), point(x0, z1)]],
-      ['neighbor', [point(x0 - 1.5, z0, 'talk', 16), point(x0 - 1.5, z1, 'wait', 18), point(x0 - 3, z1), point(x0 - 3, z0)]]
+      ['neighbor', [point(x0 + .6, z0, 'talk', 16), point(x0 + .6, z1, 'wait', 18), point(x0 + 1.8, z1), point(x0 + 1.8, z0)]]
     ];
     if (b.interior) {
-      const role = b.interior.name.includes('CLINIC') ? 'medic' : b.interior.name.includes('REPAIR') ? 'technician' : b.interior.name.includes('NOODLES') ? 'cook' : 'commuter';
+      const role = b.identity.role || 'commuter';
       routes.push([role, [point(b.x - 1.2, b.z - 3, 'duty', 32, -Math.PI / 2), point(b.x - 1.2, b.z + 3, 'work', 12, -Math.PI / 2)]]);
       const visitor = role === 'medic' ? 'patient' : role === 'commuter' ? 'commuter' : 'customer';
       routes.push([visitor, [point(b.x + 1.1, z1, 'wait', 9, Math.PI), point(b.x + 1.1, b.z + 2, role === 'cook' ? 'eat' : role === 'technician' ? 'work' : 'wait', 26, -Math.PI / 2), point(b.x + 1.1, z0, 'wait', 8), point(x1 + 1.4, z0), point(x1 + 1.4, z1)]]);
     } else routes.push(['technician', [point(x0, b.z + 5, 'repair', 35, Math.PI / 2), point(x0, z1, 'wait', 12)]]);
     const residents = routes.map(([role, stops], index) => this.resident(`block-${b.seed}-${b.x}-${b.z}-${index}`, `${first[(b.seed + index * 3) % first.length]} ${last[(Math.floor(b.seed / 13) + index) % last.length]}`, role, n, b.seed + index * 137, createRoutine(stops, 1.25 + index * .12)));
+    if(b.interior){
+      const [a,c]=b.routes,h=this.world.data.interiors.height;
+      const at=(position,activity='walk',seconds=0,route)=>({position,activity,seconds,route});
+      const lobby=[b.x,0,a.start[2]],upstairs=[b.x,h*2,c.end[2]];
+      const stops=[at(lobby,'carry',10),at(a.start,'walk',0,a),at(a.end),at(c.start,'walk',0,c),at(c.end),at(upstairs,'work',24),at(c.end,'walk',0,c),at(c.start),at(a.end,'walk',0,a),at(a.start)];
+      residents.push(this.resident(`upstairs-${b.id}`,`${first[b.seed%first.length]} ${last[(b.seed+7)%last.length]}`,'courier',n,b.seed+431,createRoutine(stops,1.3)));
+      residents.push(this.resident(`tenant-${b.id}`,`${first[(b.seed+5)%first.length]} ${last[(b.seed+3)%last.length]}`,'neighbor',n,b.seed+167,createRoutine([at([b.x-1,h*2,b.z-2],'work',27),at([b.x-1,h*2,b.z+2],'talk',20)],1.2)));
+    }
+    for(const resident of residents){resident.building=b.identity;resident.personal=b.identity.purpose;}
     this.blocks.set(b, residents);
     return residents;
   }
@@ -141,8 +164,9 @@ export class CityLife {
     const hour = mod(epoch, 86400000) / 3600000, working = hour >= 6 && hour < 20;
     const radius = quality <= .5 ? 78 : 115, limit = quality <= .5 ? 30 : 64;
     const candidates = this.locals.filter(r => distance(origin, this.world.data.districts.find(d => d.id === r.neighborhood).center) < radius + 50);
+    candidates.push(...this.travellers.filter(r=>r.routine.segments.some(s=>distance(origin,s.from)<radius+50)));
     const spacing = this.world.data.buildingGrid.spacing, cx = Math.floor(origin[0] / spacing), cz = Math.floor(origin[2] / spacing), used = new Set();
-    if (origin[1] < 12) for (let x = cx - 2; x <= cx + 2; x++) for (let z = cz - 2; z <= cz + 2; z++) {
+    if (origin[1] < 60) for (let x = cx - 2; x <= cx + 2; x++) for (let z = cz - 2; z <= cz + 2; z++) {
       const b = this.world.cells.get(`${x},${z}`);
       if (b && Math.hypot(b.x - origin[0], b.z - origin[2]) < radius + 40) {
         used.add(b);candidates.push(...this.blockResidents(b));
@@ -153,19 +177,21 @@ export class CityLife {
     for (const resident of candidates) {
       let state = this.states.get(resident.id);
       if (!state) { state = { delay: 0, until: 0, trail: [], seen: seconds, updated: seconds };this.states.set(resident.id, state); }
-      const base = routineAt(resident.routine, seconds + resident.seed - state.delay);
+      const n = this.neighborhoods.get(resident.neighborhood), event = n && cityEvent(n, epoch);
+      const scene=resident.scenes?.[n.events.indexOf(cityEvent(n,epoch-state.delay*1000))];
+      const base = routineAt(scene||resident.routine, scene?mod(seconds-state.delay,180):seconds + resident.seed - state.delay);
       let position = state.position || base.position;
       if (distance(origin, position) > radius) continue;
       const elapsed = Math.max(0, seconds - state.updated), interrupted = Boolean(state.position);
       state.seen = seconds;state.updated = seconds;
-      const n = this.neighborhoods.get(resident.neighborhood), role = this.content.roles[resident.role];
-      const stage = n && cityStage(n, completed), event = n && cityEvent(n, epoch);
+      const role = this.content.roles[resident.role];
+      const stage = n && cityStage(n, completed);
       const incident = incidents.find(e => e.neighborhood === n?.id && e.phase !== 'idle');
-      let activity = base.activity === 'duty' ? role.activity : base.activity === 'story' ? stage?.activity || 'talk' : base.activity;
+      let activity = base.activity === 'scene' ? event.activity : base.activity === 'duty' ? role.activity : base.activity === 'story' ? stage?.activity || 'talk' : base.activity;
       if (!working && base.activity === 'duty') activity = role.nightActivity || role.activity;
       // The first worker hosts the block's rotating street scene.
       if (resident.local && resident.id.endsWith('-0') && base.activity === 'duty') activity = event.activity;
-      if (incident && ['duty', 'story'].includes(base.activity)) activity = incident.phase === 'recovery' ? incident.activity : incident.phase === 'active' ? 'repair' : 'wait';
+      if (incident && ['duty', 'story','scene'].includes(base.activity)) activity = incident.phase === 'recovery' ? incident.activity : incident.phase === 'active' ? 'repair' : 'wait';
       let velocity = base.velocity, yaw = base.yaw;
       const threat = threats.filter(e => e.health > 0 && distance(position, e.position) < (e.radius || 13) && this.world.lineOfSight(position, e.position)).sort((a, b) => distance(position, a.position) - distance(position, b.position))[0];
       if (threat) {
@@ -201,13 +227,13 @@ export class CityLife {
         velocity = dt ? position.map((n, i) => (n - before[i]) / dt) : [0, 0, 0];
         if (Math.hypot(velocity[0], velocity[2]) > .01) yaw = Math.atan2(velocity[0], velocity[2]);
       } else if (focus === resident.id) {
-        state.delay += elapsed;position = routineAt(resident.routine, seconds + resident.seed - state.delay).position;
+        state.delay += elapsed;position = routineAt(scene||resident.routine,scene?mod(seconds-state.delay,180):seconds + resident.seed - state.delay).position;
         velocity = [0, 0, 0];activity = 'talk';yaw = Math.atan2(origin[0] - position[0], origin[2] - position[2]);
       }
       if (activity === 'walk' && resident.role === 'courier') activity = 'carry';
       const title = activity === 'flee' ? 'Taking cover' : activity === 'walk' ? 'Walking to the next stop' : activity === 'carry' ? 'Carrying neighborhood supplies' : activity === 'talk' ? 'Talking with a neighbor' : working ? role.work : role.rest;
       const incidentLine = incident && (incident.phase === 'recovery' ? incident.success : incident.phase === 'failed' ? incident.failure : incident.warning);
-      actors.push({ ...resident, position, velocity, yaw, activity, title, line: activity === 'flee' ? incident?.hazard ? 'Get clear of the marked surge. The line is about to discharge!' : 'Keep back from the machines. Get behind a wall!' : incidentLine || stage?.line || role.line });
+      actors.push({ ...resident, position, velocity, yaw, activity, title, line: activity === 'flee' ? incident?.hazard ? 'Get out of the marked circle. The line is about to discharge!' : 'Keep back from the machines. Get behind a wall!' : incidentLine || (base.activity==='scene'?event.detail:resident.local?stage?.line:resident.personal) || role.line });
     }
     for (const [id, state] of this.states) if (seconds - state.seen > 20 || seconds < state.seen) this.states.delete(id);
     // Keep authored residents and the open conversation present when density is reduced.
@@ -223,7 +249,7 @@ export class CityLife {
   conversation(actor, epoch) {
     const n = this.neighborhoods.get(actor.neighborhood), role = this.content.roles[actor.role];
     const incident = this.incidents.find(e => e.neighborhood === n?.id && e.phase !== 'idle');
-    return { role: role.title, personal: role.line, neighborhood: n, stage: n && cityStage(n, this.completed), event: incident ? { name: incident.name, detail: actor.line } : n && cityEvent(n, epoch) };
+    return { role: role.title, personal: actor.personal||role.line, building:actor.building, neighborhood: n, stage: n && cityStage(n, this.completed), event: incident ? { name: incident.name, detail: actor.line } : n && cityEvent(n, epoch) };
   }
   overheard(origin, epoch) {
     const seconds = epoch / 1000;

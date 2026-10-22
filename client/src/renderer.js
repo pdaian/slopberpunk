@@ -7,7 +7,7 @@ import { ghostPosition } from './ghostline.js';
 import { dungeonZones, dungeonPosition } from './dungeons.js';
 import { box, pane, bevelBox, ellipsoid, transformMesh } from './geometry.js';
 import { CharacterMeshes } from './character.js';
-import { buildingExterior, buildingInterior, streetDetails, neighborhoodDetails, civilianProps } from './scenery.js';
+import { buildingExterior, buildingInterior, streetDetails, neighborhoodDetails, civilianProps, routeGeometry, streetScene } from './scenery.js';
 import { cityStage } from './citylife.js';
 import { incidentGeometry } from './events.js';
 export { box } from './geometry.js';
@@ -213,9 +213,9 @@ export class Renderer {
     this.detailEye=[...eye];
     for(const [b,chunk]of this.details)if(distance(eye,chunk.center)>260){this.gl.deleteBuffer(chunk.buffer);this.details.delete(b);}
     for(const b of this.world.buildings){
-      const center=[b.x,3,b.z];if(distance(eye,center)>210||this.details.has(b))continue;
+      const center=[b.x,9,b.z];if(distance(eye,center)>210||this.details.has(b))continue;
       const v=[];streetDetails(v,b);if(b.interior)buildingInterior(v,b,this.world.data);
-      this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d)/2,150,false));
+      this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d,20)/2,150,false));
     }
   }
   build() {
@@ -235,7 +235,15 @@ export class Renderer {
     }
     box(ground,[0,-.2,0],[2240,.4,2240],data.palette.ground);
     for(const p of data.platforms) {
-      box(ground,[p.position[0],p.position[1]-.7,p.position[2]],p.size,'#344a46');
+      // Open the deck where an arriving stair/ramp needs headroom.
+      let pieces=[{x:p.position[0]-p.size[0]/2,z:p.position[2]-p.size[2]/2,w:p.size[0],d:p.size[2]}];
+      for(const r of data.routes||[]){
+        const rise=r.end[1]-r.start[1];if(rise<=0||Math.abs(r.end[1]-p.position[1])>.01)continue;
+        const t=Math.max(0,1-3.5/rise),a=r.start.map((n,i)=>n+(r.end[i]-n)*t),alongX=r.start[2]===r.end[2];
+        const cut={x:alongX?Math.min(a[0],r.end[0]):r.end[0]-r.width/2,z:alongX?r.end[2]-r.width/2:Math.min(a[2],r.end[2]),w:alongX?Math.abs(a[0]-r.end[0]):r.width,d:alongX?r.width:Math.abs(a[2]-r.end[2])};
+        pieces=pieces.flatMap(q=>{const x0=Math.max(q.x,cut.x),x1=Math.min(q.x+q.w,cut.x+cut.w),z0=Math.max(q.z,cut.z),z1=Math.min(q.z+q.d,cut.z+cut.d);if(x0>=x1||z0>=z1)return[q];return[{x:q.x,z:q.z,w:x0-q.x,d:q.d},{x:x1,z:q.z,w:q.x+q.w-x1,d:q.d},{x:x0,z:q.z,w:x1-x0,d:z0-q.z},{x:x0,z:z1,w:x1-x0,d:q.z+q.d-z1}].filter(q=>q.w>0&&q.d>0);});
+      }
+      for(const q of pieces)box(ground,[q.x+q.w/2,p.position[1]-p.size[1]/2,q.z+q.d/2],[q.w,p.size[1],q.d],'#344a46');
       const alongX = p.size[0] > p.size[2];
       for(const side of [-1,1]) {
         const pos=[...p.position], size=[...p.size]; pos[1]+=.15;
@@ -260,6 +268,7 @@ export class Renderer {
       bevelBox(ground,position,size,'#555968',0,yaw,2.5);
     }
     this.upload(ground,[0,0,0],10000);
+    for(const route of data.routes||[]){const v=[];routeGeometry(v,route);this.upload(v,route.start.map((n,i)=>(n+route.end[i])/2),distance(route.start,route.end)/2+route.width,700);}
     for(const biome of data.biomes||[])this.upload(biomeGeometry(biome),biome.center,biome.radius+30);
     const props=[];
     for(const l of data.landmarks) {
@@ -381,6 +390,7 @@ export class Renderer {
     for(const neighborhood of this.cityLife?.content.neighborhoods||[]){
       const stage=cityStage(neighborhood,this.cityLife.completed),index=neighborhood.stages.indexOf(stage);
       const incident=this.cityLife.incidents.find(e=>e.neighborhood===neighborhood.id&&e.phase!=='idle');
+      if(!incident||incident.phase==='recovery')streetScene(v,mist,neighborhood,this.world.data,this.epoch,sceneTime,this.reducedMotion,this.quality,eye);
       for(const id of neighborhood.sites){
         const site=this.world.data.landmarks.find(l=>l.id===id),[x,y,z]=site.position;
         if(distance(eye,site.position)>110)continue;
@@ -416,7 +426,7 @@ export class Renderer {
     const gl=this.gl, ratio=Math.min(devicePixelRatio||1,1.6)*this.quality;
     const width=Math.max(1,Math.floor(this.canvas.clientWidth*ratio)), height=Math.max(1,Math.floor(this.canvas.clientHeight*ratio));
     if(this.canvas.width!==width||this.canvas.height!==height){this.canvas.width=width;this.canvas.height=height;}
-    const light=daylight(epoch);
+    const light=daylight(epoch);this.epoch=epoch;
     this.eye=camera.eye;this.characters.reducedMotion=this.reducedMotion;
     this.matrix=multiply(perspective(camera.fov||1.05,width/height,.12,5200),lookAt(camera.eye,camera.target));
     this.updateDetails(camera.eye);
@@ -445,7 +455,7 @@ export class Renderer {
     gl.uniform1f(this.locations.uTime,this.reducedMotion?0:time);gl.uniform1f(this.locations.uDetail,this.quality);
     const room=this.world.interiorAt(camera.eye)||this.world.interiorAt(camera.target);
     gl.uniform4fv(this.locations.uRoom,room?[room.x,room.z,room.w/2,room.d/2]:[0,0,-1,-1]);
-    gl.uniform1f(this.locations.uRoomHeight,this.world.data.interiors?.height||0);
+    gl.uniform1f(this.locations.uRoomHeight,(this.world.data.interiors?.height||0)*3);
     for(const chunk of [...this.chunks,...this.details.values()])if(visible(chunk)){this.bind(chunk.buffer);gl.drawArrays(gl.TRIANGLES,0,chunk.count);}
     const v=[],mist=[];this.shadows=mist;
     if(dungeon)this.dungeon(v,dungeon.catalog,dungeon.run,ghostTime);

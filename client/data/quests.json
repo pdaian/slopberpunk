@@ -1,14 +1,14 @@
 [
   {
     "id": "relay-00",
-    "title": "Open Hours",
+    "title": "Reopen the Kitchen",
     "faction": "relay",
     "race": null,
     "level": 0,
     "requires": [],
     "giver": "iri",
-    "briefing": "Runner, over here. The gate is open, but Nella cannot feed the families coming through it: the concession has locked her water. First, take Oru’s welcome record so we can do both jobs on one trip. Then read the shutoff notice at the Commons exchange. I will stay on your channel until the kitchen is running.",
-    "completion": "There. Water in the pot, opening hours on the channel. The first family is through the gate. You made a promise we can keep for tonight. Take your welcome record back to Oru, then find Nella west of the exchange. She knows why this bill keeps coming back.",
+    "briefing": "Nella’s kitchen has lost its water. Get Oru’s welcome record first, then read the shutoff notice at the Commons exchange. Help restore the feed and post the opening hours at the Relay terminal.",
+    "completion": "The kitchen is open and its hours are posted. Return Oru’s record, then speak to Nella west of the exchange about the repeated bills.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -24,32 +24,32 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Both records ready? Good. Go to the Commons exchange, at the center of the plaza. Press E to read the shutoff notice. I am on your channel."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "The notice calls this an unpaid account. Nella calls it supper. Follow the marker to the water meter; restore both controls, clear the enforcement machines, then hold the meter’s ring."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "relay-node",
         "count": 1,
         "text": "Post the opening hours after the kitchen feed is restored. Press E, then return to Iri.",
-        "voice": "I can hear the pump. Good work. Go to the Relay terminal and press E to post the opening hours. Then come back to me; I owe you a proper welcome."
+        "voice": "Post the opening hours after the kitchen feed is restored. Press E, then return to Iri."
       }
     ],
     "story": {
       "chapter": "A place at the table",
       "speaker": "iri",
-      "invitation": "New signal? Iri Vale, by the Commons gate. Six families need a meal, and Nella’s kitchen has lost its water. Come here. I will walk you through it."
+      "invitation": "I’m Iri Vale, by the Commons gate. Six families need a meal, and Nella’s kitchen has lost its water. Come here. I’ll explain the repair."
     }
   },
   {
     "id": "relay-01",
-    "title": "Receipts for Air",
+    "title": "False Freight Charges",
     "faction": "relay",
     "race": null,
     "level": 2,
@@ -71,7 +71,7 @@
   },
   {
     "id": "relay-02",
-    "title": "The Unpaid Minute",
+    "title": "Fix the Crossing Timer",
     "faction": "relay",
     "race": null,
     "level": 4,
@@ -93,7 +93,7 @@
   },
   {
     "id": "relay-03",
-    "title": "A Courier Stands Still",
+    "title": "Protect the Resting Courier",
     "faction": "relay",
     "race": null,
     "level": 6,
@@ -115,7 +115,7 @@
   },
   {
     "id": "relay-04",
-    "title": "The Missing Footpath",
+    "title": "Survey the Fen Footpath",
     "faction": "relay",
     "race": null,
     "level": 8,
@@ -137,7 +137,7 @@
   },
   {
     "id": "relay-05",
-    "title": "Names below the Arrows",
+    "title": "Put Copper Walk on the Map",
     "faction": "relay",
     "race": null,
     "level": 10,
@@ -159,7 +159,7 @@
   },
   {
     "id": "relay-06",
-    "title": "Deadweight Fee",
+    "title": "Recover the Handcarts",
     "faction": "relay",
     "race": null,
     "level": 12,
@@ -181,7 +181,7 @@
   },
   {
     "id": "relay-07",
-    "title": "Hold the Middle Landing",
+    "title": "Reconnect the Lift Button",
     "faction": "relay",
     "race": null,
     "level": 14,
@@ -203,7 +203,7 @@
   },
   {
     "id": "relay-08",
-    "title": "A Map with Room",
+    "title": "Restore Accessible Routes",
     "faction": "relay",
     "race": null,
     "level": 16,
@@ -225,7 +225,7 @@
   },
   {
     "id": "relay-09",
-    "title": "The Right to Arrive Late",
+    "title": "Remove Delivery Penalties",
     "faction": "relay",
     "race": null,
     "level": 18,
@@ -247,7 +247,7 @@
   },
   {
     "id": "relay-10",
-    "title": "The Road through Roots",
+    "title": "Survey the Forest Detour",
     "faction": "relay",
     "race": null,
     "level": 20,
@@ -269,7 +269,7 @@
   },
   {
     "id": "relay-11",
-    "title": "Two Ends of a Promise",
+    "title": "Test Both Lift Stops",
     "faction": "relay",
     "race": null,
     "level": 22,
@@ -291,7 +291,7 @@
   },
   {
     "id": "relay-12",
-    "title": "The Toll Collector Sleeps",
+    "title": "Remove the Toll Warden",
     "faction": "relay",
     "race": null,
     "level": 24,
@@ -313,7 +313,7 @@
   },
   {
     "id": "relay-13",
-    "title": "Routes without Witnesses",
+    "title": "Protect Travel Records",
     "faction": "relay",
     "race": null,
     "level": 26,
@@ -335,7 +335,7 @@
   },
   {
     "id": "relay-14",
-    "title": "The Copper Walk Compact",
+    "title": "Give Stewards Route Access",
     "faction": "relay",
     "race": null,
     "level": 28,
@@ -357,7 +357,7 @@
   },
   {
     "id": "relay-15",
-    "title": "The Gate Faces Outward",
+    "title": "Survey the South Road",
     "faction": "relay",
     "race": null,
     "level": 30,
@@ -379,7 +379,7 @@
   },
   {
     "id": "relay-16",
-    "title": "A Light under Salt",
+    "title": "Update the Salt Beacon",
     "faction": "relay",
     "race": null,
     "level": 32,
@@ -401,7 +401,7 @@
   },
   {
     "id": "relay-17",
-    "title": "No Empty Country",
+    "title": "Map the Steppe Settlement",
     "faction": "relay",
     "race": null,
     "level": 34,
@@ -423,7 +423,7 @@
   },
   {
     "id": "relay-18",
-    "title": "A Machine at Every Horizon",
+    "title": "Stop Shelter Tracking",
     "faction": "relay",
     "race": null,
     "level": 36,
@@ -445,7 +445,7 @@
   },
   {
     "id": "relay-19",
-    "title": "The Direction of Welcome",
+    "title": "Publish Outward Routes",
     "faction": "relay",
     "race": null,
     "level": 38,
@@ -467,7 +467,7 @@
   },
   {
     "id": "relay-20",
-    "title": "Water Is Not Freight",
+    "title": "Protect the Water Carriers",
     "faction": "relay",
     "race": null,
     "level": 40,
@@ -489,7 +489,7 @@
   },
   {
     "id": "relay-21",
-    "title": "The Long Return",
+    "title": "Measure the Longer Water Route",
     "faction": "relay",
     "race": null,
     "level": 42,
@@ -511,7 +511,7 @@
   },
   {
     "id": "relay-22",
-    "title": "The Price of a Signal",
+    "title": "Connect the Roadside Crews",
     "faction": "relay",
     "race": null,
     "level": 44,
@@ -533,7 +533,7 @@
   },
   {
     "id": "relay-23",
-    "title": "Sunset Inspection",
+    "title": "Defend the Maintenance Records",
     "faction": "relay",
     "race": null,
     "level": 46,
@@ -555,7 +555,7 @@
   },
   {
     "id": "relay-24",
-    "title": "The Last Proprietary Mile",
+    "title": "Check the Toll Order’s Expiry",
     "faction": "relay",
     "race": null,
     "level": 48,
@@ -577,7 +577,7 @@
   },
   {
     "id": "relay-25",
-    "title": "A Closure with a Date",
+    "title": "Set Closure Review Dates",
     "faction": "relay",
     "race": null,
     "level": 50,
@@ -599,7 +599,7 @@
   },
   {
     "id": "relay-26",
-    "title": "Static on the Salt",
+    "title": "Clear the Emergency Channel",
     "faction": "relay",
     "race": null,
     "level": 52,
@@ -621,7 +621,7 @@
   },
   {
     "id": "relay-27",
-    "title": "Four Hands on the Key",
+    "title": "Share the Network Keys",
     "faction": "relay",
     "race": null,
     "level": 54,
@@ -643,7 +643,7 @@
   },
   {
     "id": "relay-28",
-    "title": "The Toll Chain Breaks",
+    "title": "Shut Down the Toll Chain",
     "faction": "relay",
     "race": null,
     "level": 56,
@@ -665,7 +665,7 @@
   },
   {
     "id": "relay-29",
-    "title": "An Arrow for the Lost",
+    "title": "Reserve Batteries for Rescues",
     "faction": "relay",
     "race": null,
     "level": 58,
@@ -687,7 +687,7 @@
   },
   {
     "id": "relay-30",
-    "title": "Low Water",
+    "title": "Check the Falling Water Level",
     "faction": "relay",
     "race": null,
     "level": 60,
@@ -709,14 +709,14 @@
   },
   {
     "id": "covenant-00",
-    "title": "A Place for Your Name",
+    "title": "Save the Shutoff Notice",
     "faction": "covenant",
     "race": null,
     "level": 0,
     "requires": [],
     "giver": "sera",
-    "briefing": "Before we file your arrival, look at the kitchen queue. Those people donated water. The concession has charged them for it again and locked the feed. Speak to Oru first; their welcome record belongs in this case. Then read the notice at the Commons exchange. We will preserve what happened, and get the kitchen open.",
-    "completion": "The feed is running, and the original notice is safe in the vault. A record cannot feed anyone. Today we managed both. Finish your introduction with Oru, then ask Nella about the names missing from her kitchen tally.",
+    "briefing": "The kitchen’s water donors have been billed again. Collect Oru’s welcome record, read the notice at the Commons exchange, then help restore the feed. Keep the original notice at the Memory vault.",
+    "completion": "The feed is running, and the notice is saved as evidence. Return to Oru, then ask Nella about the diners missing from her tally.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -732,21 +732,21 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Start with the original. The Commons exchange is in the center of the plaza. Press E to read the shutoff notice; keep the record intact."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Keep the notice intact. It is evidence. Follow the marker to the two water controls. Clear the enforcement machines and remain in the meter’s ring until the feed is steady."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
         "text": "Register the witnesses who kept the kitchen open. Press E, then return to Sera.",
-        "voice": "The water has returned. Now bring the notice to the Memory vault and press E to preserve it. Return to me afterward; no one gets to rewrite what you saw."
+        "voice": "Register the witnesses who kept the kitchen open. Press E, then return to Sera."
       }
     ],
     "story": {
@@ -757,7 +757,7 @@
   },
   {
     "id": "covenant-01",
-    "title": "The Borrowed Lullaby",
+    "title": "Withdraw the Unlicensed Recording",
     "faction": "covenant",
     "race": null,
     "level": 2,
@@ -779,7 +779,7 @@
   },
   {
     "id": "covenant-02",
-    "title": "A Signature Can Expire",
+    "title": "Close the Expired Diary Copy",
     "faction": "covenant",
     "race": null,
     "level": 4,
@@ -801,7 +801,7 @@
   },
   {
     "id": "covenant-03",
-    "title": "Collectors of Echoes",
+    "title": "Stop the Voiceprint Collectors",
     "faction": "covenant",
     "race": null,
     "level": 6,
@@ -823,7 +823,7 @@
   },
   {
     "id": "covenant-04",
-    "title": "An Empty Shelf",
+    "title": "Check the Bird Survey",
     "faction": "covenant",
     "race": null,
     "level": 8,
@@ -845,7 +845,7 @@
   },
   {
     "id": "covenant-05",
-    "title": "The Witness and the Owner",
+    "title": "Protect a Witness’s Privacy",
     "faction": "covenant",
     "race": null,
     "level": 10,
@@ -867,7 +867,7 @@
   },
   {
     "id": "covenant-06",
-    "title": "The Index Disagrees",
+    "title": "Stop Deleted Files Being Restored",
     "faction": "covenant",
     "race": null,
     "level": 12,
@@ -889,7 +889,7 @@
   },
   {
     "id": "covenant-07",
-    "title": "Glass with a Handle",
+    "title": "Make Consent Controls Accessible",
     "faction": "covenant",
     "race": null,
     "level": 14,
@@ -911,7 +911,7 @@
   },
   {
     "id": "covenant-08",
-    "title": "A Date Is Not a Person",
+    "title": "Separate the Merged Records",
     "faction": "covenant",
     "race": null,
     "level": 16,
@@ -933,7 +933,7 @@
   },
   {
     "id": "covenant-09",
-    "title": "The Room without Playback",
+    "title": "Meet the Forest Witness",
     "faction": "covenant",
     "race": null,
     "level": 18,
@@ -955,7 +955,7 @@
   },
   {
     "id": "covenant-10",
-    "title": "The Shape of a Refusal",
+    "title": "Require Permission Before Access",
     "faction": "covenant",
     "race": null,
     "level": 20,
@@ -977,7 +977,7 @@
   },
   {
     "id": "covenant-11",
-    "title": "Public Truth, Private Wounds",
+    "title": "Prepare the Lift Inquiry",
     "faction": "covenant",
     "race": null,
     "level": 22,
@@ -999,7 +999,7 @@
   },
   {
     "id": "covenant-12",
-    "title": "The Keeper at the Lock",
+    "title": "Reopen Record Withdrawals",
     "faction": "covenant",
     "race": null,
     "level": 24,
@@ -1021,7 +1021,7 @@
   },
   {
     "id": "covenant-13",
-    "title": "Sera’s Missing Week",
+    "title": "Verify Sera’s Missing Week",
     "faction": "covenant",
     "race": null,
     "level": 26,
@@ -1043,7 +1043,7 @@
   },
   {
     "id": "covenant-14",
-    "title": "The Unwritten Appendix",
+    "title": "Publish the Care Charter",
     "faction": "covenant",
     "race": null,
     "level": 28,
@@ -1065,7 +1065,7 @@
   },
   {
     "id": "covenant-15",
-    "title": "Cargo of Unasked Lives",
+    "title": "Find the Missing Caskets",
     "faction": "covenant",
     "race": null,
     "level": 30,
@@ -1087,7 +1087,7 @@
   },
   {
     "id": "covenant-16",
-    "title": "The Weatherproof Promise",
+    "title": "Copy the Casket Instructions",
     "faction": "covenant",
     "race": null,
     "level": 32,
@@ -1109,7 +1109,7 @@
   },
   {
     "id": "covenant-17",
-    "title": "A Grave with a Network Address",
+    "title": "Respect Refused Revivals",
     "faction": "covenant",
     "race": null,
     "level": 34,
@@ -1131,7 +1131,7 @@
   },
   {
     "id": "covenant-18",
-    "title": "The Hungry Catalog",
+    "title": "Stop the Casket Scanners",
     "faction": "covenant",
     "race": null,
     "level": 36,
@@ -1153,7 +1153,7 @@
   },
   {
     "id": "covenant-19",
-    "title": "Permission to Disagree",
+    "title": "Keep Both Witness Accounts",
     "faction": "covenant",
     "race": null,
     "level": 38,
@@ -1175,7 +1175,7 @@
   },
   {
     "id": "covenant-20",
-    "title": "The Cold Carrier",
+    "title": "Protect the Casket Cooling",
     "faction": "covenant",
     "race": null,
     "level": 40,
@@ -1197,7 +1197,7 @@
   },
   {
     "id": "covenant-21",
-    "title": "A Name Left Sealed",
+    "title": "Publish the Anonymous Warning",
     "faction": "covenant",
     "race": null,
     "level": 42,
@@ -1219,7 +1219,7 @@
   },
   {
     "id": "covenant-22",
-    "title": "The Memory Dividend",
+    "title": "Reduce Archive Cooling",
     "faction": "covenant",
     "race": null,
     "level": 44,
@@ -1241,7 +1241,7 @@
   },
   {
     "id": "covenant-23",
-    "title": "The Custodian’s Exception",
+    "title": "Stop the Forced Record Copies",
     "faction": "covenant",
     "race": null,
     "level": 46,
@@ -1263,7 +1263,7 @@
   },
   {
     "id": "covenant-24",
-    "title": "Lives between the Lines",
+    "title": "Investigate the Profile Service",
     "faction": "covenant",
     "race": null,
     "level": 48,
@@ -1285,7 +1285,7 @@
   },
   {
     "id": "covenant-25",
-    "title": "Not a Better Cage",
+    "title": "Install Independent Consent Checks",
     "faction": "covenant",
     "race": null,
     "level": 50,
@@ -1307,7 +1307,7 @@
   },
   {
     "id": "covenant-26",
-    "title": "Unlearning the Taken",
+    "title": "Stop the Backup Drones",
     "faction": "covenant",
     "race": null,
     "level": 52,
@@ -1329,7 +1329,7 @@
   },
   {
     "id": "covenant-27",
-    "title": "A Witness to Erasure",
+    "title": "Register the Deletion Receipt",
     "faction": "covenant",
     "race": null,
     "level": 54,
@@ -1351,7 +1351,7 @@
   },
   {
     "id": "covenant-28",
-    "title": "The Final Exception",
+    "title": "Shut Down the Inference Annex",
     "faction": "covenant",
     "race": null,
     "level": 56,
@@ -1373,7 +1373,7 @@
   },
   {
     "id": "covenant-29",
-    "title": "A Door Opened from Within",
+    "title": "Witness Sera’s Decision",
     "faction": "covenant",
     "race": null,
     "level": 58,
@@ -1395,7 +1395,7 @@
   },
   {
     "id": "covenant-30",
-    "title": "Cold Storage",
+    "title": "Publish the Storage Losses",
     "faction": "covenant",
     "race": null,
     "level": 60,
@@ -1417,14 +1417,14 @@
   },
   {
     "id": "foundry-00",
-    "title": "A Warm Place to Start",
+    "title": "Restore the Kitchen Pump",
     "faction": "foundry",
     "race": null,
     "level": 0,
     "requires": [],
     "giver": "bram",
-    "briefing": "See that kitchen? Cold benches. Empty pot. A working pump behind a paid lock. We can fix two of those today. Pick up Oru’s welcome record first, then read the job notice at the Commons exchange. I will talk you through the water bypass. No heroics. Finish the job and come home.",
-    "completion": "Pump steady. Benches warm. That is a day’s work, runner. Report back to Oru, then go see Nella by the kitchen. A bypass buys her a meal shift. Finding who keeps billing her buys us the next one.",
+    "briefing": "The pump works, but an account lock has stopped the kitchen water. Get Oru’s welcome record and read the job notice at the Commons exchange. Restore the feed, then register the repair at the Public forge.",
+    "completion": "The pump is steady and the repair is logged. Return to Oru, then ask Nella why the kitchen keeps receiving these bills.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -1440,21 +1440,21 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Job sheet first. Walk to the Commons exchange in the middle of the plaza and press E. Find the shutoff order before you touch the pump."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Two controls: the water meter and the kitchen tally. Press E at each. Disable the enforcement machines, then stay in the meter’s ring until the pump holds. Use a medkit if you need it."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "forge",
         "count": 1,
         "text": "Record the bypass repair at the public forge. Press E, then return to Bram.",
-        "voice": "Hear that? A pump doing its job. Take the bypass settings to the Public forge and press E to log the repair. Then back to me. I want the next shift to know what we changed."
+        "voice": "Record the bypass repair at the public forge. Press E, then return to Bram."
       }
     ],
     "story": {
@@ -1465,7 +1465,7 @@
   },
   {
     "id": "foundry-01",
-    "title": "The Bolt Nobody Owns",
+    "title": "Replace the Cracked Bracket",
     "faction": "foundry",
     "race": null,
     "level": 2,
@@ -1487,7 +1487,7 @@
   },
   {
     "id": "foundry-02",
-    "title": "A Shift with an Ending",
+    "title": "Set Relief Shifts",
     "faction": "foundry",
     "race": null,
     "level": 4,
@@ -1509,7 +1509,7 @@
   },
   {
     "id": "foundry-03",
-    "title": "Tools for the Living",
+    "title": "Recover the Repair Tools",
     "faction": "foundry",
     "race": null,
     "level": 6,
@@ -1531,7 +1531,7 @@
   },
   {
     "id": "foundry-04",
-    "title": "The Weight above Us",
+    "title": "Inspect the Overloaded Bridge",
     "faction": "foundry",
     "race": null,
     "level": 8,
@@ -1553,7 +1553,7 @@
   },
   {
     "id": "foundry-05",
-    "title": "Heat without Tribute",
+    "title": "End the Heating Cutoffs",
     "faction": "foundry",
     "race": null,
     "level": 10,
@@ -1575,7 +1575,7 @@
   },
   {
     "id": "foundry-06",
-    "title": "Safety Is a Stop Button",
+    "title": "Protect the Safety Stop",
     "faction": "foundry",
     "race": null,
     "level": 12,
@@ -1597,7 +1597,7 @@
   },
   {
     "id": "foundry-07",
-    "title": "The Last Apprentice",
+    "title": "Copy the Pump Schematics",
     "faction": "foundry",
     "race": null,
     "level": 14,
@@ -1619,7 +1619,7 @@
   },
   {
     "id": "foundry-08",
-    "title": "What the Pipe Carries",
+    "title": "Recover Waste Heat",
     "faction": "foundry",
     "race": null,
     "level": 16,
@@ -1641,7 +1641,7 @@
   },
   {
     "id": "foundry-09",
-    "title": "The Cost on the Floor",
+    "title": "Check the True Fuel Cost",
     "faction": "foundry",
     "race": null,
     "level": 18,
@@ -1663,7 +1663,7 @@
   },
   {
     "id": "foundry-10",
-    "title": "A Foundation Called Temporary",
+    "title": "Inspect the Sinking Foundations",
     "faction": "foundry",
     "race": null,
     "level": 20,
@@ -1685,7 +1685,7 @@
   },
   {
     "id": "foundry-11",
-    "title": "Hands off the Relief Valve",
+    "title": "Open the Pressure Valve",
     "faction": "foundry",
     "race": null,
     "level": 22,
@@ -1707,7 +1707,7 @@
   },
   {
     "id": "foundry-12",
-    "title": "The Shared Spare",
+    "title": "Share the Spare Parts",
     "faction": "foundry",
     "race": null,
     "level": 24,
@@ -1729,7 +1729,7 @@
   },
   {
     "id": "foundry-13",
-    "title": "An Engine with No Heir",
+    "title": "End Inherited Repair Debts",
     "faction": "foundry",
     "race": null,
     "level": 26,
@@ -1751,7 +1751,7 @@
   },
   {
     "id": "foundry-14",
-    "title": "The Common Load",
+    "title": "Publish the Maintenance Charter",
     "faction": "foundry",
     "race": null,
     "level": 28,
@@ -1773,7 +1773,7 @@
   },
   {
     "id": "foundry-15",
-    "title": "The Thirst under the City",
+    "title": "Check the Excess Pumping",
     "faction": "foundry",
     "race": null,
     "level": 30,
@@ -1795,7 +1795,7 @@
   },
   {
     "id": "foundry-16",
-    "title": "Reading the Dry Gauge",
+    "title": "Recalibrate the Fen Gauge",
     "faction": "foundry",
     "race": null,
     "level": 32,
@@ -1817,7 +1817,7 @@
   },
   {
     "id": "foundry-17",
-    "title": "The Scrap That Still Works",
+    "title": "Recover the Cooling Fins",
     "faction": "foundry",
     "race": null,
     "level": 34,
@@ -1839,7 +1839,7 @@
   },
   {
     "id": "foundry-18",
-    "title": "A Furnace Learns Patience",
+    "title": "Reduce the Furnace Schedule",
     "faction": "foundry",
     "race": null,
     "level": 36,
@@ -1861,7 +1861,7 @@
   },
   {
     "id": "foundry-19",
-    "title": "The People beyond the Drawing",
+    "title": "Survey the New Heat Outlet",
     "faction": "foundry",
     "race": null,
     "level": 38,
@@ -1883,7 +1883,7 @@
   },
   {
     "id": "foundry-20",
-    "title": "An Alarm Nobody Must Hear",
+    "title": "Add Accessible Shutdown Alarms",
     "faction": "foundry",
     "race": null,
     "level": 40,
@@ -1905,7 +1905,7 @@
   },
   {
     "id": "foundry-21",
-    "title": "The Debt Beneath the Debt",
+    "title": "Plan the Turbine Replacement",
     "faction": "foundry",
     "race": null,
     "level": 42,
@@ -1927,7 +1927,7 @@
   },
   {
     "id": "foundry-22",
-    "title": "A Machine Refuses Retirement",
+    "title": "Stop the Automatic Restarts",
     "faction": "foundry",
     "race": null,
     "level": 44,
@@ -1949,7 +1949,7 @@
   },
   {
     "id": "foundry-23",
-    "title": "The Worker Is Not the Part",
+    "title": "Separate Procedures from Private Memories",
     "faction": "foundry",
     "race": null,
     "level": 46,
@@ -1971,7 +1971,7 @@
   },
   {
     "id": "foundry-24",
-    "title": "The Weight We Can Share",
+    "title": "Set Bridge Freight Limits",
     "faction": "foundry",
     "race": null,
     "level": 48,
@@ -1993,7 +1993,7 @@
   },
   {
     "id": "foundry-25",
-    "title": "The Emergency Ends Here",
+    "title": "Free the Compulsory Shift",
     "faction": "foundry",
     "race": null,
     "level": 50,
@@ -2015,7 +2015,7 @@
   },
   {
     "id": "foundry-26",
-    "title": "A Cool Night for Everyone",
+    "title": "Test Overnight Cooling",
     "faction": "foundry",
     "race": null,
     "level": 52,
@@ -2037,7 +2037,7 @@
   },
   {
     "id": "foundry-27",
-    "title": "The Old Intake Falls Quiet",
+    "title": "Secure the Retired Intake",
     "faction": "foundry",
     "race": null,
     "level": 54,
@@ -2059,7 +2059,7 @@
   },
   {
     "id": "foundry-28",
-    "title": "No Final Heroic Shift",
+    "title": "Use the Remote Shutdown",
     "faction": "foundry",
     "race": null,
     "level": 56,
@@ -2081,7 +2081,7 @@
   },
   {
     "id": "foundry-29",
-    "title": "The Ground Holds",
+    "title": "Measure the Remaining Drawdown",
     "faction": "foundry",
     "race": null,
     "level": 58,
@@ -2103,7 +2103,7 @@
   },
   {
     "id": "foundry-30",
-    "title": "After the Shutdown",
+    "title": "Survey Fuel After the Shutdown",
     "faction": "foundry",
     "race": null,
     "level": 60,
@@ -2125,14 +2125,14 @@
   },
   {
     "id": "choir-00",
-    "title": "A Quiet Table",
+    "title": "Restore the Kitchen Warning",
     "faction": "choir",
     "race": null,
     "level": 0,
     "requires": [],
     "giver": "ves",
-    "briefing": "You can take a breath here. Nella’s kitchen has lost its water, and its warning never reached the people waiting for a meal. We will give them a working feed and a signal they can choose to hear. Speak with Oru, then read the notice at the Commons exchange. One step at a time. I am listening.",
-    "completion": "Water in the kitchen. A warning light before the next interruption. A quiet place to sit. Small things, until you need them. Return your record to Oru. Nella is west of the exchange; let her tell you what is still missing.",
+    "briefing": "Nella’s kitchen lost its water without a usable warning. Get Oru’s welcome record, read the notice at the Commons exchange, and help restore the feed. Then register the warning at the Quiet array.",
+    "completion": "The water is running and the warning is registered. Return to Oru, then speak to Nella west of the exchange about the missed meals.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -2148,21 +2148,21 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "One step. The Commons exchange is in the middle of the plaza. Walk there and press E to read the notice. We will listen to what it leaves out."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "The silence was a shutoff, not consent. Follow the marker to both water controls. Clear the machines, then stay inside the meter’s ring. You do not have to do this alone."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "choir-array",
         "count": 1,
         "text": "Connect the kitchen to the independent warning circuit. Press E, then return to Ves.",
-        "voice": "The feed is steady. Visit the Quiet array and press E to connect an independent warning. Come back when you are ready. We can let the room be quiet again."
+        "voice": "Connect the kitchen to the independent warning circuit. Press E, then return to Ves."
       }
     ],
     "story": {
@@ -2173,7 +2173,7 @@
   },
   {
     "id": "choir-01",
-    "title": "Notice before Noise",
+    "title": "Add a Broadcast Countdown",
     "faction": "choir",
     "race": null,
     "level": 2,
@@ -2195,7 +2195,7 @@
   },
   {
     "id": "choir-02",
-    "title": "The Attention Invoice",
+    "title": "Check the Listening Fines",
     "faction": "choir",
     "race": null,
     "level": 4,
@@ -2217,7 +2217,7 @@
   },
   {
     "id": "choir-03",
-    "title": "A Pause without Penalty",
+    "title": "Stop the Pursuing Loudspeakers",
     "faction": "choir",
     "race": null,
     "level": 6,
@@ -2239,7 +2239,7 @@
   },
   {
     "id": "choir-04",
-    "title": "A Route by Touch",
+    "title": "Mark the Route by Touch",
     "faction": "choir",
     "race": null,
     "level": 8,
@@ -2261,7 +2261,7 @@
   },
   {
     "id": "choir-05",
-    "title": "The Invitation Frequency",
+    "title": "Make the Bulletin Optional",
     "faction": "choir",
     "race": null,
     "level": 10,
@@ -2283,7 +2283,7 @@
   },
   {
     "id": "choir-06",
-    "title": "The Broken Megaphones",
+    "title": "Protect the Warning Lamps",
     "faction": "choir",
     "race": null,
     "level": 12,
@@ -2305,7 +2305,7 @@
   },
   {
     "id": "choir-07",
-    "title": "A Voice Kept Private",
+    "title": "Withdraw the Announcer’s Voice",
     "faction": "choir",
     "race": null,
     "level": 14,
@@ -2327,7 +2327,7 @@
   },
   {
     "id": "choir-08",
-    "title": "Words of Our Own",
+    "title": "Open the Community Noticeboard",
     "faction": "choir",
     "race": null,
     "level": 16,
@@ -2349,7 +2349,7 @@
   },
   {
     "id": "choir-09",
-    "title": "The Repeating Emergency",
+    "title": "Trace the False Evacuation Alarm",
     "faction": "choir",
     "race": null,
     "level": 18,
@@ -2371,7 +2371,7 @@
   },
   {
     "id": "choir-10",
-    "title": "Shelter from the Chorus",
+    "title": "Survey the Quiet Forest Path",
     "faction": "choir",
     "race": null,
     "level": 20,
@@ -2393,7 +2393,7 @@
   },
   {
     "id": "choir-11",
-    "title": "Silence Is Not a Command",
+    "title": "Separate Music and Quiet Areas",
     "faction": "choir",
     "race": null,
     "level": 22,
@@ -2415,7 +2415,7 @@
   },
   {
     "id": "choir-12",
-    "title": "The Listener at the Wall",
+    "title": "Protect the Quiet-Zone Walls",
     "faction": "choir",
     "race": null,
     "level": 24,
@@ -2437,7 +2437,7 @@
   },
   {
     "id": "choir-13",
-    "title": "Hands in the Record",
+    "title": "Correct the Signed Testimony",
     "faction": "choir",
     "race": null,
     "level": 26,
@@ -2459,7 +2459,7 @@
   },
   {
     "id": "choir-14",
-    "title": "The Listening Charter",
+    "title": "Publish the Listening Charter",
     "faction": "choir",
     "race": null,
     "level": 28,
@@ -2481,7 +2481,7 @@
   },
   {
     "id": "choir-15",
-    "title": "Wind without Instructions",
+    "title": "Remove Private Recordings",
     "faction": "choir",
     "race": null,
     "level": 30,
@@ -2503,7 +2503,7 @@
   },
   {
     "id": "choir-16",
-    "title": "The Beacon Says Enough",
+    "title": "Limit Emergency Bulletins",
     "faction": "choir",
     "race": null,
     "level": 32,
@@ -2525,7 +2525,7 @@
   },
   {
     "id": "choir-17",
-    "title": "The Voice That Chose Nothing",
+    "title": "Withdraw the Childhood Sample",
     "faction": "choir",
     "race": null,
     "level": 34,
@@ -2547,7 +2547,7 @@
   },
   {
     "id": "choir-18",
-    "title": "A Horizon of Speakers",
+    "title": "Stop the Mobile Repeaters",
     "faction": "choir",
     "race": null,
     "level": 36,
@@ -2569,7 +2569,7 @@
   },
   {
     "id": "choir-19",
-    "title": "The Unheard Assembly",
+    "title": "Survey the Evacuation Route",
     "faction": "choir",
     "race": null,
     "level": 38,
@@ -2591,7 +2591,7 @@
   },
   {
     "id": "choir-20",
-    "title": "A Lamp in the Dust",
+    "title": "Protect the Storm Lamps",
     "faction": "choir",
     "race": null,
     "level": 40,
@@ -2613,7 +2613,7 @@
   },
   {
     "id": "choir-21",
-    "title": "The Counter-Signal",
+    "title": "Make Opt-Outs Work",
     "faction": "choir",
     "race": null,
     "level": 42,
@@ -2635,7 +2635,7 @@
   },
   {
     "id": "choir-22",
-    "title": "A Broadcast Can End",
+    "title": "Set Emergency Expiry Dates",
     "faction": "choir",
     "race": null,
     "level": 44,
@@ -2657,7 +2657,7 @@
   },
   {
     "id": "choir-23",
-    "title": "The Volume Wardens",
+    "title": "Disable the Amplifier Wardens",
     "faction": "choir",
     "race": null,
     "level": 46,
@@ -2679,7 +2679,7 @@
   },
   {
     "id": "choir-24",
-    "title": "Attendance Is Not Assent",
+    "title": "Revoke the Attendance Contract",
     "faction": "choir",
     "race": null,
     "level": 48,
@@ -2701,7 +2701,7 @@
   },
   {
     "id": "choir-25",
-    "title": "A Square with Several Sounds",
+    "title": "Plan the Market Celebration",
     "faction": "choir",
     "race": null,
     "level": 50,
@@ -2723,7 +2723,7 @@
   },
   {
     "id": "choir-26",
-    "title": "The Last Uninvited Message",
+    "title": "Clear the Storm Channel",
     "faction": "choir",
     "race": null,
     "level": 52,
@@ -2745,7 +2745,7 @@
   },
   {
     "id": "choir-27",
-    "title": "A Network with an Exit",
+    "title": "Save the Listening Settings",
     "faction": "choir",
     "race": null,
     "level": 54,
@@ -2767,7 +2767,7 @@
   },
   {
     "id": "choir-28",
-    "title": "The Compulsory Chorus Falls",
+    "title": "End Compulsory Broadcasts",
     "faction": "choir",
     "race": null,
     "level": 56,
@@ -2789,7 +2789,7 @@
   },
   {
     "id": "choir-29",
-    "title": "A Warning Worth Hearing",
+    "title": "Test the Accessible Warning",
     "faction": "choir",
     "race": null,
     "level": 58,
@@ -2811,7 +2811,7 @@
   },
   {
     "id": "choir-30",
-    "title": "The Next Marker",
+    "title": "Check the New Evacuation Boundary",
     "faction": "choir",
     "race": null,
     "level": 60,
@@ -2833,14 +2833,14 @@
   },
   {
     "id": "human-00",
-    "title": "The Bowl before the Name",
+    "title": "Reserve a Welcome Meal",
     "faction": null,
     "race": "human",
     "level": 0,
     "requires": [],
     "giver": "archivist",
-    "briefing": "An empty bowl is our oldest greeting. Food first; names afterward. The kitchen has lost its water, so today that greeting needs your help. At the Commons exchange, read the shutoff notice. Help your contact restore the feed, then press E at the Lantern kitchen tally to reserve a bowl for the next arrival. Bring the record back to me.",
-    "completion": "A place for you, and a place for someone we have not met. That is what this bowl means. Nella keeps the tally beside the kitchen. Ask her whose bowls stayed empty yesterday.",
+    "briefing": "Nella’s kitchen has lost its water. Read the shutoff notice at the Commons exchange, help your contact restore the feed, then use the Lantern kitchen tally to reserve a meal for the next arrival. Bring the record back to me.",
+    "completion": "Your meal is reserved, and there’s a portion set aside for the next arrival. Ask Nella why fourteen regular diners missed yesterday’s meal.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -2856,21 +2856,21 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Take the welcome record to the Commons exchange. Press E to read the shutoff notice and help your contact restore the kitchen water. I will keep your place here."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Food before an identity check. Keep that promise while you help your contact restore the water."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
         "text": "Return to the kitchen and reserve a bowl for the next arrival. Press E, then return to Oru.",
-        "voice": "The kitchen can serve again. Press E at its tally to reserve the next arrival’s bowl. Then return to me."
+        "voice": "Return to the kitchen and reserve a bowl for the next arrival. Press E, then return to Oru."
       }
     ],
     "story": {
@@ -2881,7 +2881,7 @@
   },
   {
     "id": "human-01",
-    "title": "The Children outside the Count",
+    "title": "Correct the Shelter Census",
     "faction": null,
     "race": "human",
     "level": 5,
@@ -2889,8 +2889,8 @@
       "human-00"
     ],
     "giver": "archivist",
-    "briefing": "The shelter census lists fewer children than its surviving kitchen records fed. Compare the two accounts and recover the caregivers' handwritten additions before the archive treats those omitted lives as a clerical myth.",
-    "completion": "Small names emerge from the margins of flour invoices. The Afterborn began with a practical refusal to let a missing record become a missing meal.",
+    "briefing": "Compare the shelter census with the kitchen records at the Public memory archive. Several children received meals but were never counted as residents.",
+    "completion": "The cooks wrote the missing names on flour invoices. Oru adds them to the census with copies of the original records.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -2903,7 +2903,7 @@
   },
   {
     "id": "human-02",
-    "title": "Strong Enough Together",
+    "title": "Compare Water and Survival Records",
     "faction": null,
     "race": "human",
     "level": 10,
@@ -2911,8 +2911,8 @@
       "human-01"
     ],
     "giver": "archivist",
-    "briefing": "A pamphlet credits Afterborn endurance to pure blood. Visit Mourning Fen's gauge and compare its clean-water record with the shelter's survival figures. Oru wants the filters and caregivers remembered, along with the marsh their work depended on.",
-    "completion": "The figures follow water quality, not ancestry. The same wetland that kept the shelter alive is being drained to supply its descendants. Oru replaces the purity myth with a debt no ancestor knew how to repay.",
+    "briefing": "A pamphlet claims Afterborn survival came from ancestry. Compare the Fen drawdown gauge’s water records with shelter survival figures.",
+    "completion": "Survival improved when the filters worked. Oru corrects the pamphlet and adds the current readings: the wetland is now supplying more water than it replaces.",
     "objective": {
       "type": "interact",
       "target": "fen-gauge",
@@ -2925,7 +2925,7 @@
   },
   {
     "id": "human-03",
-    "title": "The Unregistered Sick",
+    "title": "End Clinic Ancestry Checks",
     "faction": null,
     "race": "human",
     "level": 15,
@@ -2933,8 +2933,8 @@
       "human-02"
     ],
     "giver": "archivist",
-    "briefing": "Clinic audit drones reject patients whose ancestry records contain the old census gaps. Disable their screening loop so the clinic can treat immediate needs while its staff replaces the inherited eligibility rule.",
-    "completion": "The waiting room begins moving by medical need. A damaged drone still prints ancestry fields that no nurse ever asked to use.",
+    "briefing": "Clinic drones reject patients whose family records have gaps. Disable two drones while the staff removes the ancestry check.",
+    "completion": "Patients are admitted by medical need. Staff remove the unused ancestry fields from the admission form.",
     "objective": {
       "type": "kill",
       "target": "drone",
@@ -2947,7 +2947,7 @@
   },
   {
     "id": "human-04",
-    "title": "The Caregiver’s Last Page",
+    "title": "Read the Medic’s Account",
     "faction": null,
     "race": "human",
     "level": 20,
@@ -2955,8 +2955,8 @@
       "human-03"
     ],
     "giver": "archivist",
-    "briefing": "A volunteer medic left one public recollection about the first shelter winter. Open the authorized testimony and recover the supply-sharing method they hoped later generations would improve instead of turning the medic into a flawless founder. The medic also records buying extra water through a concession that had displaced another shelter. Preserve that entry beside the supply-sharing method.",
-    "completion": "The testimony includes mistakes, fatigue, and help accepted from strangers. Its final instruction is to revise the method when better knowledge arrives. The founder fed people by participating in a harm they could name and could not escape. The history keeps the contradiction.",
+    "briefing": "Read the medic’s authorized account at the Memory vault. Keep the supply-sharing instructions and the entry about buying water from a company that displaced another shelter.",
+    "completion": "Oru files the complete account. The instructions helped one shelter survive, while the water purchase contributed to another shelter’s eviction.",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -2969,7 +2969,7 @@
   },
   {
     "id": "human-05",
-    "title": "Breath above Copper Walk",
+    "title": "Survey Clinic Ventilation",
     "faction": null,
     "race": "human",
     "level": 25,
@@ -2977,8 +2977,8 @@
       "human-04"
     ],
     "giver": "archivist",
-    "briefing": "The lower clinics report the same cough each time hot air settles below the freight deck. Survey an upper crossing to compare airflow, showing that resilience cannot excuse leaving people in an environment that makes them ill.",
-    "completion": "The pattern supports a ventilation repair and a shaded recovery route. Oru adds the evidence to the clinic budget instead of prescribing more endurance.",
+    "briefing": "Survey airflow at the Transit observatory. Lower clinics report more coughing when hot exhaust settles beneath the freight deck.",
+    "completion": "The readings support a new vent and a shaded recovery route. Oru submits both repairs for funding.",
     "objective": {
       "type": "explore",
       "target": "skybridge",
@@ -2991,7 +2991,7 @@
   },
   {
     "id": "human-06",
-    "title": "The Shelter That Walked",
+    "title": "Check the Old Shelter Route",
     "faction": null,
     "race": "human",
     "level": 30,
@@ -2999,8 +2999,8 @@
       "human-05"
     ],
     "giver": "archivist",
-    "briefing": "The old mobile kitchen stopped at Cinderwood's canopy before the forest became a fuel reserve. Visit the refuge and compare its shade with the shelter route. Oru needs to know which care stops still protect patients and which survive only as marks on a cherished map.",
-    "completion": "Several old stops offer no shade at all. The food route kept people alive while its fuel purchases helped destroy the places they rested. The revised map removes no names, but crosses out shelters that are no longer there.",
+    "briefing": "Check Cinderwood’s Canopy refuge against the old mobile-kitchen route. Some marked rest stops have lost their shade.",
+    "completion": "Several rest stops are bare. Oru marks them unsafe and moves the care route beneath the remaining canopy.",
     "objective": {
       "type": "explore",
       "target": "wood-refuge",
@@ -3013,7 +3013,7 @@
   },
   {
     "id": "human-07",
-    "title": "A Clinic on a Lamp Post",
+    "title": "Post the Roadside Clinic Schedule",
     "faction": null,
     "race": "human",
     "level": 35,
@@ -3021,8 +3021,8 @@
       "human-06"
     ],
     "giver": "archivist",
-    "briefing": "The roadside care route needs a reliable way to announce visits without publishing patients' names. Register a plain schedule at the salt beacon, including water supplies, accessible transport, and a channel for private requests.",
-    "completion": "The first clinic notice reaches the basin shelters without exposing a single diagnosis. A practical old tradition gains a modern set of tools.",
+    "briefing": "Post the roadside clinics’ visit times, water deliveries, and private request channel at the Last salt beacon. Keep patient names off the public board.",
+    "completion": "The shelters receive the schedule. Private appointment requests go directly to the clinic.",
     "objective": {
       "type": "interact",
       "target": "salt-beacon",
@@ -3035,7 +3035,7 @@
   },
   {
     "id": "human-08",
-    "title": "Medicine without a Toll",
+    "title": "Protect the Medicine Carrier",
     "faction": null,
     "race": "human",
     "level": 40,
@@ -3043,8 +3043,8 @@
       "human-07"
     ],
     "giver": "archivist",
-    "briefing": "Salvage automatons are stripping the cooling packs from a public medicine carrier. Clear the route before the volunteers must choose between spoiled supplies and a dangerous rush across the salt.",
-    "completion": "The medicine reaches the roadside stop within its safe temperature range. Oru records the delivery team as workers with support needs, not inexhaustible heroes.",
+    "briefing": "Disable four salvage machines before they strip the medicine carrier’s cooling packs.",
+    "completion": "The medicine arrives within its safe temperature range. Oru schedules a relief crew for the next delivery.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -3057,7 +3057,7 @@
   },
   {
     "id": "human-09",
-    "title": "The Survival Quota",
+    "title": "Remove the Labor-Based Care Rule",
     "faction": null,
     "race": "human",
     "level": 45,
@@ -3065,8 +3065,8 @@
       "human-08"
     ],
     "giver": "archivist",
-    "briefing": "A recovered shelter plan allocates care according to projected future labor rather than present need. Trace the outdated rule into the modern clinic system so the last hidden survival quota can be removed and publicly accounted for. The replacement must publish actual shortages instead of quietly translating a person's income into priority.",
-    "completion": "The rule survived through copied software, long after the emergency that produced it. Its removal includes an audit for anyone whose treatment it delayed. Equal eligibility does not fill the medicine cabinet. Oru adds the missing supplies beside the rule so scarcity cannot hide behind a fair-looking form.",
+    "briefing": "Find the clinic’s labor forecast rule at the Public memory archive. Remove its treatment priorities and keep a record of the patients it delayed.",
+    "completion": "The clinic stops ranking patients by expected earnings. Staff publish the remaining medicine shortage and contact people whose care was delayed.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3079,7 +3079,7 @@
   },
   {
     "id": "human-10",
-    "title": "No Body Is a Forecast",
+    "title": "Open Clinic Admissions",
     "faction": null,
     "race": "human",
     "level": 50,
@@ -3087,8 +3087,8 @@
       "human-09"
     ],
     "giver": "archivist",
-    "briefing": "Clinic wardens are enforcing the old labor forecast against patients outside its preferred age and ability ranges. Disable their admission controls while the staff installs an independently reviewable rule based on clinical need and equal dignity.",
-    "completion": "The wardens lose the authority to grade a person's usefulness. The clinic opens its doors under a rule every patient can challenge.",
+    "briefing": "Disable two wardens enforcing the old labor forecast at clinic admissions. Staff are ready to replace it with a medical priority list that patients can appeal.",
+    "completion": "The wardens stop collecting patients. The clinic posts its admission rules and an appeal contact by the door.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -3101,7 +3101,7 @@
   },
   {
     "id": "human-11",
-    "title": "The Care Ledger",
+    "title": "Publish the Care Budget",
     "faction": null,
     "race": "human",
     "level": 55,
@@ -3109,8 +3109,8 @@
       "human-10"
     ],
     "giver": "archivist",
-    "briefing": "Publish the roadside clinics' water allowance, staffing, and appeal contacts at the salt beacon. The care ledger must name the appointments the smaller reserve cannot yet support. Oru will not finance an unconditional promise by selling another wetland extraction claim.",
-    "completion": "Care becomes a public duty with a visible waiting list. A family asks what a right means when treatment arrives too late. Oru leaves their question in the ledger without an answer underneath.",
+    "briefing": "Publish the roadside clinics’ water allowance, staffing, and waiting list at the Last salt beacon. List the appointments the budget cannot yet cover.",
+    "completion": "The care budget is public. A family asks when its delayed treatment will happen. The clinic cannot give them a date yet.",
     "objective": {
       "type": "interact",
       "target": "salt-beacon",
@@ -3123,7 +3123,7 @@
   },
   {
     "id": "human-12",
-    "title": "The Bowl beside the Empty Well",
+    "title": "Measure Water for the Next Meal",
     "faction": null,
     "race": "human",
     "level": 60,
@@ -3131,8 +3131,8 @@
       "human-11"
     ],
     "giver": "archivist",
-    "briefing": "Walk the care route back to Mourning Fen. The survival quota is abolished, and everyone may bring a bowl. Measure the supply before the next meal; the Afterborn inheritance must include the source as well as the people gathered around it.",
-    "completion": "Someone eats before being asked to prove their worth. Someone else waits while the pot is refilled with rationed water. The old exclusion is gone; the hunger that made it useful to its authors remains. Oru sets another bowl down. It is a necessary act, and it does not settle anything.",
+    "briefing": "Return to the Fen drawdown gauge and measure the supply before the next meal. The kitchen now accepts everyone, but still has a fixed water ration.",
+    "completion": "The kitchen serves the first queue, then waits for another rationed delivery. Oru adds the reading and the number of people still waiting to the meal record.",
     "objective": {
       "type": "explore",
       "target": "fen-gauge",
@@ -3145,14 +3145,14 @@
   },
   {
     "id": "lattice-00",
-    "title": "The Name You Answer To",
+    "title": "Register Your Chosen Name",
     "faction": null,
     "race": "lattice",
     "level": 0,
     "requires": [],
     "giver": "archivist",
-    "briefing": "Tell me the name you answer to. The welcome ledger still asks for a factory serial first. We will correct it, but Nella’s kitchen has lost its water and the people in that queue cannot wait. Read the Commons exchange notice, help your contact restore the feed, then press E at the Memory vault to record your chosen name. Return to me when it is yours.",
-    "completion": "Your name comes first now. The serial stays in a repair record you control. You helped this city before it learned how to address you. Nella is west of the exchange; ask her about the people her ledger failed to count.",
+    "briefing": "The welcome form asks for a factory serial before your name. First read the Commons exchange notice and help restore the kitchen water. Then use the Memory vault to record your chosen name and return to me.",
+    "completion": "Your name appears first. The serial remains in a repair record you control. Nella is west of the exchange if you want to help with the missing meals.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -3168,21 +3168,21 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Take the welcome record to the Commons exchange. Press E to read the shutoff notice and help your contact restore the kitchen water. I will keep your place here."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Your serial is not your introduction. First, help your contact bring the kitchen water back. We will put your name beside the response record."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
         "text": "Record your chosen name beside the response log. Press E, then return to Oru.",
-        "voice": "A working feed. Now visit the Memory vault and press E to record the name you chose. Bring that introduction back to me."
+        "voice": "Record your chosen name beside the response log. Press E, then return to Oru."
       }
     ],
     "story": {
@@ -3193,7 +3193,7 @@
   },
   {
     "id": "lattice-01",
-    "title": "Clay with a Memory",
+    "title": "Correct the Ceramic Repair Guide",
     "faction": null,
     "race": "lattice",
     "level": 5,
@@ -3201,8 +3201,8 @@
       "lattice-00"
     ],
     "giver": "archivist",
-    "briefing": "A ceramic repair pattern describes every cognitive mesh as interchangeable inventory. Inspect its thermal limits and mark the handling precautions that protect a living continuity during the ordinary work of replacing a cracked plate. The pattern lists Glassroot mineral as unlimited stock. Correct that claim using the kiln's remaining inventory.",
-    "completion": "The repair guide begins with an introduction and a consent check. The same careful engineering now acknowledges who will experience the procedure. The inventory has an end date. A personhood notice can forbid treating a mesh as disposable without making its body permanent.",
+    "briefing": "Check the ceramic repair guide at the Public forge. Add a patient consent check and replace its claim of unlimited Glassroot stock with the actual inventory.",
+    "completion": "The guide requires consent before a plate is replaced. The inventory now shows when the kiln will run out.",
     "objective": {
       "type": "interact",
       "target": "forge",
@@ -3215,7 +3215,7 @@
   },
   {
     "id": "lattice-02",
-    "title": "Two Witnesses, One Morning",
+    "title": "Compare the Two Memory Records",
     "faction": null,
     "race": "lattice",
     "level": 10,
@@ -3223,8 +3223,8 @@
       "lattice-01"
     ],
     "giver": "archivist",
-    "briefing": "Two witness shards preserve the same morning with different colors and distances. Compare their authorized metadata to learn how sensory calibration can change a recollection without turning either observer into a counterfeit person.",
-    "completion": "Both records remain intact with their calibration notes. Oru invites you to describe your own senses without forcing them into somebody else's palette.",
+    "briefing": "Compare the two authorized memory records at the Memory vault. They describe the same morning with different colors and distances.",
+    "completion": "Different sensor calibrations explain the disagreement. Oru keeps both recordings with their calibration notes.",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -3237,7 +3237,7 @@
   },
   {
     "id": "lattice-03",
-    "title": "The Recall Order",
+    "title": "Stop the Body Recall",
     "faction": null,
     "race": "lattice",
     "level": 15,
@@ -3245,8 +3245,8 @@
       "lattice-02"
     ],
     "giver": "archivist",
-    "briefing": "Audit drones have mistaken a mesh safety notice for an order to repossess every Lattice using that ceramic batch. Disable their collection routine so technicians can offer voluntary repairs without detaining the people they intend to help.",
-    "completion": "The safety warning stays public, but the seizure order ends. A repair invitation replaces the word recall on the neighborhood notice.",
+    "briefing": "Disable two audit drones seizing Lattice bodies under a ceramic safety notice. Technicians can offer repairs once the collection route is clear.",
+    "completion": "The safety warning stays on the board. The seizure order is removed, and technicians offer voluntary appointments.",
     "objective": {
       "type": "kill",
       "target": "drone",
@@ -3259,7 +3259,7 @@
   },
   {
     "id": "lattice-04",
-    "title": "The Fork in the Census",
+    "title": "Separate the Forked Citizens’ Records",
     "faction": null,
     "race": "lattice",
     "level": 20,
@@ -3267,8 +3267,8 @@
       "lattice-03"
     ],
     "giver": "archivist",
-    "briefing": "The census merges two Lattice citizens because their memories share a history before a deliberate fork. Retrieve their separate declarations and establish the point where shared experience became two independent lives. Keep the two people's repair entitlements separate even though the kiln budget assumed only one shell would need maintenance.",
-    "completion": "Both citizens keep their homes and appointments. Neither receives authority to cancel the other merely by claiming to be the original. The city owes two repairs from a reserve budgeted for one. Oru refuses to make recognition conditional on solving the shortage first.",
+    "briefing": "Retrieve the separate declarations of two forked Lattice citizens at the Public memory archive. The census has merged their homes and repair appointments.",
+    "completion": "Both records are restored. The kiln now needs to cover two repairs from a budget that allowed for one.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3281,7 +3281,7 @@
   },
   {
     "id": "lattice-05",
-    "title": "A Signal Cannot Be a Self",
+    "title": "Fix Duplicate Identity Detection",
     "faction": null,
     "race": "lattice",
     "level": 25,
@@ -3289,8 +3289,8 @@
       "lattice-04"
     ],
     "giver": "archivist",
-    "briefing": "A bridge repeater reports duplicate identities whenever both forked citizens cross its range. Survey the relay boundary and isolate the obsolete rule that equates a familiar handshake signal with ownership of a whole person.",
-    "completion": "The repeater accepts distinct current keys without rewriting either past. Oru calls the result an engineering correction with room for philosophy later.",
+    "briefing": "Survey the Transit observatory repeater. It flags two forked citizens as duplicates whenever they cross the bridge.",
+    "completion": "The repeater accepts their separate current keys. Both can cross without an identity warning.",
     "objective": {
       "type": "explore",
       "target": "skybridge",
@@ -3303,7 +3303,7 @@
   },
   {
     "id": "lattice-06",
-    "title": "The Kilns beyond the Wall",
+    "title": "Survey the Ceramic Mineral Seam",
     "faction": null,
     "race": "lattice",
     "level": 30,
@@ -3311,8 +3311,8 @@
       "lattice-05"
     ],
     "giver": "archivist",
-    "briefing": "The first witness vessels were fired from the Glassroot Steppe's mineral seam. Visit the northern soil core and compare its remaining depth with the root mat above it. Ada's kiln keeps people alive; expanding it would take the ground that keeps its well alive.",
-    "completion": "The repair ledger and ecological survey describe the same material from opposite ends. Oru asks you to preserve both. There is no unowned spare world behind the one the plates came from.",
+    "briefing": "Survey the Glassroot soil core. The mineral used for replacement bodies also supports the roots around the settlement’s well.",
+    "completion": "The deeper cut would supply ceramic but undermine the well. Oru files the repair demand beside the soil survey.",
     "objective": {
       "type": "explore",
       "target": "steppe-core",
@@ -3325,7 +3325,7 @@
   },
   {
     "id": "lattice-07",
-    "title": "Tam’s Ninth Cup",
+    "title": "Retrieve Tam’s Housing Request",
     "faction": null,
     "race": "lattice",
     "level": 35,
@@ -3333,8 +3333,8 @@
       "lattice-06"
     ],
     "giver": "archivist",
-    "briefing": "Ada's land register preserves Tam of Nine Cups' public request for a room with a door that locks from within. Retrieve it beside the mineral concession. The first recognized Lattice citizen asked for privacy in a body whose clay had already displaced a settlement.",
-    "completion": "Tam's ordinary request remains just. So does the displaced families' claim to their well. Oru places neither underneath the other; the page now carries two needs the original ceremony kept apart.",
+    "briefing": "Retrieve Tam’s housing request from the Vacant land register. Compare its date with the mineral concession that displaced local families.",
+    "completion": "Tam received a private room. The clay for that body came from land taken from another settlement. Oru keeps both records together.",
     "objective": {
       "type": "interact",
       "target": "steppe-deed",
@@ -3347,7 +3347,7 @@
   },
   {
     "id": "lattice-08",
-    "title": "The Pattern Harvesters",
+    "title": "Recover Occupied Mesh Plates",
     "faction": null,
     "race": "lattice",
     "level": 40,
@@ -3355,8 +3355,8 @@
       "lattice-07"
     ],
     "giver": "archivist",
-    "briefing": "Salvage automatons are harvesting occupied mesh plates as reusable ceramic stock. Clear their collection route so the affected Lattice can recover damaged bodies under their own repair plans.",
-    "completion": "The plates return to the people who recognize them. Unidentified fragments receive protected storage rather than an automatic merge.",
+    "briefing": "Disable four salvage machines collecting occupied mesh plates. Return recovered fragments to the repair crews.",
+    "completion": "Identified plates return to their owners. Unidentified fragments stay in protected storage until someone can check them.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -3369,7 +3369,7 @@
   },
   {
     "id": "lattice-09",
-    "title": "A Seam Worth Keeping",
+    "title": "Require Consent for Memory Changes",
     "faction": null,
     "race": "lattice",
     "level": 45,
@@ -3377,8 +3377,8 @@
       "lattice-08"
     ],
     "giver": "archivist",
-    "briefing": "An optimization service offers to smooth contradictory recollections by erasing whichever witness is less statistically common. Register a continuity instruction that preserves uncertainty and requires your permission before any future reconciliation.",
-    "completion": "The service accepts a visible seam in the record. Oru observes that a life need not become perfectly consistent to remain yours.",
+    "briefing": "At the Memory vault, require consent before a service removes conflicting recollections from your record.",
+    "completion": "The service keeps both recollections and records your instruction. It can no longer choose one for deletion automatically.",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -3391,7 +3391,7 @@
   },
   {
     "id": "lattice-10",
-    "title": "The Merger Mandate",
+    "title": "Stop the Forced Mergers",
     "faction": null,
     "race": "lattice",
     "level": 50,
@@ -3399,8 +3399,8 @@
       "lattice-09"
     ],
     "giver": "archivist",
-    "briefing": "Continuance's wardens have classified independently living forks as an inefficient allocation of civic identity. Disable their forced-merger hardware while the archivists publish the separate declarations as binding records.",
-    "completion": "The merger mandate loses its enforcement machinery. Each affected person receives a clear route to repair, housing, and services in their own name.",
+    "briefing": "Disable two wardens attempting to merge independently living Lattice forks. Archivists will register their separate declarations.",
+    "completion": "The forced-merger equipment stops. Each resident receives a separate record for housing, care, and repairs.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -3413,7 +3413,7 @@
   },
   {
     "id": "lattice-11",
-    "title": "A Charter for Divergence",
+    "title": "Register Separate Repair Rights",
     "faction": null,
     "race": "lattice",
     "level": 55,
@@ -3421,8 +3421,8 @@
       "lattice-10"
     ],
     "giver": "archivist",
-    "briefing": "The city now needs a rule that outlasts this particular dispute. Register a charter protecting voluntary forks, chosen repairs, private memory boundaries, and the right of descendants to grow different from a shared past. Append the limited repair reserve and the right to challenge its allocation. No clause may describe a forced merger as environmental efficiency.",
-    "completion": "The charter treats continuity as evidence to discuss, not a chain of ownership. It includes an appeal process led by people with varied experiences of identity. The charter protects divergence while bodies still need scarce ceramic. Oru refuses both compulsory unity and a false promise of limitless shells.",
+    "briefing": "Register the new Lattice charter at the Public memory archive. Protect separate identities and voluntary repairs, then publish the limited repair budget and appeal process.",
+    "completion": "The charter is filed. The repair queue remains longer than the kiln’s current reserve can cover.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3435,7 +3435,7 @@
   },
   {
     "id": "lattice-12",
-    "title": "The Clay beneath the Self",
+    "title": "Close the Deeper Mineral Claim",
     "faction": null,
     "race": "lattice",
     "level": 60,
@@ -3443,8 +3443,8 @@
       "lattice-11"
     ],
     "giver": "archivist",
-    "briefing": "Register the divergence charter at the Glassroot land office. It protects separate selves and closes the assumption that a living landscape is merely their stockroom. New repairs will depend on recovered ceramic, and the queue will be longer than anyone wants to announce.",
-    "completion": "Forced merger ends. Ada patches another shell while grass grows through the abandoned extraction stakes. Some future repairs remain unfunded. The charter can forbid calling a person surplus; it cannot tell the seam to replenish itself. The door opens from within, onto the same exhausted ground.",
+    "briefing": "Register the charter at the Vacant land register and close the deeper extraction claim. Future urgent repairs will use recovered ceramic.",
+    "completion": "Ada patches another shell with recovered pieces. The deeper seam stays closed, and several repairs remain on the waiting list.",
     "objective": {
       "type": "interact",
       "target": "steppe-deed",
@@ -3457,14 +3457,14 @@
   },
   {
     "id": "revenant-00",
-    "title": "A Second Introduction",
+    "title": "Record Your New Introduction",
     "faction": null,
     "race": "revenant",
     "level": 0,
     "requires": [],
     "giver": "archivist",
-    "briefing": "You do not owe me the name you used before. I would like to know the person here now. Nella’s water has been locked, so let us begin with something the living need. Read the notice at the Commons exchange, help your contact restore the kitchen feed, then press E at the Relay terminal to leave your new introduction. Come back and tell me how you want it read.",
-    "completion": "The channel carries your present name. The earlier one is yours to share or leave unspoken. Another beginning costs this city something; it does not give the city ownership of you. Nella keeps the kitchen just west of us. She could use your help.",
+    "briefing": "Use the name you want recorded now. Read the Commons exchange notice, help your contact restore the kitchen water, then leave your introduction at the Relay terminal. Bring the record back to me.",
+    "completion": "The channel uses your current name. Your earlier name stays private unless you choose to share it. Nella needs help west of the exchange.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -3480,21 +3480,21 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Take the welcome record to the Commons exchange. Press E to read the shutoff notice and help your contact restore the kitchen water. I will keep your place here."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "You have returned before. Today, help the kitchen return. Follow your contact’s instructions at the water controls."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "relay-node",
         "count": 1,
         "text": "Leave your new introduction on the neighborhood channel. Press E, then return to Oru.",
-        "voice": "Water is flowing. Leave your introduction at the Relay terminal with E, then come back to me. We will begin with the name you use now."
+        "voice": "Leave your new introduction on the neighborhood channel. Press E, then return to Oru."
       }
     ],
     "story": {
@@ -3505,7 +3505,7 @@
   },
   {
     "id": "revenant-01",
-    "title": "The Letter That Waited",
+    "title": "Return Control of the Letter",
     "faction": null,
     "race": "revenant",
     "level": 5,
@@ -3513,8 +3513,8 @@
       "revenant-00"
     ],
     "giver": "archivist",
-    "briefing": "A waiting letter was addressed to a former life and contains an invitation, not an obligation. Check its delivery seal without opening it so the vault can return control over the message to its intended living recipient.",
-    "completion": "The letter receives a choice of when to open it, answer it, or leave it sealed. No reunion is scheduled on another person's behalf.",
+    "briefing": "Check the waiting letter’s delivery seal at the Memory vault without opening it. Return control of it to the intended recipient.",
+    "completion": "The recipient can open, answer, or leave the letter sealed. The vault cancels the automatic reunion appointment.",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -3527,7 +3527,7 @@
   },
   {
     "id": "revenant-02",
-    "title": "The Bond under the Covenant",
+    "title": "Find the Hidden Service Bond",
     "faction": null,
     "race": "revenant",
     "level": 10,
@@ -3535,8 +3535,8 @@
       "revenant-01"
     ],
     "giver": "archivist",
-    "briefing": "Your lineage's early revival forms include a service bond hidden beneath the consent page. Retrieve the original terms and distinguish a volunteer's wish to live again from a contractor's attempt to purchase their future labor. The contractor counted a restored worker as renewable labor while treating the wetland supplying their body as free input.",
-    "completion": "The forms reveal two agreements that should never have shared a signature. Oru begins a list of living people still charged against the old bond. Death was priced as a maintenance interruption. The depleted marsh never received an entry because it could not be billed for its own return.",
+    "briefing": "Find the early revival forms at the Public memory archive. A service bond was hidden beneath the consent page.",
+    "completion": "The signature authorized both restoration and compulsory work. Oru lists the living people still being charged under it.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3549,7 +3549,7 @@
   },
   {
     "id": "revenant-03",
-    "title": "Property of a Former Employer",
+    "title": "Stop Body Repossession",
     "faction": null,
     "race": "revenant",
     "level": 15,
@@ -3557,8 +3557,8 @@
       "revenant-02"
     ],
     "giver": "archivist",
-    "briefing": "Audit drones scan restored bodies for obsolete contractor marks and issue repossession orders. Disable their collection loop so affected Revenants can reach the clinic to remove those marks safely and voluntarily.",
-    "completion": "The clinic queue moves without escorts. A body's manufacturing history stops being mistaken for a current claim of ownership.",
+    "briefing": "Disable two audit drones issuing repossession orders from old contractor marks. The clinic can then remove those marks at each patient’s request.",
+    "completion": "Patients reach the clinic without machine escorts. Removing an old mark no longer requires a contractor’s approval.",
     "objective": {
       "type": "kill",
       "target": "drone",
@@ -3571,7 +3571,7 @@
   },
   {
     "id": "revenant-04",
-    "title": "Learning the New Hand",
+    "title": "Adjust the Tool Grip",
     "faction": null,
     "race": "revenant",
     "level": 20,
@@ -3579,8 +3579,8 @@
       "revenant-03"
     ],
     "giver": "archivist",
-    "briefing": "A restored worker keeps missing a tool grip because their new hand differs from the one they remember. Calibrate the forge's adaptive controls to the living body instead of requiring that body to imitate an archived movement perfectly.",
-    "completion": "The worker finishes a careful first assembly with a new technique. Oru records adaptation as a skill, not evidence of failed restoration.",
+    "briefing": "Adjust the Public forge’s controls for a worker whose restored hand has a different grip.",
+    "completion": "The worker finishes the assembly using the adjusted controls. The new grip settings are saved for their next shift.",
     "objective": {
       "type": "interact",
       "target": "forge",
@@ -3593,7 +3593,7 @@
   },
   {
     "id": "revenant-05",
-    "title": "What Memory Cannot Promise",
+    "title": "Correct the Revival Guide",
     "faction": null,
     "race": "revenant",
     "level": 25,
@@ -3601,8 +3601,8 @@
       "revenant-04"
     ],
     "giver": "archivist",
-    "briefing": "A restoration advertisement guarantees an unchanged return, even when the stored witness record is incomplete. Correct the public consent guide so future patients understand uncertainty, bodily change, and their right to seek support afterward.",
-    "completion": "The guide makes no promise of a perfect copy. It promises honest information, continuing care, and recognition of whoever begins the next life.",
+    "briefing": "Correct the revival guide at the Memory vault. Explain incomplete memories, possible body changes, and available follow-up care.",
+    "completion": "The guide no longer guarantees an unchanged return. Patients can read the limits before signing.",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -3615,7 +3615,7 @@
   },
   {
     "id": "revenant-06",
-    "title": "Where the Barrier Ended",
+    "title": "Investigate the Barrier Rescue",
     "faction": null,
     "race": "revenant",
     "level": 30,
@@ -3623,8 +3623,8 @@
       "revenant-05"
     ],
     "giver": "archivist",
-    "briefing": "The barrier volunteers' memorial includes a water route from Mourning Fen. Visit its gauge and recover the support plan. The same contractors who promised rescue diverted supplies to profitable cooling loads while the barrier crew waited below the tide line.",
-    "completion": "The rescue was possible on the original schedule. It became unprofitable after the diversion. The gauge bears no memorial for what happened downstream; its casing simply records a larger delivery to the city.",
+    "briefing": "Inspect the Fen drawdown gauge’s barrier-era records. Rescue supplies were diverted from the workers to paying cooling customers.",
+    "completion": "The original schedule could have reached the barrier crew. The diversion delayed it; Oru adds the delivery orders to the incident record.",
     "objective": {
       "type": "explore",
       "target": "fen-gauge",
@@ -3637,7 +3637,7 @@
   },
   {
     "id": "revenant-07",
-    "title": "The Rescue That Was Delayed",
+    "title": "Recover the Delayed Rescue Log",
     "faction": null,
     "race": "revenant",
     "level": 35,
@@ -3645,8 +3645,8 @@
       "revenant-06"
     ],
     "giver": "archivist",
-    "briefing": "A beacon log records why the barrier rescue arrived late: vehicles were held for an unpaid transport authorization. Recover the public incident record so the service bond cannot continue presenting a preventable delay as the workers' personal debt.",
-    "completion": "The timeline places responsibility with the failed transport system. The volunteers' descendants receive a corrected public account with the original uncertainty preserved.",
+    "briefing": "Recover the delayed barrier rescue log at the Last salt beacon. Vehicles were held for an unpaid transport authorization.",
+    "completion": "The log confirms the delay. Oru adds it to the challenge against the workers’ service debts.",
     "objective": {
       "type": "interact",
       "target": "salt-beacon",
@@ -3659,7 +3659,7 @@
   },
   {
     "id": "revenant-08",
-    "title": "Caskets Are Not Cargo",
+    "title": "Protect the Restoration Caskets",
     "faction": null,
     "race": "revenant",
     "level": 40,
@@ -3667,8 +3667,8 @@
       "revenant-07"
     ],
     "giver": "archivist",
-    "briefing": "Salvage automatons are cutting open dormant restoration caskets to recover their power cells. Clear the collection route so each intact casket can be handled according to the person's recorded wishes, including any refusal to return.",
-    "completion": "The caskets reach protected custody without a mass activation. Oru checks consent before anyone begins counting potential rescues.",
+    "briefing": "Disable four salvage machines cutting open dormant restoration caskets. Keep each casket sealed until its recorded instructions are checked.",
+    "completion": "The caskets arrive intact. Staff check each person’s revival instructions before starting treatment.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -3681,7 +3681,7 @@
   },
   {
     "id": "revenant-09",
-    "title": "A Debt That Died Alone",
+    "title": "Cancel the Inherited Service Debt",
     "faction": null,
     "race": "revenant",
     "level": 45,
@@ -3689,8 +3689,8 @@
       "revenant-08"
     ],
     "giver": "archivist",
-    "briefing": "Continuance transferred contractor debts across death while quietly dropping the contractor's duties of care. Publish the full bond history and challenge the one-sided inheritance on behalf of every restored person it still follows. The canceled service claim must not be replaced with a transferable lien on the materials used for a new body.",
-    "completion": "The claim loses the missing context that made it look legitimate. The city recognizes no automatic labor obligation merely because a life has begun again. The debt ends without making restoration free to perform. The clinic's water allowance remains a separate, painful public argument.",
+    "briefing": "Publish the full service bond history at the Public memory archive. Cancel the inherited work debt without replacing it with a claim on the new body.",
+    "completion": "The work debt is canceled. Restoration still requires funding, so the clinic opens a separate review of its water and materials budget.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3703,7 +3703,7 @@
   },
   {
     "id": "revenant-10",
-    "title": "The Repossession Wardens",
+    "title": "Disable the Repossession Wardens",
     "faction": null,
     "race": "revenant",
     "level": 50,
@@ -3711,8 +3711,8 @@
       "revenant-09"
     ],
     "giver": "archivist",
-    "briefing": "The bond's wardens continue collecting Revenants under an order whose legal basis has collapsed. Disable their restraint chassis while the clinics distribute readable release records to everyone previously targeted.",
-    "completion": "The collectors stop, and the releases do not require payment. Former contractors receive an appeal contact instead of another invisible queue.",
+    "briefing": "Disable two repossession wardens still collecting Revenants under the canceled bond.",
+    "completion": "The collectors shut down. Clinics hand out release records without charging the affected patients.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -3725,7 +3725,7 @@
   },
   {
     "id": "revenant-11",
-    "title": "The Right to One More Morning",
+    "title": "Register New Revival Instructions",
     "faction": null,
     "race": "revenant",
     "level": 55,
@@ -3733,8 +3733,8 @@
       "revenant-10"
     ],
     "giver": "archivist",
-    "briefing": "The replacement revival covenant must protect both a wish to continue and a wish to decline. Register independent, revocable instructions with a review date so no faction, family, or creditor can substitute its preference for the person's own. State the present material limits honestly. A wish to continue must not authorize a creditor to drain the fen, nor a shortage authorize anyone to substitute refusal.",
-    "completion": "The vault accepts either choice with the same care. Its consent screen no longer rewards one answer with brighter colors or easier buttons. The instruction protects a choice; it is no guarantee of the means to fulfill it. The vault records that uncertainty without charging for a brighter answer.",
+    "briefing": "Register new revival instructions at the Memory vault. Both consent and refusal must be revocable. Include the current limits on water and cultivated bodies.",
+    "completion": "The vault accepts either decision. It also states that shortages may delay a requested revival.",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -3747,7 +3747,7 @@
   },
   {
     "id": "revenant-12",
-    "title": "The Morning That Is Not Owed",
+    "title": "Publish the Nutrient Reserve",
     "faction": null,
     "race": "revenant",
     "level": 60,
@@ -3755,8 +3755,8 @@
       "revenant-11"
     ],
     "giver": "archivist",
-    "briefing": "Carry the corrected barrier history to the Brine Bloom's culture bank, where cultivated bodies begin. Register the new covenant beside the actual nutrient reserve. Neither the dead nor the landscape can be conscripted to make the city's survival account balance.",
-    "completion": "The restoration bond is retired. Those who return owe no labor for the fact of being alive. Others remain in storage while cultures and water run short. Ilex watches a wild growth thrive beyond the bank without reviving anyone inside it. Life continues; the particular lives you hoped for are another matter.",
+    "briefing": "Register the corrected barrier history and new consent rules at the Sealed culture bank. Publish the actual nutrient reserve beside them.",
+    "completion": "The service bond is retired. Restored patients owe no compulsory labor, but others remain in storage while water and cultures run short.",
     "objective": {
       "type": "interact",
       "target": "bloom-bank",
@@ -3769,14 +3769,14 @@
   },
   {
     "id": "bloom-00",
-    "title": "The Garden You Carry",
+    "title": "Record Your Care Needs",
     "faction": null,
     "race": "bloom",
     "level": 0,
     "requires": [],
     "giver": "archivist",
-    "briefing": "What do you call the life you carry? The welcome notice calls every symbiont a hazard. We can correct that, but first Nella’s kitchen needs water, for people and for its growing beds. Read the Commons exchange notice and help your contact restore the feed. Then press E at the Lantern kitchen tally to record individual care guidance. Return to me afterward.",
-    "completion": "The notice now asks what care each person needs. The beds are watered, for tonight. We have changed a line on a screen; Nella has to make it work every morning. Find her west of the exchange and ask about the missing meals.",
+    "briefing": "The welcome notice treats every symbiont as a hazard. First read the Commons exchange notice and help restore the kitchen water. Then use the Lantern kitchen tally to record individual care needs and return to me.",
+    "completion": "The notice now asks what each person needs. Nella has enough water for tonight; ask her about the meals missed yesterday.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -3792,21 +3792,21 @@
         "target": "market",
         "count": 1,
         "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Take the welcome record to the Commons exchange. Press E to read the shutoff notice and help your contact restore the kitchen water. I will keep your place here."
+        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "People and growing beds share this feed. Follow your contact to the controls; restore the water before we revise the care notice."
+        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
         "text": "Check the restored water feed with the kitchen growers. Press E, then return to Oru.",
-        "voice": "The feed is back. Press E at the Lantern kitchen tally to record the care guidance, then return to me. Tell me which words fit your partnership."
+        "voice": "Check the restored water feed with the kitchen growers. Press E, then return to Oru."
       }
     ],
     "story": {
@@ -3817,7 +3817,7 @@
   },
   {
     "id": "bloom-01",
-    "title": "A Meal for Two Kinds of Life",
+    "title": "Test an Open Nutrient Recipe",
     "faction": null,
     "race": "bloom",
     "level": 5,
@@ -3825,8 +3825,8 @@
       "bloom-00"
     ],
     "giver": "archivist",
-    "briefing": "The public nutrient mixer offers only the licensed formula sold to the original salt miners. Inspect an open formulation that supports several safe cultures and keeps its ingredients readable to the people who depend on them. Check its water and mineral requirements as carefully as its license. An open recipe can still exhaust a shared source.",
-    "completion": "The mixer gains a carefully tested alternative with clear limits. Symbiont care no longer begins with a payment to an absent patent office. The formula is free to copy. The things it must eat are not made plentiful by that freedom.",
+    "briefing": "Test the open nutrient recipe at the Public forge. Check its water and mineral requirements before it replaces the licensed formula.",
+    "completion": "The tested recipe can be copied freely. The mixer lists which cultures it supports and how much water each batch needs.",
     "objective": {
       "type": "interact",
       "target": "forge",
@@ -3839,7 +3839,7 @@
   },
   {
     "id": "bloom-02",
-    "title": "The Unleased Bloom",
+    "title": "Recover the Miners’ Notes",
     "faction": null,
     "race": "bloom",
     "level": 10,
@@ -3847,8 +3847,8 @@
       "bloom-01"
     ],
     "giver": "archivist",
-    "briefing": "An old company archive calls the first independent cultures stolen equipment. Recover the miners' own cultivation notes to show how they developed viable partnerships after the licensed nutrient supply became a tool of control.",
-    "completion": "The notes describe years of shared experiments and failures. Oru restores the miners' names to a history that had credited only the company laboratory.",
+    "briefing": "Recover the miners’ cultivation notes at the Public memory archive. The company account credits only its laboratory.",
+    "completion": "The notes document years of experiments by miners. Oru adds their names and methods to the public history.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3861,7 +3861,7 @@
   },
   {
     "id": "bloom-03",
-    "title": "The Harvesters’ Mistake",
+    "title": "Stop Culture Seizures",
     "faction": null,
     "race": "bloom",
     "level": 15,
@@ -3869,8 +3869,8 @@
       "bloom-02"
     ],
     "giver": "archivist",
-    "briefing": "Salvage automatons classify living symbiont cultures as recoverable industrial stock. Disable their collection route so the clinic can move its patients and samples without becoming a source of machine-selected raw materials.",
-    "completion": "The clinic keeps its cultures under patient-approved care plans. The machines' inventory category is retained as evidence of the rule being challenged.",
+    "briefing": "Disable two salvage machines seizing living symbiont cultures as company stock.",
+    "completion": "The clinic moves its patients and samples safely. Staff retain the seizure orders as evidence.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -3883,7 +3883,7 @@
   },
   {
     "id": "bloom-04",
-    "title": "A Language of Changes",
+    "title": "Correct the Symbiont Diaries",
     "faction": null,
     "race": "bloom",
     "level": 20,
@@ -3891,8 +3891,8 @@
       "bloom-03"
     ],
     "giver": "archivist",
-    "briefing": "Early Sporebound diaries describe shifts in appetite, scent, and sleep that later catalogs turned into claims of a commanding hive mind. Review the voluntarily released notes and restore their careful observations of distinct partnerships learning to coexist. Retain the entries where a host's needs and a culture's growth did not agree. Coexistence was work, not a recovered natural harmony.",
-    "completion": "The corrected archive separates chemical signaling from orders and individual experience from a whole lineage. Oru leaves space for the parts biology has not yet explained. One diarist chose a weaker culture to keep breathing through winter. Oru refuses to edit the compromise into a story of perfect partnership.",
+    "briefing": "Read the released Sporebound diaries at the Memory vault. Correct the catalog’s claim that chemical signals are commands from a hive mind.",
+    "completion": "The revised entries describe separate hosts and cultures. One diarist reduced a culture’s growth because it was making breathing difficult.",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -3905,7 +3905,7 @@
   },
   {
     "id": "bloom-05",
-    "title": "Where the Air Goes",
+    "title": "Check the Clinic Vent",
     "faction": null,
     "race": "bloom",
     "level": 25,
@@ -3913,8 +3913,8 @@
       "bloom-04"
     ],
     "giver": "archivist",
-    "briefing": "A clinic plans to vent a culture room onto an upper walkway. Survey the airflow and public access so its new system can contain experimental spores without isolating ordinary Sporebound residents from the city around them.",
-    "completion": "A filtered vent route protects the walkway. The clinic's safety plan applies to the experiment rather than to everyone who shares a lineage with its patients.",
+    "briefing": "Survey the Transit observatory’s airflow before the clinic opens a new culture-room vent. Keep experimental spores off the public walkway.",
+    "completion": "The crew chooses a filtered outlet. Ordinary Sporebound residents keep access to the walkway.",
     "objective": {
       "type": "explore",
       "target": "skybridge",
@@ -3927,7 +3927,7 @@
   },
   {
     "id": "bloom-06",
-    "title": "Green under the White",
+    "title": "Survey the Spreading Fungus",
     "faction": null,
     "race": "bloom",
     "level": 30,
@@ -3935,8 +3935,8 @@
       "bloom-05"
     ],
     "giver": "archivist",
-    "briefing": "At the Brine Bloom's seep, industrial strains are escaping into the salt pans. Visit the boundary and compare living color with the suppliers' restoration claims. Oru wants a survey of who can survive this growth, not a photograph proving that something green exists.",
-    "completion": "The fans are thriving where native communities and human households are failing. The supplier calls every new patch recovery. Oru records the losses alongside the spread; nature has not chosen a side anyone can inhabit without cost.",
+    "briefing": "Survey the Last freshwater seep and compare the fungal spread with the supplier’s recovery claims. Record the homes and native plants lost along the boundary.",
+    "completion": "The fungus is spreading while households leave and native plants die. Oru files the survey beside the company’s advertisement.",
     "objective": {
       "type": "explore",
       "target": "bloom-seep",
@@ -3949,7 +3949,7 @@
   },
   {
     "id": "bloom-07",
-    "title": "The Culture That Ate Its Neighbors",
+    "title": "Trace the Culture’s Water Use",
     "faction": null,
     "race": "bloom",
     "level": 35,
@@ -3957,8 +3957,8 @@
       "bloom-06"
     ],
     "giver": "archivist",
-    "briefing": "Read the Brine Bloom culture bank's mineral records. The licensed strain was bred to depend on a scarce feed; its feral descendants learned to draw from the seep instead. The response needs to distinguish an ended monopoly from an ecosystem made safe.",
-    "completion": "The patent's hold is weaker and the pressure on the seep is greater. Oru marks the remaining refuges without promising that one emancipated organism will leave room for another.",
+    "briefing": "Check the Sealed culture bank’s mineral records. Licensed cultures need the supplier’s feed; escaped strains have started drawing directly from the seep.",
+    "completion": "The escaped strains no longer need the licensed feed. Their water use leaves less for the refuge cultures.",
     "objective": {
       "type": "interact",
       "target": "bloom-bank",
@@ -3971,7 +3971,7 @@
   },
   {
     "id": "bloom-08",
-    "title": "No Blanket Cure",
+    "title": "Stop Blanket Sterilization",
     "faction": null,
     "race": "bloom",
     "level": 40,
@@ -3979,8 +3979,8 @@
       "bloom-07"
     ],
     "giver": "archivist",
-    "briefing": "Continuance's treatment drones are spraying a broad sterilant that harms the refuges along with the industrial strain. Disable the spray units before their simple solution destroys the diversity the response is supposed to protect.",
-    "completion": "The spray front stops at the marked boundary. The clinic replaces its borrowed pesticide plan with targeted removal and carefully contained trials.",
+    "briefing": "Disable four treatment drones spraying sterilant across the refuges. Their spray kills protected cultures as well as the escaped strain.",
+    "completion": "The spray stops. The clinic begins targeted removal and sealed trials instead.",
     "objective": {
       "type": "kill",
       "target": "drone",
@@ -3993,7 +3993,7 @@
   },
   {
     "id": "bloom-09",
-    "title": "The Patient Bioreactor",
+    "title": "Test Contained Cultures",
     "faction": null,
     "race": "bloom",
     "level": 45,
@@ -4001,8 +4001,8 @@
       "bloom-08"
     ],
     "giver": "archivist",
-    "briefing": "Configure a sealed bioreactor at the forge to test mixed cultures against the industrial strain. Include their water draw and waste heat in the comparison. A counter-culture that wins by consuming the last reserve would merely give the collapse another name.",
-    "completion": "One mixed community slows the strain, but only while receiving nutrients the wider basin cannot supply. The result is useful inside a bounded refuge. Oru refuses the proposed headline announcing a cure.",
+    "briefing": "Test mixed cultures in a sealed bioreactor at the Public forge. Measure their water use and waste heat as well as their effect on the escaped strain.",
+    "completion": "One mixture slows the strain, but uses too many nutrients for a basin-wide release. The keepers reserve it for contained refuges.",
     "objective": {
       "type": "interact",
       "target": "forge",
@@ -4015,7 +4015,7 @@
   },
   {
     "id": "bloom-10",
-    "title": "The Quarantine Line",
+    "title": "Remove the Biased Checkpoint",
     "faction": null,
     "race": "bloom",
     "level": 50,
@@ -4023,8 +4023,8 @@
       "bloom-09"
     ],
     "giver": "archivist",
-    "briefing": "Wardens enforce an old industrial quarantine against Sporebound travelers while ignoring unsealed company sample crates. Disable the discriminatory checkpoint so inspectors can apply containment rules to actual materials and exposures.",
-    "completion": "Travelers regain the route, and the sample crates finally receive inspection. The new boundary follows a documented hazard instead of a person's ancestry.",
+    "briefing": "Disable two wardens blocking Sporebound travelers while admitting unsealed company samples. Inspectors are ready to check exposure and packaging instead of ancestry.",
+    "completion": "Travelers regain access. The unsealed sample crates are held for inspection.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -4037,7 +4037,7 @@
   },
   {
     "id": "bloom-11",
-    "title": "A Library That Stays in Its Jars",
+    "title": "Open the Sealed Culture Library",
     "faction": null,
     "race": "bloom",
     "level": 55,
@@ -4045,8 +4045,8 @@
       "bloom-10"
     ],
     "giver": "archivist",
-    "briefing": "Register a diverse, sealed culture library at the Brine Bloom bank, with a limited water allowance and withdrawal boundary. The keepers can preserve samples and protect narrow refuges; they cannot restore the whole salt pan by releasing another organism with orders to win.",
-    "completion": "The library opens. Families outside its defensible boundary receive relocation notices and a share of the remaining supplies. Nobody confuses the safety of the jars with the recovery of the place they came from.",
+    "briefing": "Register a sealed culture library and its water allowance at the Sealed culture bank. Mark the refuge boundary and the supplies available for households that must move.",
+    "completion": "The library opens with a fixed allowance. Families beyond the boundary receive relocation notices and supplies.",
     "objective": {
       "type": "interact",
       "target": "bloom-bank",
@@ -4059,7 +4059,7 @@
   },
   {
     "id": "bloom-12",
-    "title": "The Pact Nobody Else Signed",
+    "title": "Check the Refuge Boundary",
     "faction": null,
     "race": "bloom",
     "level": 60,
@@ -4067,8 +4067,8 @@
       "bloom-11"
     ],
     "giver": "archivist",
-    "briefing": "Walk the Brine Bloom's remaining seep after the contained trials. Confirm the refuge boundary and record the growth beyond it, including the strains that now live without a supplier. Oru asks for a conclusion that does not turn survival into innocence or diversity into a promise of peace.",
-    "completion": "The monopoly is broken. A few cultures remain in common care, and the wild bloom continues across the evacuated pans. Hosts and fungi keep negotiating needs that cannot all be met. The pact is an agreement among the people still here. Nothing in the salt has signed it, and nothing promises to wait for their next decision.",
+    "briefing": "Return to the Last freshwater seep after the trials. Check the refuge markers and record any growth beyond them.",
+    "completion": "The culture lease has ended and the refuge jars remain sealed. Wild fungus continues across the evacuated houses, so the keepers move the outer markers back.",
     "objective": {
       "type": "explore",
       "target": "bloom-seep",
@@ -4081,7 +4081,7 @@
   },
   {
     "id": "mourning-fen-00",
-    "title": "The Water beneath the Wage",
+    "title": "Compare Pumping and Wages",
     "faction": null,
     "race": null,
     "biome": "mourning-fen",
@@ -4102,7 +4102,7 @@
   },
   {
     "id": "mourning-fen-01",
-    "title": "A Share in the Thirst",
+    "title": "Check the Proposed Share Payment",
     "faction": null,
     "race": null,
     "biome": "mourning-fen",
@@ -4125,7 +4125,7 @@
   },
   {
     "id": "mourning-fen-02",
-    "title": "Enough for This Winter",
+    "title": "Record the Winter Pumping Limit",
     "faction": null,
     "race": null,
     "biome": "mourning-fen",
@@ -4148,7 +4148,7 @@
   },
   {
     "id": "cinderwood-00",
-    "title": "The Forest in the Prospectus",
+    "title": "Check the False Forestry Credits",
     "faction": null,
     "race": null,
     "biome": "cinderwood",
@@ -4169,7 +4169,7 @@
   },
   {
     "id": "cinderwood-01",
-    "title": "What the Canopy Keeps",
+    "title": "Survey the Remaining Canopy",
     "faction": null,
     "race": null,
     "biome": "cinderwood",
@@ -4192,7 +4192,7 @@
   },
   {
     "id": "cinderwood-02",
-    "title": "Standing Timber",
+    "title": "Cancel the False Timber Certificates",
     "faction": null,
     "race": null,
     "biome": "cinderwood",
@@ -4215,7 +4215,7 @@
   },
   {
     "id": "glassroot-steppe-00",
-    "title": "A Body in the Seam",
+    "title": "Measure the Mineral Seam",
     "faction": null,
     "race": null,
     "biome": "glassroot-steppe",
@@ -4236,7 +4236,7 @@
   },
   {
     "id": "glassroot-steppe-01",
-    "title": "Vacant Means Unprofitable",
+    "title": "Correct the Vacant Land Survey",
     "faction": null,
     "race": null,
     "biome": "glassroot-steppe",
@@ -4259,7 +4259,7 @@
   },
   {
     "id": "glassroot-steppe-02",
-    "title": "The Road South",
+    "title": "Register the Settlement’s Relocation",
     "faction": null,
     "race": null,
     "biome": "glassroot-steppe",
@@ -4282,7 +4282,7 @@
   },
   {
     "id": "brine-bloom-00",
-    "title": "The Green That Came Back Wrong",
+    "title": "Measure the Shared Seep",
     "faction": null,
     "race": null,
     "biome": "brine-bloom",
@@ -4303,7 +4303,7 @@
   },
   {
     "id": "brine-bloom-01",
-    "title": "A Patent with No Heirs",
+    "title": "Challenge the Culture Lease",
     "faction": null,
     "race": null,
     "biome": "brine-bloom",
@@ -4326,7 +4326,7 @@
   },
   {
     "id": "brine-bloom-02",
-    "title": "Outer Boundary",
+    "title": "Register the Containment Plan",
     "faction": null,
     "race": null,
     "biome": "brine-bloom",
@@ -4349,7 +4349,7 @@
   },
   {
     "id": "neighborhood-market-00",
-    "title": "The Empty Bowls",
+    "title": "Find the Missing Diners",
     "faction": null,
     "race": null,
     "neighborhood": "market",
@@ -4373,21 +4373,21 @@
         "target": "lantern-kitchen",
         "count": 1,
         "text": "Reach the first neighborhood record.",
-        "voice": "Go to Lantern kitchen tally. Walk up to the record."
+        "voice": "Reach the first neighborhood record."
       },
       {
         "type": "interact",
         "target": "commons-water",
         "count": 1,
         "text": "Compare the service record with the first account.",
-        "voice": "Go to Commons water meter. Press E to inspect the record."
+        "voice": "Compare the service record with the first account."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
         "text": "Return to the first record and preserve the discrepancy.",
-        "voice": "Go to Lantern kitchen tally. Press E to inspect the record."
+        "voice": "Return to the first record and preserve the discrepancy."
       }
     ],
     "story": {
@@ -4398,7 +4398,7 @@
   },
   {
     "id": "neighborhood-market-01",
-    "title": "A Gift Charged Twice",
+    "title": "Check the Double Water Bill",
     "faction": null,
     "race": null,
     "neighborhood": "market",
@@ -4424,21 +4424,21 @@
         "target": "commons-water",
         "count": 1,
         "text": "Read the service record before intervening.",
-        "voice": "Go to Commons water meter. Press E to inspect the record."
+        "voice": "Read the service record before intervening."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
         "text": "Restore both incident controls, clear enforcement, and hold the marked site.",
-        "voice": "The lock is back. Restore the two controls, clear the machines, and hold the meter’s ring. We can try again if this shift runs out."
+        "voice": "Restore both incident controls, clear enforcement, and hold the marked site."
       },
       {
         "type": "interact",
         "target": "commons-water",
         "count": 1,
         "text": "Record the restored service and who was left waiting.",
-        "voice": "Go to Commons water meter. Press E to inspect the record."
+        "voice": "Record the restored service and who was left waiting."
       }
     ],
     "story": {
@@ -4449,7 +4449,7 @@
   },
   {
     "id": "neighborhood-market-02",
-    "title": "Who Washes the Bowls",
+    "title": "Set the Kitchen Rota",
     "faction": null,
     "race": null,
     "neighborhood": "market",
@@ -4475,21 +4475,21 @@
         "target": "pantry-ledger",
         "count": 1,
         "text": "Publish the neighborhood rota.",
-        "voice": "Go to Open pantry ledger. Press E to inspect the record."
+        "voice": "Publish the neighborhood rota."
       },
       {
         "type": "hold",
         "target": "commons-water",
         "count": 10,
         "text": "Monitor the service in person",
-        "voice": "Stay by the water meter for ten seconds. A steady feed is worth checking before you hand it to the next shift."
+        "voice": "Monitor the service in person"
       },
       {
         "type": "interact",
         "target": "pantry-ledger",
         "count": 1,
         "text": "Confirm the handover on the duty board.",
-        "voice": "Go to Open pantry ledger. Press E to inspect the record."
+        "voice": "Confirm the handover on the duty board."
       }
     ],
     "story": {
@@ -4500,7 +4500,7 @@
   },
   {
     "id": "neighborhood-archive-00",
-    "title": "An Ordinary Morning",
+    "title": "Check the Rejected Memory",
     "faction": null,
     "race": null,
     "neighborhood": "archive",
@@ -4541,7 +4541,7 @@
   },
   {
     "id": "neighborhood-archive-01",
-    "title": "The Warmest Shelf",
+    "title": "Inspect Cooling Priorities",
     "faction": null,
     "race": null,
     "neighborhood": "archive",
@@ -4584,7 +4584,7 @@
   },
   {
     "id": "neighborhood-archive-02",
-    "title": "Room for One Copy",
+    "title": "Record Each Witness’s Consent",
     "faction": null,
     "race": null,
     "neighborhood": "archive",
@@ -4627,7 +4627,7 @@
   },
   {
     "id": "neighborhood-furnace-00",
-    "title": "People in the Vacant Flats",
+    "title": "Count the Occupied Flats",
     "faction": null,
     "race": null,
     "neighborhood": "furnace",
@@ -4668,7 +4668,7 @@
   },
   {
     "id": "neighborhood-furnace-01",
-    "title": "The Apprentice Line",
+    "title": "Inspect the Heat Bypass",
     "faction": null,
     "race": null,
     "neighborhood": "furnace",
@@ -4711,7 +4711,7 @@
   },
   {
     "id": "neighborhood-furnace-02",
-    "title": "A Fair Clock",
+    "title": "Set the Shared Heating Schedule",
     "faction": null,
     "race": null,
     "neighborhood": "furnace",
@@ -4754,7 +4754,7 @@
   },
   {
     "id": "neighborhood-quiet-00",
-    "title": "The Missed Warning",
+    "title": "Trace the Missed Flood Warning",
     "faction": null,
     "race": null,
     "neighborhood": "quiet",
@@ -4795,7 +4795,7 @@
   },
   {
     "id": "neighborhood-quiet-01",
-    "title": "A Rail That Speaks",
+    "title": "Test the Lamp and Handrail",
     "faction": null,
     "race": null,
     "neighborhood": "quiet",
@@ -4838,7 +4838,7 @@
   },
   {
     "id": "neighborhood-quiet-02",
-    "title": "Someone Checks Tomorrow",
+    "title": "Assign Warning Inspections",
     "faction": null,
     "race": null,
     "neighborhood": "quiet",
@@ -4881,7 +4881,7 @@
   },
   {
     "id": "neighborhood-skybridge-00",
-    "title": "Nobody on the Platform",
+    "title": "Count the Night Passengers",
     "faction": null,
     "race": null,
     "neighborhood": "skybridge",
@@ -4922,7 +4922,7 @@
   },
   {
     "id": "neighborhood-skybridge-01",
-    "title": "A Fare Paid in Work",
+    "title": "Check the Service-Pass Exclusion",
     "faction": null,
     "race": null,
     "neighborhood": "skybridge",
@@ -4965,7 +4965,7 @@
   },
   {
     "id": "neighborhood-skybridge-02",
-    "title": "One Last Connection",
+    "title": "Keep the Late Connection Open",
     "faction": null,
     "race": null,
     "neighborhood": "skybridge",

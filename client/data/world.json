@@ -22,6 +22,7 @@
   "buildingGrid": { "min": -13, "max": 13, "spacing": 80, "widthMin": 29, "widthMax": 48, "heightMin": 24, "heightMax": 146, "excludeCenter": 90 },
   "interiors": {
     "height": 6.4, "wall": 0.8, "doorWidth": 5, "doorHeight": 4.2,
+    "upperRooms": [{"name": "SHARED ROOM", "furniture": [{"kind": "table", "center": [-6, 0.6, 0], "size": [4, 1.2, 4]}, {"kind": "bench", "center": [-6, 0.45, -3.5], "size": [4, 0.9, 1.2]}, {"kind": "bench", "center": [-6, 0.45, 3.5], "size": [4, 0.9, 1.2]}, {"kind": "cabinet", "center": [7, 1.5, 0], "size": [2, 3, 4]}]}, {"name": "UPSTAIRS WORKROOM", "furniture": [{"kind": "table", "center": [-6, 0.6, -3], "size": [4, 1.2, 3]}, {"kind": "table", "center": [6, 0.6, 3], "size": [4, 1.2, 3]}, {"kind": "cabinet", "center": [7, 1.5, -5], "size": [2, 3, 2]}, {"kind": "bench", "center": [-6, 0.45, 5], "size": [4, 0.9, 1.2]}]}],
     "rooms": [
       { "name": "NIGHT CLINIC", "color": "#6de4dd", "furniture": [
         { "kind": "counter", "center": [-7, 0.7, -6], "size": [5, 1.4, 2] },
@@ -46,7 +47,11 @@
         { "kind": "bench", "center": [8, 0.45, 0], "size": [1.6, 0.9, 9] },
         { "kind": "cabinet", "center": [-7, 1.6, -8], "size": [3, 3.2, 1.6] },
         { "kind": "table", "center": [7, 0.6, 8], "size": [4, 1.2, 2] }
-      ] }
+      ] },
+      {"name": "READING ROOM", "color": "#c6b6e4", "furniture": [{"kind": "cabinet", "center": [-8, 1.6, -5], "size": [2, 3.2, 7]}, {"kind": "cabinet", "center": [8, 1.6, 5], "size": [2, 3.2, 7]}, {"kind": "table", "center": [6, 0.6, -5], "size": [3, 1.2, 2.4]}, {"kind": "bench", "center": [-6, 0.45, 5], "size": [2, 0.9, 4]}]},
+      {"name": "SHARED LAUNDRY", "color": "#8acbd5", "furniture": [{"kind": "cabinet", "center": [-8, 1, -5], "size": [3, 2, 3]}, {"kind": "cabinet", "center": [-8, 1, 4], "size": [3, 2, 3]}, {"kind": "table", "center": [7, 0.6, 0], "size": [3, 1.2, 8]}]},
+      {"name": "NEIGHBORHOOD NURSERY", "color": "#b8d78c", "furniture": [{"kind": "table", "center": [-7, 0.6, -5], "size": [4, 1.2, 3]}, {"kind": "table", "center": [7, 0.6, 5], "size": [4, 1.2, 3]}, {"kind": "cabinet", "center": [-8, 1.5, 5], "size": [2, 3, 2]}]},
+      {"name": "PARCEL OFFICE", "color": "#e3b582", "furniture": [{"kind": "counter", "center": [-7, 0.7, 0], "size": [2.4, 1.4, 8]}, {"kind": "cabinet", "center": [8, 1.5, -5], "size": [3, 3, 3]}, {"kind": "cabinet", "center": [8, 1.5, 5], "size": [3, 3, 3]}]}
     ]
   },
   "palette": { "sky": "#080e20", "fog": "#25374b", "ground": "#252a35", "concrete": ["#303848", "#3b414e", "#262e3c", "#4a454d"], "neon": ["#73f4d1", "#60d9fa", "#ffae69", "#ff5c9f"] },
@@ -59,12 +64,597 @@
     { "id": "basin", "name": "THE PALE BASIN", "subtitle": "Dry harbor · salt roads · low visibility", "center": [0, 0, 1450], "radius": 1700, "minLevel": 50, "color": "#e7c495" }
   ],
   "biomes": [
-    { "id": "mourning-fen", "name": "MOURNING FEN", "subtitle": "Eastern wetland · pump crews · falling water", "description": "East of Vesper, reed beds and black pools filter the city's runoff. Pump families live on wages paid by the concession draining their drinking water. A slower pump means fewer poisoned nests and fewer paid shifts.", "center": [1440, 0, 320], "radius": 240, "minLevel": 8, "color": "#86b9a0", "ground": "#233e35", "kind": "wetland", "seed": 4181 },
-    { "id": "cinderwood", "name": "CINDERWOOD", "subtitle": "Western canopy · cutting crews · ashfall", "description": "West of the furnaces, charred trunks shelter the last living canopy. A restoration fund pays cutters by the stump and counts its plantations before they germinate. The workers know; their children still need heat.", "center": [-1440, 0, -320], "radius": 240, "minLevel": 18, "color": "#b99b75", "ground": "#383930", "kind": "forest", "seed": 4182 },
-    { "id": "glassroot-steppe", "name": "GLASSROOT STEPPE", "subtitle": "Northern grassland · ceramic kilns · mineral seam", "description": "North of the city, silver grasses root in the mineral seam used to fire Lattice bodies. Mining buys another person's continuity by removing the soil that holds a settlement together. The wind recognizes neither deed nor refuge.", "center": [0, 0, -1440], "radius": 240, "minLevel": 30, "color": "#bcc6aa", "ground": "#41463b", "kind": "grassland", "seed": 4183 },
-    { "id": "brine-bloom", "name": "BRINE BLOOM", "subtitle": "Southern salt pans · sealed cultures · abandoned homes", "description": "South of the floodgate, fungal fans spread over the abandoned salt pans. The growth is alive, invasive, and indifferent. Licensed cultures and feral descendants drink from the same dwindling seep; neither can be persuaded to leave enough.", "center": [400, 0, 1600], "radius": 240, "minLevel": 30, "color": "#9ab5b6", "ground": "#303d43", "kind": "fungal", "seed": 4184 }
+    { "id": "mourning-fen", "name": "MOURNING FEN", "subtitle": "Eastern wetland · pump crews · falling water", "description": "Reeds and pools east of Vesper filter the city’s runoff. Mara’s crew earns wages pumping the water, but the extraction is also draining their wells.", "center": [1440, 0, 320], "radius": 240, "minLevel": 8, "color": "#86b9a0", "ground": "#233e35", "kind": "wetland", "seed": 4181 },
+    { "id": "cinderwood", "name": "CINDERWOOD", "subtitle": "Western canopy · cutting crews · ashfall", "description": "The surviving trees west of Vesper shelter young growth from the heat. Tovin’s crew is paid to cut them under a restoration program that counts dead seedlings as future timber.", "center": [-1440, 0, -320], "radius": 240, "minLevel": 18, "color": "#b99b75", "ground": "#383930", "kind": "forest", "seed": 4182 },
+    { "id": "glassroot-steppe", "name": "GLASSROOT STEPPE", "subtitle": "Northern grassland · ceramic kilns · mineral seam", "description": "The northern mineral seam supplies ceramic for Lattice bodies. Digging deeper would undermine the roots around Ada’s settlement and its well.", "center": [0, 0, -1440], "radius": 240, "minLevel": 30, "color": "#bcc6aa", "ground": "#41463b", "kind": "grassland", "seed": 4183 },
+    { "id": "brine-bloom", "name": "BRINE BLOOM", "subtitle": "Southern salt pans · sealed cultures · abandoned homes", "description": "Fungal cultures spread across the southern salt pans. Ilex keeps stable samples sealed while escaped strains consume the seep and force households to leave.", "center": [400, 0, 1600], "radius": 240, "minLevel": 30, "color": "#9ab5b6", "ground": "#303d43", "kind": "fungal", "seed": 4184 }
+  ],
+  "architecture": {
+    "market": {
+      "streets": [
+        "Lantern Lane",
+        "Potters Row",
+        "Market Street"
+      ],
+      "materials": [
+        "#624951",
+        "#765b4e",
+        "#504a51",
+        "#81685a"
+      ],
+      "trim": "#e8b578",
+      "upper": [
+        "Kitchen break room",
+        "Shared roof nursery"
+      ],
+      "uses": [
+        {
+          "name": "Bell Street Clinic",
+          "purpose": "The clinic keeps two beds free for kitchen workers. The blue cupboard holds donated dressings.",
+          "history": "A nurse repaired the doorway after the last flood. The old water mark is still on the wall.",
+          "detail": "medical",
+          "role": "medic"
+        },
+        {
+          "name": "Second Use Repairs",
+          "purpose": "Bring broken hotplates to the front counter. Repaired ones go on the shelf by the door.",
+          "history": "The owner started with one borrowed soldering iron. Neighbors still lend the expensive tools.",
+          "detail": "repair",
+          "role": "technician"
+        },
+        {
+          "name": "Mina’s Noodles",
+          "purpose": "Mina serves broth before the early shift. Used bowls go in the washing crate.",
+          "history": "The mismatched stools came from three cafes that closed when water prices rose.",
+          "detail": "food",
+          "role": "cook"
+        },
+        {
+          "name": "Carriers Rest",
+          "purpose": "Couriers leave their carts outside and take turns using the kettle.",
+          "history": "The cracked station clock is kept ten minutes fast so nobody misses the last lift.",
+          "detail": "transit",
+          "role": "commuter"
+        },
+        {
+          "name": "The Book Swap",
+          "purpose": "Leave a book on the return shelf or take one upstairs to read.",
+          "history": "A retired printer opened the room after the school lost its library.",
+          "detail": "books",
+          "role": "archivist"
+        },
+        {
+          "name": "Lantern Washhouse",
+          "purpose": "Shared washers run in batches to save water. Collect dry clothes upstairs.",
+          "history": "Families bought the first machine together. Their payment list is pinned beside it.",
+          "detail": "laundry",
+          "role": "technician"
+        },
+        {
+          "name": "Seed and Stem",
+          "purpose": "Kitchen scraps feed the seedlings. The sturdy plants go to the upstairs nursery.",
+          "history": "The first tomato plant grew in a split soup tin. Its cuttings fill the window now.",
+          "detail": "plants",
+          "role": "gardener"
+        },
+        {
+          "name": "Parcel House",
+          "purpose": "Deliveries are sorted by street. Unclaimed medicine stays behind the counter.",
+          "history": "The chalk marks record parcels carried upstairs for neighbors who cannot manage the steps.",
+          "detail": "parcels",
+          "role": "courier"
+        }
+      ]
+    },
+    "archive": {
+      "streets": [
+        "Glass Lane",
+        "Witness Street",
+        "Binder Row"
+      ],
+      "materials": [
+        "#48516b",
+        "#656479",
+        "#38475b",
+        "#716882"
+      ],
+      "trim": "#b7c4eb",
+      "upper": [
+        "Reading room",
+        "Records repair room"
+      ],
+      "uses": [
+        {
+          "name": "Voss Memory Clinic",
+          "purpose": "Patients check a memory copy before the clerk seals it. Appointments are written beside the beds.",
+          "history": "One cabinet is empty. Its owner chose deletion, and the staff kept the space unassigned.",
+          "detail": "medical",
+          "role": "medic"
+        },
+        {
+          "name": "Lens and Coil",
+          "purpose": "Technicians rebuild the readers that play stored memories. Lenses dry on the padded bench.",
+          "history": "The oldest reader only works when warm. Staff wrap it in a blanket before the first appointment.",
+          "detail": "repair",
+          "role": "technician"
+        },
+        {
+          "name": "The Margins Cafe",
+          "purpose": "Clerks trade lunch shifts here while their cooling checks run.",
+          "history": "The tables have pencil notes under their varnish, left by readers before the cafe opened.",
+          "detail": "food",
+          "role": "cook"
+        },
+        {
+          "name": "Witness Waiting Room",
+          "purpose": "Families wait here while relatives review their records upstairs.",
+          "history": "Every chair was donated after visitors spent a winter waiting on the pavement.",
+          "detail": "transit",
+          "role": "commuter"
+        },
+        {
+          "name": "Loose Leaf Library",
+          "purpose": "Paper copies stay available when the archive network goes down.",
+          "history": "The handwritten index is longer than the official one. It includes records the city stopped listing.",
+          "detail": "books",
+          "role": "archivist"
+        },
+        {
+          "name": "Clean Sleeve Laundry",
+          "purpose": "The crew washes protective sleeves and clinic bedding separately.",
+          "history": "The floor tiles mark where cooling equipment stood before the room became a laundry.",
+          "detail": "laundry",
+          "role": "technician"
+        },
+        {
+          "name": "Glasshouse Cuttings",
+          "purpose": "Shade plants grow beside the warm archive exhaust. Ask before taking a cutting.",
+          "history": "A clerk planted the first vine to cover a sealed window. It now reaches the second floor.",
+          "detail": "plants",
+          "role": "gardener"
+        },
+        {
+          "name": "Witness Post",
+          "purpose": "Sealed consent forms wait in numbered trays. Clerks collect them in person.",
+          "history": "The delivery slot was widened so people could send paper records without folding them.",
+          "detail": "parcels",
+          "role": "courier"
+        }
+      ]
+    },
+    "furnace": {
+      "streets": [
+        "Copper Walk",
+        "Rivet Street",
+        "Boiler Lane"
+      ],
+      "materials": [
+        "#5e443c",
+        "#77574a",
+        "#49454a",
+        "#866555"
+      ],
+      "trim": "#db9465",
+      "upper": [
+        "Shift canteen",
+        "Apprentice workshop"
+      ],
+      "uses": [
+        {
+          "name": "Shift Clinic",
+          "purpose": "The clinic treats burns and keeps spare respirator filters by the entrance.",
+          "history": "Workers fitted the second doorway so stretchers could pass through without turning.",
+          "detail": "medical",
+          "role": "medic"
+        },
+        {
+          "name": "Three Bolt Workshop",
+          "purpose": "Used heat couplings are tested here before they return to the flats.",
+          "history": "Three founders welded their first tools to the sign. Only one still works full time.",
+          "detail": "repair",
+          "role": "technician"
+        },
+        {
+          "name": "The Relief Canteen",
+          "purpose": "The incoming crew eats first; the outgoing crew gets food packed for home.",
+          "history": "The counter is cut from an old freight platform. Its weight limit is still stamped on the edge.",
+          "detail": "food",
+          "role": "cook"
+        },
+        {
+          "name": "Boiler Crew Rooms",
+          "purpose": "Workers wait for shift assignments and dry their coats by the pipes.",
+          "history": "The benches face away from the furnace after an apprentice complained about the glare.",
+          "detail": "transit",
+          "role": "commuter"
+        },
+        {
+          "name": "Repair Manuals",
+          "purpose": "Borrow a workshop manual or add a correction in the margin.",
+          "history": "Half the diagrams are hand drawn because the manufacturers no longer supply parts.",
+          "detail": "books",
+          "role": "archivist"
+        },
+        {
+          "name": "Copper Wash",
+          "purpose": "Work clothes soak downstairs. Clean clothes are kept away from the ash upstairs.",
+          "history": "The crew fitted a second filter after a washer clogged with metal filings.",
+          "detail": "laundry",
+          "role": "technician"
+        },
+        {
+          "name": "Warm Wall Nursery",
+          "purpose": "Seed trays use waste heat from the workshop. The water tank is checked each shift.",
+          "history": "Neighbors started growing greens here during a delivery strike. They kept the beds afterward.",
+          "detail": "plants",
+          "role": "gardener"
+        },
+        {
+          "name": "Reclaimed Parts Depot",
+          "purpose": "Couriers sort salvaged valves by size before sending them to repair crews.",
+          "history": "Each crate names the building it came from, so crews can trace a faulty batch.",
+          "detail": "parcels",
+          "role": "courier"
+        }
+      ]
+    },
+    "quiet": {
+      "streets": [
+        "Willow Court",
+        "Reed Lane",
+        "Courtyard Road"
+      ],
+      "materials": [
+        "#4a5d50",
+        "#65715c",
+        "#435451",
+        "#7c8069"
+      ],
+      "trim": "#c3d89a",
+      "upper": [
+        "Community room",
+        "Seed drying room"
+      ],
+      "uses": [
+        {
+          "name": "Court Clinic",
+          "purpose": "The waiting room uses a light to call patients. Written instructions are available at the desk.",
+          "history": "Neighbors replaced the loud door buzzer with a lamp after the clinic moved in.",
+          "detail": "medical",
+          "role": "medic"
+        },
+        {
+          "name": "Lamp and Rail",
+          "purpose": "Repairers test the warning lamps and handrail motors here.",
+          "history": "The first test switch is still mounted low enough for the children who helped wire it.",
+          "detail": "repair",
+          "role": "technician"
+        },
+        {
+          "name": "Willow Kitchen",
+          "purpose": "Meals are collected from the window. The upstairs room is open for shared dinners.",
+          "history": "The cook keeps the dented stockpot that served the block during the flood.",
+          "detail": "food",
+          "role": "cook"
+        },
+        {
+          "name": "Garden Waiting Room",
+          "purpose": "Carers rest here between visits. The noticeboard lists who needs a lift home.",
+          "history": "The long bench was built around a tree root instead of cutting it out.",
+          "detail": "transit",
+          "role": "commuter"
+        },
+        {
+          "name": "Court Reading Room",
+          "purpose": "Neighbors borrow books and write replies to the weekly notices.",
+          "history": "The shelves were made from the frames of removed advertising screens.",
+          "detail": "books",
+          "role": "archivist"
+        },
+        {
+          "name": "Reed Laundry",
+          "purpose": "The laundry saves rinse water for the courtyard planters.",
+          "history": "Residents moved the drying lines upstairs to keep the entrance clear for wheelchairs.",
+          "detail": "laundry",
+          "role": "technician"
+        },
+        {
+          "name": "Common Ground Nursery",
+          "purpose": "Keep the seed trays damp. The marked ones are reserved for flooded courtyards.",
+          "history": "Each planter carries the name of the household that will look after it.",
+          "detail": "plants",
+          "role": "gardener"
+        },
+        {
+          "name": "Court Delivery Room",
+          "purpose": "Groceries wait in shaded boxes until neighbors collect them.",
+          "history": "A volunteer added a second list for people who need deliveries carried upstairs.",
+          "detail": "parcels",
+          "role": "courier"
+        }
+      ]
+    },
+    "skybridge": {
+      "streets": [
+        "Platform Road",
+        "Cable Street",
+        "Connection Lane"
+      ],
+      "materials": [
+        "#3e5666",
+        "#536f7c",
+        "#364959",
+        "#6b8090"
+      ],
+      "trim": "#8ddbe3",
+      "upper": [
+        "Night crew room",
+        "Dispatch office"
+      ],
+      "uses": [
+        {
+          "name": "Night Connection Clinic",
+          "purpose": "The night medic treats lift crews and passengers between departures.",
+          "history": "The examination lamp runs on its own battery after a blackout interrupted a treatment.",
+          "detail": "medical",
+          "role": "medic"
+        },
+        {
+          "name": "Cable Service",
+          "purpose": "Lift brake pads are measured here before each replacement.",
+          "history": "A retired mechanic marked the safe wear limit on every bench in yellow paint.",
+          "detail": "repair",
+          "role": "technician"
+        },
+        {
+          "name": "Last Stop Kitchen",
+          "purpose": "Hot meals are kept ready for the late connection. Bring containers back on your next shift.",
+          "history": "The owner changed the opening hours after cleaners repeatedly arrived to a closed counter.",
+          "detail": "food",
+          "role": "cook"
+        },
+        {
+          "name": "Platform Lodge",
+          "purpose": "Passengers can wait indoors and check the next staffed lift.",
+          "history": "The folding beds were bought by night workers who missed too many connections home.",
+          "detail": "transit",
+          "role": "commuter"
+        },
+        {
+          "name": "Travel Reading Room",
+          "purpose": "Paper timetables and route books stay here when the boards fail.",
+          "history": "The map includes the service stairs that never appeared on the passenger diagrams.",
+          "detail": "books",
+          "role": "archivist"
+        },
+        {
+          "name": "Night Crew Laundry",
+          "purpose": "Clean uniforms are packed by shift so crews can collect them on the way up.",
+          "history": "A cleaner painted the delivery shelf numbers large enough to read at the end of a long shift.",
+          "detail": "laundry",
+          "role": "technician"
+        },
+        {
+          "name": "Cable Garden",
+          "purpose": "The sheltered nursery supplies plants for the windbreaks on the skyway.",
+          "history": "The first seedlings were carried up in a mechanic’s lunch box.",
+          "detail": "plants",
+          "role": "gardener"
+        },
+        {
+          "name": "Late Parcel Office",
+          "purpose": "Last deliveries wait here for the night lift crew. Medical parcels go first.",
+          "history": "The wall clock has two hands from different stations, fitted by the overnight repairer.",
+          "detail": "parcels",
+          "role": "courier"
+        }
+      ]
+    }
+  },
+  "routes": [
+    {"id":"east-crest","name":"East embankment lookout","kind":"hill","start":[1120,16,-304],"end":[1120,16,-288],"width":14},
+    {"id":"fen-crest","name":"Fen levee lookout","kind":"hill","start":[1440,12,552],"end":[1440,12,568],"width":18},
+    {
+      "id": "commons-ramp",
+      "name": "Commons freight ramp",
+      "kind": "ramp",
+      "start": [
+        8,
+        0,
+        -176
+      ],
+      "end": [
+        8,
+        24,
+        -80
+      ],
+      "width": 6
+    },
+    {
+      "id": "glass-stairs",
+      "name": "Glass Steps stairs",
+      "kind": "stairs",
+      "start": [
+        328,
+        0,
+        -200
+      ],
+      "end": [
+        328,
+        24,
+        -80
+      ],
+      "width": 6,
+      "steps": 96
+    },
+    {
+      "id": "copper-stairs",
+      "name": "Copper Walk service stairs",
+      "kind": "stairs",
+      "start": [
+        -312,
+        0,
+        -200
+      ],
+      "end": [
+        -312,
+        24,
+        -80
+      ],
+      "width": 6,
+      "steps": 96
+    },
+    {
+      "id": "court-hill",
+      "name": "Courtyard garden hill",
+      "kind": "hill",
+      "start": [
+        -496,
+        0,
+        320
+      ],
+      "end": [
+        -400,
+        8,
+        320
+      ],
+      "width": 12
+    },
+    {
+      "id": "court-stairs",
+      "name": "Garden terrace stairs",
+      "kind": "stairs",
+      "start": [
+        -384,
+        8,
+        320
+      ],
+      "end": [
+        -320,
+        24,
+        320
+      ],
+      "width": 8,
+      "steps": 64
+    },
+    {
+      "id": "transit-ramp",
+      "name": "Night crew ramp",
+      "kind": "ramp",
+      "start": [
+        328,
+        0,
+        176
+      ],
+      "end": [
+        328,
+        24,
+        296
+      ],
+      "width": 6
+    },
+    {
+      "id": "west-crown-stairs",
+      "name": "West crown stairs",
+      "kind": "stairs",
+      "start": [
+        -320,
+        24,
+        -200
+      ],
+      "end": [
+        -320,
+        48,
+        -80
+      ],
+      "width": 5,
+      "steps": 96
+    },
+    {
+      "id": "east-crown-stairs",
+      "name": "East crown stairs",
+      "kind": "stairs",
+      "start": [
+        320,
+        24,
+        200
+      ],
+      "end": [
+        320,
+        48,
+        320
+      ],
+      "width": 5,
+      "steps": 96
+    },
+    {
+      "id": "east-hill-up",
+      "name": "East embankment climb",
+      "kind": "hill",
+      "start": [
+        1120,
+        0,
+        -400
+      ],
+      "end": [
+        1120,
+        16,
+        -304
+      ],
+      "width": 14
+    },
+    {
+      "id": "east-hill-down",
+      "name": "East embankment descent",
+      "kind": "hill",
+      "start": [
+        1120,
+        16,
+        -288
+      ],
+      "end": [
+        1120,
+        0,
+        -192
+      ],
+      "width": 14
+    },
+    {
+      "id": "fen-hill-up",
+      "name": "Fen levee path",
+      "kind": "hill",
+      "start": [
+        1440,
+        0,
+        480
+      ],
+      "end": [
+        1440,
+        12,
+        552
+      ],
+      "width": 18
+    },
+    {
+      "id": "fen-hill-down",
+      "name": "Fen levee descent",
+      "kind": "hill",
+      "start": [
+        1440,
+        12,
+        568
+      ],
+      "end": [
+        1440,
+        0,
+        640
+      ],
+      "width": 18
+    }
   ],
   "platforms": [
+    { "id": "garden-terrace", "position": [-392, 8, 320], "size": [16, 1.4, 12] },
+    { "id": "night-ramp-landing", "position": [328, 24, 308], "size": [16, 1.4, 24] },
     { "id": "north-skyway", "position": [0, 24, -80], "size": [2000, 1.4, 12] },
     { "id": "south-skyway", "position": [0, 24, 320], "size": [2000, 1.4, 12] },
     { "id": "east-skyway", "position": [320, 24, 0], "size": [12, 1.4, 2000] },
@@ -110,7 +700,7 @@
     {"id":"tactile-relay","name":"Tactile warning relay","position":[-320,0,335],"color":"#b5d78d","kind":"terminal","neighborhood":"quiet","evidence":"The test circuit pairs an amber lamp sequence with pulses through the handrail. A separate steady light marks a failed circuit. The prototype draws power from the court battery."},
     {"id":"court-assembly","name":"Listening Courts noticeboard","position":[-307,0,320],"color":"#b5d78d","kind":"terminal","neighborhood":"quiet","evidence":"The inspection rota names two neighbors per shift and a manual warning route if the battery fails. The lights and handrail stay public; private rooms keep control of their own speakers."},
     {"id":"night-platform","name":"Night platform register","position":[310,24,320],"color":"#81dce5","kind":"terminal","neighborhood":"skybridge","evidence":"Forty service-pass holders signed the last departure sheet: cleaners, carers, couriers, and a lift mechanic. The public timetable records no paying passengers and recommends closure."},
-    {"id":"service-counter","name":"Service-pass counter","position":[320,24,309],"color":"#81dce5","kind":"terminal","neighborhood":"skybridge","evidence":"The occupancy counter excludes service passes before counting passengers. A maintenance concession supplies those passes as part of wages. Travel is simultaneously compensation and statistically nonexistent."},
+    {"id":"service-counter","name":"Service-pass counter","position":[320,24,309],"color":"#81dce5","kind":"terminal","neighborhood":"skybridge","evidence":"The occupancy counter excludes service passes before counting passengers. A maintenance concession supplies those passes as part of wages. The system treats these passes as wages but leaves their passengers out of the count."},
     {"id":"last-connection","name":"Last Connection duty board","position":[331,24,320],"color":"#81dce5","kind":"terminal","neighborhood":"skybridge","evidence":"The revised rota staffs the late lift and retains fewer, published connections. Service passes count toward demand. A named relief crew inherits each shift, and missed departures must be recorded."}
   ],
   "enemySpawns": [

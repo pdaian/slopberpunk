@@ -50,10 +50,11 @@ export class Prediction {
     // Substeps prevent a dash crossing a narrow wall at a low frame rate.
     const steps=Math.max(1,Math.ceil(Math.hypot(this.velocity[0],this.velocity[2])*dt/.35));
     for(let i=0;i<steps;i++){
-      let nx=p[0]+this.velocity[0]*dt/steps,nz=p[2]+this.velocity[2]*dt/steps;
       const arena=this.inDungeon?this.data.dungeons.rules:null;
-      if(!this.world.collides(nx,p[1],p[2],m.radius)&&(!arena||Math.abs(nx-arena.arena[0])<=arena.arenaRadius))p[0]=nx;else this.velocity[0]=0;
-      if(!this.world.collides(p[0],p[1],nz,m.radius)&&(!arena||Math.abs(nz-arena.arena[2])<=arena.arenaRadius))p[2]=nz;else this.velocity[2]=0;
+      for(const axis of [0,2]){
+        const next=this.world.stepPosition(p,axis,this.velocity[axis]*dt/steps,this.grounded,m.radius,m.height);
+        if(next&&(!arena||Math.abs(next[axis]-arena.arena[axis])<=arena.arenaRadius)){p[axis]=next[axis];p[1]=next[1];}else this.velocity[axis]=0;
+      }
     }
     this.velocity[1]-=m.gravity*dt;let nextY=p[1]+this.velocity[1]*dt;
     if(this.velocity[1]>0){const ceiling=this.world.ceilingAt(p[0],p[2],p[1],nextY,m.radius,m.height);if(nextY>=ceiling){nextY=ceiling;this.velocity[1]=0;}}

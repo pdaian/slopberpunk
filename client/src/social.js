@@ -12,7 +12,7 @@ const field = (label, name, options = '') => {
   if(options.includes('type="number"'))options=options.replace('type="number"','type="text" inputmode="numeric" pattern="[0-9]+"').replace(/\b(min|max)=/g,'data-$1=');
   return `<label class="community-field">${label}<input name="${name}" ${options} required></label>`;
 };
-const compose = (action, hidden = '', title = '') => `<form data-community-form="${action}" class="community-form">${hidden}${title}<label class="community-field">${action === 'dm' ? 'PRIVATE MESSAGE' : 'MESSAGE'}<textarea name="body" maxlength="${action === 'thread' || action === 'reply' ? 2000 : 1000}" rows="3" required placeholder="Write your signal…"></textarea></label><span class="compose-hint">CTRL / CMD + ENTER TO SEND · DRAFT KEPT WHILE YOU PLAY</span><button class="button primary" type="submit">${action === 'thread' ? 'CREATE THREAD' : 'SEND'} →</button></form>`;
+const compose = (action, hidden = '', title = '') => `<form data-community-form="${action}" class="community-form">${hidden}${title}<label class="community-field">${action === 'dm' ? 'PRIVATE MESSAGE' : 'MESSAGE'}<textarea name="body" maxlength="${action === 'thread' || action === 'reply' ? 2000 : 1000}" rows="3" required placeholder="Write a message…"></textarea></label><span class="compose-hint">CTRL / CMD + ENTER TO SEND · DRAFT KEPT WHILE YOU PLAY</span><button class="button primary" type="submit">${action === 'thread' ? 'CREATE THREAD' : 'SEND'} →</button></form>`;
 const hidden = (name, value) => `<input type="hidden" name="${name}" value="${esc(value)}">`;
 const numeric = new Set(['group','auction','delivery','thread','quantity','minimum','buyout','hours','amount']);
 const tabardColors = ['#284d42','#273f65','#66384d','#9a613b','#d3b678','#c7ed99','#81e5ed','#e6abfd'];
@@ -76,7 +76,7 @@ export class Community {
     const id = this.character().id;
     if (this.owner !== id) { this.owner = id; this.summary = null; this.pending = null; this.pendingDraft=null; this.drafts.clear(); }
     const epoch = ++this.epoch; this.view = view; this.query = query;
-    this.showPanel('Community terminal', '<p role="status">Tuning the community signal…</p>', 'VESPER / COMMUNITY', 'community');
+    this.showPanel('Community terminal', '<p role="status">Loading community…</p>', 'VESPER / COMMUNITY', 'community');
     let summary;
     try { summary = await this.browse({ view: 'summary' }); }
     catch (error) { if (epoch === this.epoch && this.isOpen()) this.showPanel('Community unavailable.', `<p role="alert">${esc(error.message)}</p>${button('TRY AGAIN','tab','data-view="chat"')}`, 'VESPER / COMMUNITY', 'community'); return; }
