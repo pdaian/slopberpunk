@@ -1,6 +1,7 @@
 // Sloperberpunk browser application. GPL-3.0-or-later. See LICENSE.
 import { World } from './world.js';
 import { Renderer } from './renderer.js';
+import { WebGLUI } from './webgl-ui.js';
 import { Prediction,availableQuest,experienceFor,stats } from './prediction.js';
 import { Input } from './input.js';
 import { AudioEngine } from './audio.js';
@@ -19,7 +20,7 @@ import { validateWorldEvents, worldEventViews, incidentStatus, incidentTargets }
 import { isSpirit, recoveryView, bearing } from './death.js';
 
 const $=selector=>document.querySelector(selector);
-let data,world,renderer,input,audio,cityLife,simulation=null,connection=null,account=null;
+let data,world,renderer,interfaceUI,input,audio,cityLife,simulation=null,connection=null,account=null;
 let state='landing',selectedRace='human',selectedFaction='relay',targetId=null,nearest=null;
 let time=0,lastFrame=0,uiAccumulator=0,yaw=0,pitch=.15,thirdPerson=true,introTime=0,introShot=-1;
 let toastTimer,dialogPage='',journalFilter='active',otherPlayers=[],effects=[],floaters=[],log=[],deleteArmed=null;
@@ -39,9 +40,10 @@ function setState(next){
   state=next;for(const name of ['landing','creation','cinematic','hud'])$(`#${name}`).hidden=next!==(name==='hud'?'playing':name);
   if(input){input.active=next==='playing'||next==='cinematic';input.menu=next!=='playing'||$('#panel-dialog').open;input.clear();}
 }
-function closePanel(){if($('#panel-dialog').open)$('#panel-dialog').close();dialogPage='';audio?.stopVoice();if(input){input.menu=state!=='playing';input.clear();}}
+function closePanel(){interfaceUI?.closeSelect();if($('#panel-dialog').open)$('#panel-dialog').close();dialogPage='';audio?.stopVoice();if(input){input.menu=state!=='playing';input.clear();}}
 function panel(title,html,eyebrow='SLOPERBERPUNK / FIELD TERMINAL',page=''){
   if(dialogPage!==page)audio?.stopVoice();
+  interfaceUI?.closeSelect();
   $('#dialog-title').textContent=title;$('#dialog-eyebrow').textContent=eyebrow;$('#dialog-content').innerHTML=html;dialogPage=page;
   if(!$('#panel-dialog').open)$('#panel-dialog').showModal();
   document.exitPointerLock?.();if(input){input.menu=true;input.clear();}
@@ -50,7 +52,8 @@ function initialUI(){
   $('#race-options').innerHTML=data.races.map(r=>`<label class="choice" style="--choice-color:${r.color}"><input type="radio" name="race" value="${r.id}" ${r.id===selectedRace?'checked':''}>${icon(r.id)}<strong>${esc(r.name)}</strong><small>${esc(r.passive.name)}</small></label>`).join('');
   $('#faction-options').innerHTML=data.factions.map(f=>`<label class="choice" style="--choice-color:${f.color}"><input type="radio" name="faction" value="${f.id}" ${f.id===selectedFaction?'checked':''}>${icon(f.id)}<strong>${esc(f.shortName||f.name)}</strong></label>`).join('');
   updateChoices();
-  $('#hotbar').innerHTML=data.abilities.map(a=>`<button class="ability" data-action="ability:${a.id}" title="${esc(a.name)} — ${esc(a.description)}" aria-label="${esc(a.name)}: ${esc(a.description)}" style="color:${a.color}"><span class="key">${a.key}</span>${icon(a.icon)}<span class="cooldown-shade" style="transform:scaleY(0)"></span><span class="cooldown-number"></span><span class="locked-level"></span></button>`).join('')+`<button class="ability" data-action="medkit" title="Medkit [H]" aria-label="Use medkit"><span class="key">H</span>${icon('medkit')}<span id="medkit-count" class="locked-level"></span></button>`;
+  const abilityNames={arc:'ARC',surge:'SURGE',mend:'MEND',aegis:'GUARD',lance:'LANCE',echo:'ECHO',ghostline:'GHOST'};
+  $('#hotbar').innerHTML=data.abilities.map(a=>`<button class="ability" data-action="ability:${a.id}" data-tooltip="${esc(a.name)} — ${esc(a.description)}" aria-label="${esc(a.name)}: ${esc(a.description)}" style="color:${a.color}"><span class="key">${a.key}</span>${icon(a.icon)}<span class="ability-name">${abilityNames[a.id]||esc(a.name)}</span><span class="cooldown-shade" style="transform:scaleY(0)"></span><span class="cooldown-number"></span><span class="locked-level"></span></button>`).join('')+`<button class="ability" data-action="medkit" data-tooltip="Use a field medkit [H]" aria-label="Use medkit"><span class="key">H</span>${icon('medkit')}<span class="ability-name">KIT</span><span id="medkit-count" class="locked-level"></span></button>`;
 }
 function updateFounderOffer(){
   const view=founderOfferView(founderOffer,account);
@@ -92,7 +95,7 @@ function showCharacters(chars){
 }
 async function startGame(character,newCharacter=false){
   closePanel();connection?.close();connection=null;otherPlayers=[];targetId=null;effects=[];floaters=[];
-  myGuild=null;community?.reset();worldClock.reset();cityLife.clear();
+  myGuild=null;community?.reset(character.id);worldClock.reset();cityLife.clear();
   storyCue='';currentGuide=null;
   simulation=new Prediction(data,world,structuredClone(character),onEvent);yaw=character.yaw||0;pitch=.15;
   if(!exploration.has(character.id))exploration.set(character.id,new Set());
@@ -185,7 +188,7 @@ function perform(action,event){
   }
   if(state!=='playing')return;
   if(action.startsWith('ability:')){if(!$('#panel-dialog').open&&simulation.character.health>0)act({type:'ability',id:action.split(':')[1],target:targetId});return;}
-  const panels={journal:showJournal,neighborhoods:()=>showJournal('neighborhoods'),talents:showTalents,inventory:showInventory,map:showMap,dungeons:showDungeons,community:()=>community.open().catch(e=>toast(e.message))};if(panels[action])return panels[action]();
+  const panels={journal:showJournal,neighborhoods:()=>showJournal('neighborhoods'),talents:showTalents,inventory:showInventory,map:showMap,dungeons:showDungeons,guild:()=>community.open('guild').catch(e=>toast(e.message)),community:()=>community.open().catch(e=>toast(e.message))};if(panels[action])return panels[action]();
   if(action==='camera'){thirdPerson=!thirdPerson;return;}
   if(action==='medkit'){act({type:'medkit'});return;}
   if(action==='target'){
@@ -227,7 +230,7 @@ function showLineages(){
   panel('An origin is not an order.',`<p class="dialog-intro">Four ways of being human. Every lineage carries a history, a living argument, and a future it gets to choose.</p><div class="card-grid">${data.races.map(r=>`<article class="info-card"><span style="color:${r.color}">${icon(r.id)}</span><h3>${esc(r.name)}</h3><p class="quote">${esc(r.tagline)}</p><p>${esc(r.lore)}</p><p class="tag">${esc(r.passive.name.toUpperCase())} / ${esc(r.passive.description)}</p><p class="tag">13 CHAPTERS · LEVEL 0–60</p></article>`).join('')}</div>`,'LINEAGES / LIVING HISTORY','lineages');
 }
 function showGuide(){
-  const controls=[['Move','W A S D'],['Look','HOLD RMB / DRAG'],['Capture mouse','DOUBLE CLICK'],['Jump / sprint','SPACE / SHIFT'],['Dash','Q'],['Talk / use / lift','E'],['Cycle targets','TAB'],['Abilities','1–6'],['Ghostline','R'],['Medkit','H'],['Journal / talents','J / T'],['Gear / map','I / M'],['Dungeons / group finder','G'],['Camera / menu','V / ESC']];
+  const controls=[['Move','W A S D'],['Look','HOLD RMB / DRAG'],['Capture mouse','DOUBLE CLICK'],['Jump / sprint','SPACE / SHIFT'],['Dash','Q'],['Talk / use / lift','E'],['Cycle targets','TAB'],['Abilities','1–6'],['Ghostline','R'],['Medkit','H'],['Journal / talents','J / T'],['Gear / map','I / M'],['Dungeons / group finder','G'],['Community / guild','C / U'],['Camera / menu','V / ESC']];
   panel('A runner’s field guide.',`<div class="guide-grid">${controls.map(([a,b])=>`<div class="guide-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><p class="guide-note">CONTROLLER · Left stick moves, right stick looks. A jumps, B dashes, X interacts, Y cycles targets. RT fires; LB surges; RB heals; LT shields. D-pad up uses a medkit, down opens the map, left/right use unlocked abilities. Right-stick press (R3) casts Ghostline. View opens the journal. Menu opens settings. In menus, use the D-pad and A.</p><p class="guide-note">TOUCH · Use the left movement pad and drag the world to look. Tap the action bar to cast. TARGET chooses a nearby enemy; USE talks to contacts, activates terminals, or rides a lift.</p><article class="info-card ghostline-guide"><span class="tag">GHOSTLINE / LEVEL 0 / R · R3 · TOUCH HOTBAR</span><h3>Your past is someone else’s opening.</h3><p>Move at least 12 m over 2 seconds, then cast Ghostline. A cyan runner replays up to 6 seconds of your route. After its 0.6-second arming delay, cross it to braid: a 10 m shockwave hits visible enemies, restores your dash, and returns 20 energy. Another player crossing it adds 50% power and restores both runners. Costs 30 energy; 18-second cooldown. No target needed.</p><p>Try it: sprint past an enemy, press R, turn, and dash back through your afterimage. With a friend, lay your route through their fight and let them make contact. Follow the dotted cyan trail and the moving runner, also shown on the minimap.</p></article><div class="card-grid"><article class="info-card"><h3>Build a role, not a cage.</h3><p>Everyone carries an arc carbine, a disruption pulse, a healing protocol, and a kinetic shield. Earn a talent point every five levels. Specialize in holding ground, restoring allies, breaking enemy rhythm, or moving between them.</p></article><article class="info-card"><h3>Death has a cost.</h3><p>Outside expeditions, death costs 5% of your credits (up to 50). Release your spirit at the nearest graveyard, then follow your body marker. Recover within 12 m with a clear view to return at 50% health and energy. A Remembrance keeper can revive you at the graveyard at 25%, charging another 10% of your credits (up to 100) and giving 60 seconds of resurrection sickness: half damage and 25% slower movement. Spirits can use lifts; ESC / Menu opens recovery options.</p><h3>Every shot is a roll.</h3><p>Position and range matter. A d100 resolves misses and critical hits. Stronger enemies are harder to hit. Watch your energy, interrupt incoming attacks, and save a dash for the way out.</p></article></div><p class="guide-note">Character voices have individual pitch and pacing and use installed local English voices. VOICES toggles speech; dialogue and story captions remain available. Standard USB controllers require browser support and a secure origin. GPL-3.0-or-later. Source and original assets are yours to modify under the license.</p>`,'CONTROLS / SYSTEMS','guide');
 }
 function questObjective(q){return objectiveText(questView(q,simulation.character).step,data);}
@@ -482,7 +485,7 @@ function updateHUD(){
   $('#server-clock').dateTime=new Date(worldClock.now()).toISOString();
   $('#health-fill').style.width=`${clamp(c.health/s.health*100,0,100)}%`;$('#health-text').textContent=`${Math.ceil(c.health)} / ${s.health}${simulation.shield?' +'+Math.ceil(simulation.shield):''}`;
   $('#energy-fill').style.width=`${clamp(c.energy/s.energy*100,0,100)}%`;$('#energy-text').textContent=`${Math.floor(c.energy)} / ${s.energy}`;
-  $('#credits').textContent=`${c.credits} ¤`;$('#medkit-count').textContent=`${c.medkits} PACKS`;
+  $('#credits').textContent=`${c.credits} ¤`;$('#medkit-count').textContent=String(c.medkits);
   $('#xp-fill').style.width=`${c.level===60?100:c.xp/experienceFor(c.level,data.rules)*100}%`;$('#xp-text').textContent=c.level===60?'LEVEL 60 / SIGNAL COMPLETE':`LEVEL ${c.level} · ${c.xp} / ${experienceFor(c.level,data.rules)} XP`;
   $('#founder-xp-status').hidden=!founderBoostActive(c);
   const district=world.district(c.position),interior=world.interiorAt(c.position);
@@ -640,7 +643,7 @@ function frame(timestamp){
   else if(state!=='creation')actors.push(...cityLife.update(worldClock.now(),state==='playing'?simulation.character.position:[camera.target[0],0,camera.target[2]],{enemies:state==='playing'?simulation.enemies:[],incidents:state==='playing'?simulation.worldEvents:[],completed:state==='playing'?simulation.character.completed:[],quality:renderer.quality,focus:dialogPage.startsWith('resident:')?dialogPage.slice(9):null}));
   if(state==='playing'){uiAccumulator+=dt;if(uiAccumulator>.1){uiAccumulator=0;updateHUD();}}
   effects=effects.filter(e=>time-e.time<e.duration);floaters=floaters.filter(f=>time-f.time<f.duration);
-  renderer.render(camera,actors,effects,time,worldClock.now(),state==='playing'?simulation.ghostlines:[],simulation?.time||0,state==='playing'&&simulation?.inDungeon?{catalog:data.dungeons,run:simulation.dungeon.run}:null,state==='playing'&&!simulation.inDungeon?{events:simulation.worldEvents,rules:data.events.rules}:null);updateLabels();requestAnimationFrame(frame);
+  renderer.render(camera,actors,effects,time,worldClock.now(),state==='playing'?simulation.ghostlines:[],simulation?.time||0,state==='playing'&&simulation?.inDungeon?{catalog:data.dungeons,run:simulation.dungeon.run}:null,state==='playing'&&!simulation.inDungeon?{events:simulation.worldEvents,rules:data.events.rules}:null);updateLabels();interfaceUI.render(timestamp);requestAnimationFrame(frame);
 }
 async function boot(){
   const names=['rules','world','races','factions','quests','talents','abilities','enemies','npcs','intro','audio','lore','dungeons','citylife','events'];
@@ -652,7 +655,7 @@ async function boot(){
   audio.onCaption=caption=>{$('#voice-caption').hidden=!caption||state!=='playing'||$('#panel-dialog').open;if(caption){$('#voice-speaker').textContent=caption.speaker;$('#voice-line').textContent=caption.text;}};
   community=new Community({character:()=>simulation?.character,online:()=>Boolean(connection?.open),showPanel:panel,isOpen:()=>dialogPage==='community'&&$('#panel-dialog').open,toast,races:data.races,now:()=>worldClock.now()});
   input=new Input($('#world'),perform,(dx,dy)=>{yaw-=dx;pitch=clamp(pitch+dy,-.45,1.05);});
-  initialUI();wireEvents();$('#loading').hidden=true;setState('landing');requestAnimationFrame(frame);
+  initialUI();wireEvents();interfaceUI=new WebGLUI($('#interface'),$('#interface-source'));$('#loading').hidden=true;setState('landing');requestAnimationFrame(frame);
   refreshFounderOffer();
   api('/health').then(health=>worldClock.sync(health.serverTime)).catch(()=>{});
   sessionReady=api('/session').then(session=>{account={username:session.username,founderHalo:session.founderHalo};$('#account-label').textContent=account.username;updateFounderOffer();}).catch(error=>{if(error.status!==401)toast('The server is unavailable. Try signing in again when your connection returns.');});

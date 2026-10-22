@@ -93,7 +93,7 @@ Install Rust 1.89 or later, then start the complete application from the reposit
 cargo run --release
 ```
 
-Open **http://localhost:8080** for the landing page and choose **Enter Vesper** for the game at **/play.html**. This one Rust process serves the frontend, accounts, multiplayer WebSockets, community, and persistence on the same listener. Browser JavaScript is served directly as ES modules; no frontend build or separate runtime is needed.
+Open **http://localhost:8080** to go directly to the game title screen at **/play.html**, then choose **Enter Vesper**. This one Rust process serves the frontend, accounts, multiplayer WebSockets, community, and persistence on the same listener. Browser JavaScript is served directly as ES modules; no frontend build or separate runtime is needed.
 
 The default port is **8080**. To serve everything on **80** instead:
 
@@ -105,15 +105,19 @@ PORT=80 cargo run --release
 
 Use **Account** or **Enter Vesper** to register or sign in, then create or resume a server character. Each account supports eight characters. All play requires a connection to this server; characters and progress are stored there. **Settings → Export signed character** downloads a server-signed archive. The first Cargo run resolves dependencies and compiles the application; server startup creates the runtime database.
 
-With a server character, press **C** or choose **Community** for chat, messages, guilds, parties, the auction house, forums, contacts, and deliveries. The server generates its private Ed25519 signing identity on first startup and reuses it thereafter. Back up the entire data directory, including `social.json` and `signing-key.json`. Server character exports are signed by that server identity; they include progression, cooldowns, social records, and economic records without including authentication secrets.
+With a server character, press **C** or choose **Comms** for chat, messages, guilds, parties, the auction house, forums, contacts, and deliveries. Press **U** or choose **Guild** to open the guild roster, invitations, roles, and tabard editor directly. The server generates its private Ed25519 signing identity on first startup and reuses it thereafter. Back up the entire data directory, including `social.json` and `signing-key.json`. Server character exports are signed by that server identity; they include progression, cooldowns, social records, and economic records without including authentication secrets.
 
 ### Play on Steam Deck
 
 Use the browser client through a non-Steam browser shortcut in Gaming Mode. The [Steam Deck guide](docs/STEAM_DECK.md) covers the game URL, browser launch options, Steam Input, account access, and signed exports. Sign in to the same server to resume your character across devices and browser profiles. Steam Deck hardware acceptance is still outstanding.
 
+The title screen, character creation, HUD, maps, dialogs, and every community section are presented by a dedicated WebGL interface. Original pixel glyphs, square terminal panels, labeled ability slots, and a bottom navigation rail share a single visual language. UI resolution stays independent of world render quality. The unpainted HTML controls retain browser layout, keyboard focus, native text editing/IME, password-manager support, and screen-reader semantics; they do not paint a second interface. Select menus and tabard color choices are rendered in the game as well.
+
+Community drafts stay in memory for the current character while switching sections or returning to play; they are cleared when switching characters or reloading the page. **Ctrl/Cmd + Enter** sends a composed message or forum post. Failed requests retain their draft and request ID for retry. Native Tab navigation works in menus without triggering combat or target selection. Browser/GPU and touch/controller visual acceptance for the new interface remains outstanding.
+
 ## What is implemented
 
-- A custom WebGL2 renderer with a WebGL1 shader path, beveled architecture and character meshes, smooth lineage details, cyan/magenta lighting, height fog, procedural wet pavement, rain, vent steam, wind-driven vegetation, walking residents, cargo traffic, and a dark slate MMO interface. Articulated runners have speed-driven leg and arm motion, planted feet, airborne poses, and moving coat panels.
+- A custom WebGL2 renderer with a WebGL1 shader path, beveled architecture and character meshes, smooth lineage details, cyan/magenta lighting, height fog, procedural wet pavement, rain, vent steam, wind-driven vegetation, walking residents, cargo traffic, and a pixel terminal interface rendered in WebGL. Articulated runners have speed-driven leg and arm motion, planted feet, airborne poses, and moving coat panels.
 - A deterministic **725-building city**, approximately **2.24 km across**, inside a **6.4 km playable basin**. Streets, 24 m skyways, 48 m crowns, rooftop landings, lifts, terminals, NPCs, and enemy spawns come from readable map data.
 - **577 walk-in ground floors** with clinics, repair shops, noodle counters, and transit lounges. Lit entrances open on both sides, with server-validated walls, furniture, and headroom. Map fog reveals nearby streets during the browser session; active objectives remain visible. Green minimap marks identify discovered entrances. Interior geometry streams near the camera, and distant actors use simpler meshes.
 - Keyboard/mouse, touch movement and action controls, and standard-mapped browser gamepads. Movement includes acceleration, sprint, buffered jumping, coyote time, air control, a short dash, wall collision, and first/third-person cameras.
@@ -133,9 +137,9 @@ Use the browser client through a non-Steam browser shortcut in Gaming Mode. The 
 
 ```text
 client/
-  index.html, landing.css     Lightweight landing page
-  play.html, style.css        Game title, creation, cinematic, HUD, menus
-  src/                       Renderer, movement prediction, input, audio, network, UI
+  index.html                 Direct entry to the game title screen
+  play.html, style.css        Semantic controls and responsive interface layout
+  src/                       World/UI renderers, pixel font, prediction, input, audio, network
   data/                      Map, rules, quests, lore, races, factions, abilities
   assets/                    Original SVG mark and articulated mesh recipes
   tests/                     Buildless world, movement, geometry, and renderer checks
@@ -174,7 +178,8 @@ LICENSE                      Complete GNU GPL version 3 text
 | Ghostline: release your recent route | R | Right-stick press (R3) |
 | Medkit | H | D-pad up |
 | Journal / talents / gear / map | J / T / I / M | View opens journal; Menu exposes controls; D-pad down opens map |
-| Community / guilds / chat / auction house | C | Select Community from Settings |
+| Community / chat / auction house | C | Select Comms on the HUD or Community from Settings |
+| Guild roster / roles / tabards | U | Select Guild on the HUD |
 | Dungeons / group finder / casebook | G | Select Dungeons / Group Finder from Settings |
 | Camera / settings | V / Escape | Menu opens settings |
 
@@ -189,6 +194,7 @@ rustfmt --edition 2024 --check server/src/main.rs
 node --experimental-default-type=module client/tests/world.test.mjs
 node --experimental-default-type=module client/tests/citylife.test.mjs
 node --experimental-default-type=module client/tests/quests.test.mjs
+node --experimental-default-type=module client/tests/ui.test.mjs
 git diff --check
 ```
 

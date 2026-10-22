@@ -6,11 +6,15 @@ export class Input {
   constructor(canvas,onAction,onLook) {
     this.canvas=canvas;this.onAction=onAction;this.onLook=onLook;this.keys=new Set();this.edges=new Set();this.buttons=[];this.active=false;this.menu=true;this.drag=null;this.touchMove=[0,0];this.connected='';this.padTime=0;this.menuIndex=0;this.sensitivity=.0025;
     window.addEventListener('keydown',e=>{
+      if(e.defaultPrevented||e.isComposing)return;
+      if(e.code==='Escape'){if(!e.repeat){e.preventDefault();this.onAction('escape');}return;}
       if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+      // Native Tab, Space and arrow navigation must never cast or cycle targets in menus.
+      if(this.menu||!this.active||e.ctrlKey||e.metaKey||e.altKey)return;
       if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&this.active)e.preventDefault();
       if(!this.keys.has(e.code))this.edges.add(e.code);this.keys.add(e.code);
       if(e.repeat)return;
-      const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',KeyR:'ability:ghostline',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyG:'dungeons',KeyH:'medkit',Escape:'escape',KeyV:'camera'};
+      const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',KeyR:'ability:ghostline',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyU:'guild',KeyG:'dungeons',KeyH:'medkit',KeyV:'camera'};
       if(bindings[e.code]&&this.active)this.onAction(bindings[e.code]);
     });
     window.addEventListener('keyup',e=>this.keys.delete(e.code));
@@ -66,11 +70,14 @@ export class Input {
       if(this.menu){
         this.padTime-=dt;
         const direction=edge(13)||edge(15)||axis(pad.axes[1])>.6?1:edge(12)||edge(14)||axis(pad.axes[1])<-.6?-1:0;
-        const container=document.querySelector('dialog[open]')||document.querySelector('#death-screen:not([hidden])')||document.querySelector('#creation:not([hidden])')||document.querySelector('#landing:not([hidden])');
-        const focusables=container?Array.from(container.querySelectorAll('button:not(:disabled),input,textarea,select,[tabindex="0"]')).filter(e=>e.getClientRects().length):[];
+        const container=document.querySelector('.ui-select')||document.querySelector('dialog[open]')||document.querySelector('#death-screen:not([hidden])')||document.querySelector('#creation:not([hidden])')||document.querySelector('#landing:not([hidden])');
+        const focusables=container?Array.from(container.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled):not([type="hidden"]),textarea:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(e=>e.getClientRects().length):[];
         if(direction&&this.padTime<=0&&focusables.length){const current=focusables.indexOf(document.activeElement);this.menuIndex=(current+direction+focusables.length)%focusables.length;focusables[this.menuIndex].focus();this.padTime=.22;}
         if(edge(0))document.activeElement?.click();
-        if(edge(1)||edge(9))this.onAction('escape');
+        if(edge(1)||edge(9)){
+          if(document.querySelector('.ui-select'))document.activeElement?.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true}));
+          else this.onAction('escape');
+        }
       }else{
         forward-=axis(pad.axes[1]);strafe+=axis(pad.axes[0]);this.onLook(axis(pad.axes[2])*dt*2.3,axis(pad.axes[3])*dt*1.8);
         jump ||=edge(0);dash ||=edge(1);sprint ||=pressed[10];

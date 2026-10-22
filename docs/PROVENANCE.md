@@ -12,7 +12,7 @@ The editable JavaScript, Rust, GLSL, HTML, CSS, SVG, JSON, and documentation are
 
 | Category | Editable source and origin | External content used |
 | --- | --- | --- |
-| Sloperberpunk branding and interface | Project-specific lettering treatment, CSS, and SVG symbols; the name was supplied by the user | Browser/OS system fonts; no downloaded font files |
+| Sloperberpunk branding and interface | Project-specific pixel glyphs, WebGL interface, CSS layout, and SVG symbols; the name was supplied by the user | Browser/OS fonts for semantic layout and Unicode fallback; no downloaded font files |
 | Vesper and surrounding wasteland | Plaintext map data and procedural low-poly building, terrain, prop, and character geometry | No imported meshes, textures, or asset packs |
 | Materials and lighting | Project-authored shader and color definitions | WebGL browser implementation only |
 | Races, factions, quests, and dialogue | Original JSON/text content for Vesper, Relay, Glass Covenant, Ash Foundry, and Null Choir | No franchise dialogue, quest text, character biographies, or fictional locations copied into the content |

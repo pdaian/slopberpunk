@@ -6,39 +6,82 @@ import { tabardPreview } from './tabard.js';
 const tabs = [['chat','CHAT'],['dm','MESSAGES'],['guild','GUILD'],['party','PARTY'],['auctions','AUCTION HOUSE'],['forum','FORUM'],['people','PEOPLE'],['deliveries','DELIVERIES']];
 const stamp = seconds => new Date(seconds * 1000).toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
 const button = (label, action, fields = '') => `<button type="button" class="small-button" data-social="${action}" ${fields}>${esc(label)}</button>`;
-const field = (label, name, options = '') => `<label class="community-field">${label}<input name="${name}" ${options} required></label>`;
-const compose = (action, hidden = '', title = '') => `<form data-community-form="${action}" class="community-form">${hidden}${title}<label class="community-field">${action === 'dm' ? 'PRIVATE MESSAGE' : 'MESSAGE'}<textarea name="body" maxlength="${action === 'thread' || action === 'reply' ? 2000 : 1000}" rows="3" required></textarea></label><button class="button primary" type="submit">${action === 'thread' ? 'CREATE THREAD' : 'SEND'} ↗</button></form>`;
+const field = (label, name, options = '') => {
+  // Text inputs expose caret/selection positions to the WebGL painter; number inputs
+  // do not. Retain a numeric mobile keyboard and enforce the original bounds below.
+  if(options.includes('type="number"'))options=options.replace('type="number"','type="text" inputmode="numeric" pattern="[0-9]+"').replace(/\b(min|max)=/g,'data-$1=');
+  return `<label class="community-field">${label}<input name="${name}" ${options} required></label>`;
+};
+const compose = (action, hidden = '', title = '') => `<form data-community-form="${action}" class="community-form">${hidden}${title}<label class="community-field">${action === 'dm' ? 'PRIVATE MESSAGE' : 'MESSAGE'}<textarea name="body" maxlength="${action === 'thread' || action === 'reply' ? 2000 : 1000}" rows="3" required placeholder="Write your signal…"></textarea></label><span class="compose-hint">CTRL / CMD + ENTER TO SEND · DRAFT KEPT WHILE YOU PLAY</span><button class="button primary" type="submit">${action === 'thread' ? 'CREATE THREAD' : 'SEND'} →</button></form>`;
 const hidden = (name, value) => `<input type="hidden" name="${name}" value="${esc(value)}">`;
 const numeric = new Set(['group','auction','delivery','thread','quantity','minimum','buyout','hours','amount']);
+const tabardColors = ['#284d42','#273f65','#66384d','#9a613b','#d3b678','#c7ed99','#81e5ed','#e6abfd'];
+const colorField = (label,name,value) => `${field(label+' / HEX COLOR',name,`value="${esc(value)}" pattern="#[0-9a-fA-F]{6}" maxlength="7" autocomplete="off" spellcheck="false"`)}<div class="tabard-swatches" role="group" aria-label="${label} color presets">${tabardColors.map(color=>`<button type="button" data-social="swatch" data-field="${name}" data-color="${color}" style="--swatch:${color}" aria-label="${label} ${color}"></button>`).join('')}</div>`;
 
 export class Community {
   constructor({ character, online, showPanel, isOpen, toast, races, now = () => Date.now() }) {
     Object.assign(this, { character, online, showPanel, isOpen, toast, races, now });
     this.view = 'chat'; this.query = {}; this.summary = null; this.epoch = 0; this.busy = false; this.pending = null; this.owner = null;
+    this.drafts = new Map(); this.pendingDraft = null;
     const root = document.querySelector('#dialog-content');
     root.addEventListener('click', e => { const b = e.target.closest('[data-social]'); if (b) this.click(b).catch(error => this.toast(error.message)); });
     root.addEventListener('submit', e => { if (e.target.dataset.communityForm) { e.preventDefault(); this.submit(e.target).catch(error => this.toast(error.message)); } });
     root.addEventListener('input', e => {
+      if(e.target.dataset.min!==undefined)e.target.setCustomValidity('');
+      this.saveDrafts();
       if (e.target.form?.dataset.communityForm !== 'guild_tabard') return;
       const values = Object.fromEntries(new FormData(e.target.form));
       const preview = document.querySelector('#tabard-live'); if (preview) preview.innerHTML = tabardPreview(values);
     });
+    root.addEventListener('keydown', e => {
+      if(e.target.tagName==='TEXTAREA'&&(e.ctrlKey||e.metaKey)&&e.key==='Enter'&&!e.isComposing) {
+        e.preventDefault();if(!this.busy)e.target.form?.requestSubmit();
+      }
+    });
     this.timer = setInterval(() => this.poll(), 5000);
   }
-  reset() { this.summary = null; this.query = {}; this.epoch++; }
+  reset(nextOwner = this.character()?.id) {
+    this.summary = null; this.query = {}; this.epoch++;
+    if(nextOwner!==this.owner){this.drafts.clear();this.pending=null;this.pendingDraft=null;this.view='chat';}
+  }
+  draftKey(form) {
+    const hidden=[...form.querySelectorAll('input[type="hidden"]')].map(f=>[f.name,f.value]);
+    return JSON.stringify([this.owner,this.view,form.dataset.communityForm,hidden]);
+  }
+  saveDrafts() {
+    if(this.owner!==this.character()?.id)return;
+    for(const form of document.querySelectorAll('[data-community-form]')) {
+      const values=[...form.elements].filter(f=>f.name&&f.type!=='hidden').map(f=>[f.name,f.type==='checkbox'?f.checked:f.value]);
+      const key=this.draftKey(form);this.drafts.delete(key);this.drafts.set(key,values);
+    }
+    // Bound memory even when browsing hundreds of different threads or listings.
+    while(this.drafts.size>64)this.drafts.delete(this.drafts.keys().next().value);
+  }
+  restoreDrafts() {
+    for(const form of document.querySelectorAll('[data-community-form]')) {
+      const values=this.drafts.get(this.draftKey(form));if(!values)continue;
+      for(const [name,value]of values){const field=form.elements.namedItem(name);if(!field)continue;if(field.type==='checkbox')field.checked=value;else field.value=value;}
+      if(form.dataset.communityForm==='guild_tabard') {
+        const preview=document.querySelector('#tabard-live');if(preview)preview.innerHTML=tabardPreview(Object.fromEntries(new FormData(form)));
+      }
+    }
+  }
   path() { return `/characters/${encodeURIComponent(this.character().id)}/social`; }
   async browse(query) { return (await api(`${this.path()}?${new URLSearchParams(Object.entries(query).filter(([,v]) => v !== undefined && v !== null))}`)).data; }
-  async open(view = this.view, query = {}) {
+  async open(view = this.view, query = {}, captureDrafts = true) {
+    if(captureDrafts)this.saveDrafts();
     if (!this.online()) {
       this.showPanel('The city’s community.', '<p>Sign in and enter with a server character to join guilds and parties, trade, use persistent chat and messages, and browse the forum.</p>', 'COMMUNITY / ACCOUNT REQUIRED', 'community'); return;
     }
     const id = this.character().id;
-    if (this.owner !== id) { this.owner = id; this.summary = null; this.pending = null; this.view = 'chat'; }
+    if (this.owner !== id) { this.owner = id; this.summary = null; this.pending = null; this.pendingDraft=null; this.drafts.clear(); }
     const epoch = ++this.epoch; this.view = view; this.query = query;
-    this.showPanel('Stay connected.', '<p role="status">Opening the community terminal…</p>', 'VESPER / COMMUNITY', 'community');
-    try { this.summary = await this.browse({ view: 'summary' }); }
+    this.showPanel('Community terminal', '<p role="status">Tuning the community signal…</p>', 'VESPER / COMMUNITY', 'community');
+    let summary;
+    try { summary = await this.browse({ view: 'summary' }); }
     catch (error) { if (epoch === this.epoch && this.isOpen()) this.showPanel('Community unavailable.', `<p role="alert">${esc(error.message)}</p>${button('TRY AGAIN','tab','data-view="chat"')}`, 'VESPER / COMMUNITY', 'community'); return; }
-    if (epoch !== this.epoch || !this.isOpen()) return;
+    if (epoch !== this.epoch || !this.isOpen() || this.character()?.id!==id) return;
+    this.summary=summary;
     this.render(); await this.refresh(epoch);
   }
   channelName(channel) {
@@ -48,14 +91,17 @@ export class Community {
   choices(channels, key, selected) { return `<div class="tabs community-channels">${channels.map(c => button(this.channelName(c),'channel',`data-key="${key}" data-channel="${esc(c)}" aria-pressed="${c === selected}"`)).join('')}</div>`; }
   render() {
     const s = this.summary, c = this.character(), view = this.view;
-    let html = `<div class="tabs community-tabs">${tabs.map(([id,label]) => `<button data-social="tab" data-view="${id}" class="${id === view ? 'selected' : ''}">${label}</button>`).join('')}</div><div class="community-status"><span id="community-status">${s.deliveries} deliveries · ${s.inbox.reduce((n,i) => n+i.unread,0)} unread messages</span>${button('REFRESH','refresh')}</div><div id="community-retry" ${this.pending ? '' : 'hidden'}><p>An action needs a response. Retry it with the same request ID.</p>${button('RETRY ACTION','retry')}</div>`;
+    let html = `<div class="community-shell"><nav class="tabs community-tabs" aria-label="Community sections">${tabs.map(([id,label],i) => `<button data-social="tab" data-view="${id}" aria-current="${id===view?'page':'false'}" class="${id === view ? 'selected' : ''}"><span class="channel-slot">${String(i+1).padStart(2,'0')}</span>${label}</button>`).join('')}</nav><section class="community-main" aria-label="${tabs.find(([id])=>id===view)?.[1]||'Community'}"><div class="community-status"><span id="community-status">${s.deliveries} deliveries · ${s.inbox.reduce((n,i) => n+i.unread,0)} unread messages</span>${button('REFRESH','refresh')}</div><div id="community-retry" ${this.pending ? '' : 'hidden'}><p>Your last action is awaiting a response. Retry to check it without sending it twice.</p>${button('RETRY ACTION','retry')}</div>`;
     const pager = `<div class="settings-actions">${button('LATEST','latest')}<button type="button" id="community-older" class="small-button" data-social="older" hidden>OLDER →</button></div>`;
     if (view === 'chat') {
       if (!s.channels.includes(this.query.channel)) this.query.channel = 'world';
       html += this.choices(s.channels,'channel',this.query.channel)+`<p class="muted">Persistent history · ${esc(this.channelName(this.query.channel))}</p><div id="community-stream" class="community-stream" aria-live="polite"></div>${pager}`+compose('chat',hidden('channel',this.query.channel));
     } else if (view === 'dm') {
       html += '<p class="muted">Messages reach offline characters. Use People to start a conversation.</p><div class="community-inbox">'+s.inbox.map(i => button(`${i.profile?.name || i.id.slice(0,8)}${i.unread ? ` (${i.unread} new)` : ''}`,'message',`data-target="${esc(i.id)}"`)).join('')+'</div>';
-      if (this.query.target) html += `<p>Conversation with <code>${esc(this.query.target)}</code></p><div id="community-stream" class="community-stream" aria-live="polite"></div>${pager}`+compose('dm',hidden('target',this.query.target));
+      if (this.query.target) {
+        const person=[...s.inbox,...s.contacts,...s.members].find(p=>p.id===this.query.target);
+        html += `<p>To: <strong>${esc(person?.profile?.name||this.query.target.slice(0,12))}</strong></p><div id="community-stream" class="community-stream" aria-live="polite"></div>${pager}`+compose('dm',hidden('target',this.query.target));
+      }
       else html += '<p>Select a conversation or find someone in People.</p>';
     } else if (view === 'guild' || view === 'party') {
       html += this.groupView(view);
@@ -74,7 +120,8 @@ export class Community {
       html += s.contacts.map(f => `<article class="community-entry"><strong>${esc(f.profile?.name || f.id)}</strong><small>${f.online ? 'ONLINE' : 'OFFLINE'} · ${f.accepted ? 'FRIEND' : f.incoming ? 'INVITATION RECEIVED' : 'INVITATION SENT'}</small>${button('MESSAGE','message',`data-target="${esc(f.id)}"`)}${!f.accepted && f.incoming ? button('ACCEPT','mutate',`data-action="friend_accept" data-target="${esc(f.id)}"`) : ''}${button(f.accepted ? 'REMOVE' : 'DECLINE / CANCEL','mutate',`data-action="friend_remove" data-target="${esc(f.id)}"`)}</article>`).join('');
       html += (s.blocked || []).map(id => `<p>Blocked: <code>${esc(id)}</code> ${button('UNBLOCK','mutate',`data-action="unblock" data-target="${esc(id)}"`)}</p>`).join('');
     }
-    this.showPanel('Stay connected.',html,'VESPER / COMMUNITY','community');
+    this.showPanel('Community terminal',html+'</section></div>','VESPER / COMMUNITY','community');
+    this.restoreDrafts();
   }
   groupView(kind) {
     const c = this.character(), s = this.summary, g = s[kind], invitations = s[`${kind}Invites`];
@@ -88,7 +135,7 @@ export class Community {
         return `<article class="community-entry"><strong>${esc(m?.profile?.name || id.slice(0,8))}</strong><small>${esc(role)} · ${m?.online ? 'ONLINE' : 'OFFLINE'}</small>${id !== c.id ? button('MESSAGE','message',`data-target="${esc(id)}"`) : ''}${officer && id !== g.owner ? button('REMOVE','mutate',`data-action="${kind}_kick" data-group="${g.id}" data-target="${esc(id)}"`) : ''}${leader && id !== c.id ? button(role === 'officer' ? 'MAKE MEMBER' : 'MAKE OFFICER','mutate',`data-action="${kind}_promote" data-group="${g.id}" data-target="${esc(id)}" data-role="${role === 'officer' ? 'member' : 'officer'}"`)+button('TRANSFER LEADERSHIP','mutate',`data-action="${kind}_transfer" data-group="${g.id}" data-target="${esc(id)}"`) : ''}</article>`;
       }).join('');
       if (officer) html += `<form data-community-form="${kind}_invite" class="community-form">${hidden('group',g.id)}${field('INVITE / CHARACTER ID (FIND IN PEOPLE)','target','minlength="64" maxlength="64"')}<button class="small-button">INVITE</button></form>`;
-      if (kind === 'guild' && officer) html += `<form data-community-form="guild_tabard" class="community-form community-grid">${hidden('group',g.id)}${field('CLOTH','base',`type="color" value="${esc(g.tabard.base)}"`)}${field('TRIM','trim',`type="color" value="${esc(g.tabard.trim)}"`)}<label class="community-field">PATTERN<select name="pattern">${['stripe','cross','split'].map(v=>`<option ${v===g.tabard.pattern?'selected':''}>${v}</option>`).join('')}</select></label><label class="community-field">EMBLEM<select name="emblem">${['signal','star','tower'].map(v=>`<option ${v===g.tabard.emblem?'selected':''}>${v}</option>`).join('')}</select></label><div id="tabard-live">${tabardPreview(g.tabard)}</div><button class="button primary">SAVE TABARD</button></form>`;
+      if (kind === 'guild' && officer) html += `<form data-community-form="guild_tabard" class="community-form community-grid">${hidden('group',g.id)}<div>${colorField('CLOTH','base',g.tabard.base)}</div><div>${colorField('TRIM','trim',g.tabard.trim)}</div><label class="community-field">PATTERN<select name="pattern">${['stripe','cross','split'].map(v=>`<option ${v===g.tabard.pattern?'selected':''}>${v}</option>`).join('')}</select></label><label class="community-field">EMBLEM<select name="emblem">${['signal','star','tower'].map(v=>`<option ${v===g.tabard.emblem?'selected':''}>${v}</option>`).join('')}</select></label><div id="tabard-live">${tabardPreview(g.tabard)}</div><button class="button primary">SAVE TABARD</button></form>`;
       html += button('LEAVE '+kind.toUpperCase(),'mutate',`data-action="${kind}_leave" data-group="${g.id}"`);
     }
     if (kind === 'guild') html += `<article class="info-card"><h3>Your lineage hall</h3><p>Complete your first lineage chapter to unlock one daily medkit. A guild with your lineage’s charter grants two. Supplies reset at 00:00 UTC and wait safely in Deliveries. Your lineage has its own private chat and forum section.</p><button class="small-button" data-social="mutate" data-action="lineage_reward" ${s.lineageClaimed ? 'disabled' : ''}>${s.lineageClaimed ? 'CLAIMED TODAY' : 'CLAIM DAILY SUPPLY'}</button></article><h3>Guild directory</h3><div id="community-stream" class="community-stream"></div><div class="settings-actions">${button('FIRST PAGE','latest')}<button type="button" id="community-older" class="small-button" data-social="older" hidden>MORE GUILDS →</button></div>`;
@@ -123,30 +170,35 @@ export class Community {
     if (view === 'people') return result.items.map(p=>`<article class="community-entry"><strong>${esc(p.name)}</strong><small>${esc(this.races.find(r=>r.id===p.race)?.name)} · ${p.online?'ONLINE':'OFFLINE'}</small><code>${esc(p.id)}</code>${p.id!==c.id?`<div class="settings-actions">${button('MESSAGE','message',`data-target="${esc(p.id)}"`)}${button('ADD FRIEND','mutate',`data-action="friend_request" data-target="${esc(p.id)}"`)}${button('BLOCK','mutate',`data-action="block" data-target="${esc(p.id)}"`)}</div><form data-community-form="gift" class="community-form">${hidden('target',p.id)}${field('GIFT CREDITS','amount','type="number" min="1" max="1000000"')}<button class="small-button">SEND GIFT</button></form>`:''}</article>`).join('');
     return '';
   }
-  async mutate(request, reopen = true) {
+  async mutate(request, reopen = true, submittedDraft = null) {
     if (this.busy) return;
     if (this.pending && request !== this.pending) throw new Error('Retry the pending action before sending another.');
+    this.saveDrafts();this.pendingDraft ||= submittedDraft;
     this.pending ||= {...request,version:2,requestId:crypto.randomUUID()}; this.busy = true;
     const id = this.character().id;
     try {
       const result = await api(this.path(),this.pending); this.pending = null;
       if (this.character()?.id !== id) return;
-      if (reopen && this.isOpen()) await this.open(this.view,{...this.query,before:undefined});
+      if(this.pendingDraft)this.drafts.delete(this.pendingDraft);this.pendingDraft=null;
+      if (reopen && this.isOpen()) await this.open(this.view,{...this.query,before:undefined},false);
       else if (this.summary && request.action==='dm_read') { const conversation=this.summary.inbox.find(i=>i.id===request.target);if(conversation)conversation.unread=0; }
       return result;
     } catch (error) {
-      if (error.status && error.status<500) this.pending = null;
+      if (error.status && error.status<500) {this.pending = null;this.pendingDraft=null;}
       const retry = document.querySelector('#community-retry'); if (retry) retry.hidden = !this.pending;
       throw error;
     } finally { this.busy = false; }
   }
   async click(b) {
     const d = b.dataset;
+    if(d.social==='swatch') {
+      const field=b.closest('form').elements.namedItem(d.field);field.value=d.color;field.dispatchEvent(new Event('input',{bubbles:true}));return;
+    }
     if (d.social==='tab') return this.open(d.view);
     if (d.social==='message') return this.open('dm',{target:d.target});
     if (d.social==='channel') return this.open(this.view,{[d.key]:d.channel});
     if (d.social==='thread') return this.open('forum',{section:this.query.section,thread:Number(d.thread)});
-    if (d.social==='refresh') return this.refresh();
+    if (d.social==='refresh') return this.open(this.view,this.query);
     if (d.social==='older') { this.query.before=this.next;return this.refresh(++this.epoch); }
     if (d.social==='latest') { delete this.query.before;return this.refresh(++this.epoch); }
     if (d.social==='retry' && this.pending) return this.mutate(this.pending);
@@ -157,6 +209,12 @@ export class Community {
   }
   async submit(form) {
     if (this.busy) return;
+    for(const field of form.querySelectorAll('[data-min]')) {
+      const value=Number(field.value),min=Number(field.dataset.min),max=Number(field.dataset.max);
+      if(!Number.isSafeInteger(value)||value<min||value>max) {
+        field.setCustomValidity(`Enter a whole number from ${min} to ${max}.`);field.reportValidity();return;
+      }
+    }
     const action = form.dataset.communityForm, values = Object.fromEntries(new FormData(form));
     if (action==='search') return this.open('people',{search:values.search});
     const request = {action,...values};
@@ -164,7 +222,7 @@ export class Community {
     if (action.endsWith('_create')) request.raceOnly=values.raceOnly==='on';
     if (action==='guild_tabard') request.tabard={base:values.base,trim:values.trim,pattern:values.pattern,emblem:values.emblem};
     const submit = form.querySelector('[type="submit"],button');submit.disabled=true;
-    try { await this.mutate(request); } finally { submit.disabled=false; }
+    try { await this.mutate(request,true,this.draftKey(form)); } finally { submit.disabled=false; }
   }
   async poll() {
     if (!this.online() || !this.character() || this.busy || this.polling || document.hidden) return;

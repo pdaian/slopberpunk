@@ -2,7 +2,7 @@
 
 The game-specific code, geometry, symbols, dialogue, rules, and synthesized audio sources are original to this project and offered under GPL-3.0-or-later to the extent licensable. The complete GPL text in `LICENSE` is the Free Software Foundation's license document, reproduced unmodified.
 
-The browser client has no third-party JavaScript package, hosted font, texture pack, mesh library, sampled audio, or external media dependency. It uses browser WebGL, Web Audio, Gamepad, Pointer Lock, and Speech Synthesis implementations and installed system fonts. Those implementations and local speech voices retain their providers' terms; they are not redistributed as project-authored assets.
+The browser client has no third-party JavaScript package, hosted font, texture pack, mesh library, sampled audio, or external media dependency. It uses browser WebGL, Web Audio, Gamepad, Pointer Lock, and Speech Synthesis implementations and installed system fonts for semantic layout and Unicode fallback. The visible terminal uses original editable pixel glyphs in `client/src/pixel-font.js`. Those implementations and local speech voices retain their providers' terms; they are not redistributed as project-authored assets.
 
 The Rust manifest pins seven runtime dependencies:
 
