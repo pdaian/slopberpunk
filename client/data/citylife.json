@@ -28,8 +28,8 @@
       "stages": [
         {"status":"Kitchen water shut off", "line":"They call it donated water. Nella has the receipts from the families who paid for it.", "activity":"wait"},
         {"quest":"neighborhood-market-00", "contactLine":"Fourteen missing diners. I know every one of them. Now we need to find out why donating water made their bills grow.", "status":"Missing diners identified", "line":"You counted the empty places. Nella kept those portions warm anyway.", "activity":"talk"},
-        {"quest":"neighborhood-market-01", "contactLine":"The receipts match. I'll keep them beside the counter until the kitchen has a rota that everyone can read.", "status":"Double billing confirmed", "line":"The meter counted every jug twice. Now the whole queue has seen the reading.", "activity":"work"},
-        {"quest":"neighborhood-market-02", "contactLine":"Take a bowl. I'm off the counter for an hour; Mina has the next shift. We still ration the water, but we don't bill the donors twice.", "status":"Kitchen shifts shared", "line":"We take turns at the counter now. The water is still rationed, but nobody charges us for donating it.", "activity":"serve"}
+        {"quest":"neighborhood-market-01", "contactLine":"The receipts match. I'll keep them beside the counter until the kitchen has a work schedule that everyone can read.", "status":"Double billing confirmed", "line":"The meter counted every jug twice. Now the whole queue has seen the reading.", "activity":"work"},
+        {"quest":"neighborhood-market-02", "contactLine":"Take a bowl. I'm off the counter for an hour; Mina has the next shift. We still ration the water, but we don't bill the donors twice. Oru calls our copy the Living Record. Keep those fourteen names at the front when you take it to the other desks.", "status":"Kitchen shifts shared", "line":"We take turns at the counter. Oru kept the fourteen names in our Living Record, even when the old tally said everyone ate.", "activity":"serve"}
       ]
     },
     {
@@ -46,12 +46,12 @@
         {"status":"Uneven cooling", "line":"The premium vault is cold. My mother's shelf isn't. They say the order is automatic.", "activity":"wait"},
         {"quest":"neighborhood-archive-00", "contactLine":"That ordinary morning matters to its witness. I won't let the index choose for her. Check the cooling order next.", "status":"Rejected record found", "line":"She asked to keep one ordinary morning. The index marked it disposable.", "activity":"talk"},
         {"quest":"neighborhood-archive-01", "contactLine":"The queue sorts by money before it reads consent. We can free duplicate space, but only if its witnesses agree.", "status":"Payment priority confirmed", "line":"Elin found the payment column. We weren't imagining which shelves warmed first.", "activity":"repair"},
-        {"quest":"neighborhood-archive-02", "contactLine":"The cold space rotates now. People signed away copies, not their right to refuse. I keep both kinds of answer here.", "status":"Consent-based storage", "line":"We rotate the cold space by consent now. I gave up a copy so someone else could keep their only one.", "activity":"work"}
+        {"quest":"neighborhood-archive-02", "contactLine":"The cold space rotates now. People signed away copies, not their right to refuse. I keep both kinds of answer here.", "status":"Consent-based storage", "line":"We share cold space by consent. Elin sent Oru the terms, not my mother’s memory. I checked.", "activity":"work"}
       ]
     },
     {
       "id": "furnace", "name": "Copper Walk", "contact": "merek", "color": "#e99b6f", "motif": "workshop",
-      "premise": "An unfinished heat line warms an empty concession office while occupied flats freeze. Merek's repair crew can redirect it, if they can protect the next shift from inheriting the debt.",
+      "premise": "An unfinished heat line warms an empty company office while occupied flats freeze. Merek's repair crew can redirect it, if they can protect the next shift from inheriting the debt.",
       "sites": ["cold-flats", "heat-diverter", "shift-charter"],
       "residents": [{"name":"Ona Ash","role":"technician","line":"This coupling has been repaired twice. The pressure test comes before we fit it."},{"name":"Tess Coil","role":"technician","line":"Hold the light here. I can’t read the stamp through the soot."},{"name":"Vale Moss","role":"courier","line":"I’ve brought two valves. The depot is still looking for a third."},{"name":"Ren Wren","role":"customer","line":"I’m on break until the next crew signs in. There’s soup left if you want some."},{"name":"Pell Slate","role":"neighbor","line":"My flat gets heat after six. I’m checking whether upstairs is on the same schedule."},{"name":"Ada Bell","role":"cook","line":"The night crew takes its food in tins. Leave the lids by the sink."},{"name":"Caro Venn","role":"technician","line":"An apprentice shouldn’t sign for damage older than they are. I’m checking the form."}],
       "events": [
@@ -62,8 +62,8 @@
       "stages": [
         {"status":"Occupied flats without heat", "line":"Put your hand on the office wall. Warm. Nobody's worked there in eleven years.", "activity":"repair"},
         {"quest":"neighborhood-furnace-00", "contactLine":"Twenty-three occupied flats. They were never empty; they were outside the account. Let's see where their heat went.", "status":"Residents counted", "line":"Merek wrote down every flat. Including the ones the housing register calls empty.", "activity":"talk"},
-        {"quest":"neighborhood-furnace-01", "contactLine":"We can reach the bypass. We also need a rota that doesn't leave the youngest worker holding eleven years of repair debt.", "status":"Bypass inspected", "line":"The bypass is ready. We won't put an apprentice's name on the repair bond.", "activity":"repair"},
-        {"quest":"neighborhood-furnace-02", "contactLine":"The office is cold and the risers take turns. My crew's eating. For once, I can tell you who's coming to relieve them.", "status":"Heating shifts shared", "line":"My room is warm for six hours. The next six belong to the upstairs family. I'll take a fair clock over that empty office.", "activity":"eat"}
+        {"quest":"neighborhood-furnace-01", "contactLine":"We can reach the bypass. We also need a work schedule that doesn't leave the youngest worker holding eleven years of repair debt.", "status":"Bypass inspected", "line":"The bypass is ready. We won't put an apprentice's name on the repair debt agreement.", "activity":"repair"},
+        {"quest":"neighborhood-furnace-02", "contactLine":"The office is cold and the risers take turns. My crew's eating. For once, I can tell you who's coming to relieve them.", "status":"Heating shifts shared", "line":"My room gets six hours of heat. Oru has all twenty-three occupied addresses now, with the old vacancy report still attached.", "activity":"eat"}
       ]
     },
     {
@@ -79,8 +79,8 @@
       "stages": [
         {"status":"Flood warning disconnected", "line":"We took the advertisements down. Nobody told us the flood warning shared their wire.", "activity":"wait"},
         {"quest":"neighborhood-quiet-00", "contactLine":"The advisory arrived. None of our neighbors received it. We need a warning people can see and feel, including when it fails.", "status":"Failed warning traced", "line":"Sable kept the missed alarm in the minutes. Winning quiet didn't make us safe.", "activity":"talk"},
-        {"quest":"neighborhood-quiet-01", "contactLine":"The lamp and rail agree. A successful test won't check tomorrow's battery. Put names on the inspection rota.", "status":"Lamp and rail tested", "line":"Try the rail when the lamp pulses. My father can feel that through his gloves.", "activity":"repair"},
-        {"quest":"neighborhood-quiet-02", "contactLine":"Two neighbors check the battery each shift. The lamps and rail belong to the court. Your room's speaker still belongs to you.", "status":"Inspection shifts assigned", "line":"The rail and lamps take turns being checked. We kept the quiet, and made someone responsible for the warning.", "activity":"tend"}
+        {"quest":"neighborhood-quiet-01", "contactLine":"The lamp and rail agree. A successful test won't check tomorrow's battery. Put names on the inspection work schedule.", "status":"Lamp and rail tested", "line":"Try the rail when the lamp pulses. My father can feel that through his gloves.", "activity":"repair"},
+        {"quest":"neighborhood-quiet-02", "contactLine":"Two neighbors check the battery each shift. The lamps and rail belong to the court. Your room's speaker still belongs to you.", "status":"Inspection shifts assigned", "line":"Sable records the warnings we actually receive. The lamp and rail matter more than the transmitter’s total.", "activity":"tend"}
       ]
     },
     {
@@ -97,7 +97,7 @@
         {"status":"Night service threatened", "line":"Forty of us used that connection. The counter said zero. Service passes don't count as passengers.", "activity":"wait"},
         {"quest":"neighborhood-skybridge-00", "contactLine":"Forty names on an empty service. Find where the counter loses them; I want that rule beside the closure notice.", "status":"Passengers counted", "line":"Ivo has our names. I didn't think I'd ever be relieved to appear on another list.", "activity":"talk"},
         {"quest":"neighborhood-skybridge-01", "contactLine":"They accepted work as a fare, then excluded that fare from demand. Now we need a timetable someone is paid to keep.", "status":"Service passes included", "line":"Cleaning the tower buys a service pass. Apparently it didn't buy the right to need a way home.", "activity":"work"},
-        {"quest":"neighborhood-skybridge-02", "contactLine":"The late lift has a named crew and a relief time. Fewer trips than we asked for, but the last one is on the board. People can plan around it.", "status":"Late shift staffed", "line":"The late lift stays staffed now. Fewer trips, shared duty. I can tell my daughter when I'll be home.", "activity":"talk"}
+        {"quest":"neighborhood-skybridge-02", "contactLine":"The late lift has a named crew and a relief time. Fewer trips than we asked for, but the last one is on the board. People can plan around it.", "status":"Late shift staffed", "line":"Our forty names are in the Living Record. The late lift has a crew; I can tell my daughter when I’ll be home.", "activity":"talk"}
       ]
     }
   ]

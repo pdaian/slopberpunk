@@ -84,6 +84,14 @@ fn identifier(s: &str) -> bool {
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 impl Catalog {
+    pub(super) fn choice_ids(&self) -> impl Iterator<Item = (&str, Vec<&str>)> {
+        self.entries.iter().map(|d| {
+            (
+                d.id.as_str(),
+                d.decision.choices.iter().map(|c| c.id.as_str()).collect(),
+            )
+        })
+    }
     pub fn validate(&self, data: &Content) -> io::Result<()> {
         let invalid = || io::Error::other("Invalid dungeon content in dungeons.json");
         let r = &self.rules;
@@ -157,8 +165,8 @@ impl Catalog {
                 || !d.production.is_object()
                 || d.reward.xp == 0
                 || d.reward.xp > 100000
-                || d.reward.credits == 0
-                || d.reward.credits > 10000
+                || d.reward.gold == 0
+                || d.reward.gold > 10000
             {
                 return Err(invalid());
             }
@@ -321,7 +329,7 @@ impl Shard {
         };
         let d = self.content.dungeons.get(text(&value["dungeon"]));
         if self.dungeons.busy(id) || p.instance.is_some() {
-            notice(p, "Leave your current queue or expedition first.");
+            notice(p, "Leave your current dungeon or waiting queue first.");
             return false;
         }
         if !d.is_some_and(|d| p.c.level >= d.level)
@@ -330,7 +338,7 @@ impl Shard {
         {
             notice(
                 p,
-                "Meet the dungeon's level requirement and leave combat before queueing.",
+                "Reach the dungeon’s required level and stop fighting before joining the queue.",
             );
             return false;
         }
@@ -358,7 +366,10 @@ impl Shard {
         };
         if let Err(error) = lobby.send(command).await {
             if let Command::Transfer { player, .. } = error.0 {
-                notice(&player, "Expedition service unavailable.");
+                notice(
+                    &player,
+                    "Dungeons are unavailable right now. Try again later.",
+                );
                 self.players.insert(id, *player);
             }
             return;
@@ -368,7 +379,7 @@ impl Shard {
                 self.forwarded.insert(id);
             }
             Ok(Err(p)) => {
-                notice(&p, "The expedition lobby is full. Try again later.");
+                notice(&p, "The dungeon waiting area is full. Try again later.");
                 self.players.insert(id, *p);
             }
             Err(_) => {
@@ -453,7 +464,7 @@ impl Shard {
         } else {
             self.end_run(
                 &run,
-                "A runner left. The expedition has ended; the crew can queue again.",
+                "A player left. The dungeon has ended for everyone. You can join the queue again.",
             );
         }
     }
@@ -524,6 +535,7 @@ impl Shard {
                 speed: 3.0,
                 attack_at: 0.0,
                 stun_until: 0.0,
+                exposed_until: 0.0,
                 respawn_at: f64::INFINITY,
                 aggro: None,
             });
@@ -561,6 +573,13 @@ impl Shard {
         run.deadline = 0.0;
         for t in &run.tickets {
             if let Some(p) = self.players.get_mut(&t.id) {
+                // A runner owns their ballot, even when the crew chooses another ending.
+                // Replays retain ordinary expedition rewards but cannot farm moral standing.
+                let record = format!("dungeon:{}", d.id);
+                if !p.c.morality.records.contains_key(&record) {
+                    let choice = run.votes.get(&t.id).map(String::as_str).unwrap_or("defer");
+                    let _ = morality::settle(&mut p.c, &self.content, &record, choice);
+                }
                 let old = p.c.dungeon_history.get(&d.id).map_or(0, |h| h.clears);
                 p.c.dungeon_history.insert(
                     d.id.clone(),
@@ -569,15 +588,12 @@ impl Shard {
                         ending: ending.clone(),
                     },
                 );
-                p.c.credits = p.c.credits.saturating_add(d.reward.credits);
+                let gold = economy::grant_gold(&mut p.c, d.reward.gold);
                 let xp = gain_xp(p, &self.content, d.reward.xp);
                 p.c.revision += 1;
                 p.dirty = true;
-                emit(
-                    p,
-                    json!({"type":"reward","xp":xp,"credits":d.reward.credits}),
-                );
-                notice(p, "Expedition complete. Read your ending in Dungeons [G].");
+                emit(p, json!({"type":"reward","xp":xp,"gold":gold}));
+                notice(p, "Dungeon complete. Press G to read your ending.");
             }
         }
     }
@@ -659,7 +675,7 @@ impl Shard {
                         relocate(p, position(&rules, [0.0, 0.0, 14.0]), &self.content);
                         notice(
                             p,
-                            "Expedition ready. Read the first chapter in Dungeons [G].",
+                            "Dungeon ready. Press G to read the first chapter and choose READY.",
                         );
                     }
                 }
@@ -740,7 +756,7 @@ impl Shard {
                         ..Movement::default()
                     };
                     other.ghost_trail.clear();
-                    notice(other, "An ally restored your signal.");
+                    notice(other, "Another player brought you back to life.");
                 }
                 run.revives.insert(id.to_owned(), count - 1);
             }
@@ -773,7 +789,7 @@ impl Shard {
                     if let Some(p) = self.players.get(&t.id) {
                         notice(
                             p,
-                            "Dungeon group found. Open Dungeons [G] to accept the ready check.",
+                            "Group found. Press G and choose READY TO ENTER to join them.",
                         );
                     }
                 }
@@ -817,7 +833,7 @@ impl Shard {
             if self.time - run.started >= rules.max_run_seconds {
                 self.end_run(
                     &run,
-                    "Expedition time limit reached. Return to the finder when ready.",
+                    "The dungeon time limit ran out. Press G to join the queue again.",
                 );
                 continue;
             }
@@ -832,7 +848,7 @@ impl Shard {
                     if let Some(p) = self.players.get(&t.id) {
                         notice(
                             p,
-                            "Ready check ended. Accepted runners keep their queue priority.",
+                            "Not everyone joined in time. Players who accepted keep their place in line.",
                         );
                         if run.ready.contains(&t.id) && p.c.health > 0.0 {
                             self.dungeons.queue.push(t);
@@ -885,6 +901,8 @@ impl Shard {
                                     let damage = (Stats::new(&p.c, &self.content).health
                                         * rules.pulse_fraction)
                                         .round();
+                                    let damage =
+                                        damage * (1.0 - Stats::new(&p.c, &self.content).armor);
                                     let absorbed = p.shield.min(damage);
                                     p.shield -= absorbed;
                                     p.c.health = (p.c.health - damage + absorbed).max(0.0);
@@ -966,7 +984,7 @@ mod tests {
         shard
     }
     fn add(s: &mut Shard, id: &str, race: &str, faction: &str, level: u32) {
-        let mut c:Character=serde_json::from_value(json!({"version":2,"id":id,"name":id,"race":race,"faction":faction,"level":level,"xp":0,"credits":45,"position":[0,0,32],"yaw":0,"health":140,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
+        let mut c:Character=serde_json::from_value(json!({"version":2,"id":id,"name":id,"race":race,"faction":faction,"level":level,"xp":0,"gold":45,"position":[0,0,32],"yaw":0,"health":140,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
         let stats = Stats::new(&c, &s.content);
         c.health = stats.health;
         c.energy = stats.energy;
@@ -974,6 +992,7 @@ mod tests {
         s.players.insert(
             id.into(),
             Player {
+                live_social: live_social::Session::default(),
                 instance: None,
                 owner: "account".into(),
                 previous_position: c.position,
@@ -1258,7 +1277,7 @@ mod tests {
             json!({"target":evidence[0].id,"attempt":attempt}),
         );
         assert!(s.dungeons.runs[&key].evidence.is_empty());
-        assert_eq!(s.players[&ids[0]].c.credits, 45);
+        assert_eq!(s.players[&ids[0]].c.gold, 45);
     }
     #[test]
     fn recovery_is_personal_and_revives_are_spatial_bounded_and_non_replayable() {
@@ -1302,10 +1321,10 @@ mod tests {
         assert_eq!(s.dungeons.runs[&key].ending.as_deref(), Some("defer"));
         assert_eq!(s.dungeons.runs[&key].votes[&ids[0]], "publish");
         for id in &ids {
-            assert_eq!(s.players[id].c.credits, 195);
+            assert_eq!(s.players[id].c.gold, 195);
             assert_eq!(s.players[id].c.dungeon_history["borrowed-ferry"].clears, 1);
             command(&mut s, id, "vote", json!({"choice":"publish"}));
-            assert_eq!(s.players[id].c.credits, 195);
+            assert_eq!(s.players[id].c.gold, 195);
         }
         s.leave_dungeon(&ids[0]);
         assert!(s.dungeons.runs.contains_key(&key));
@@ -1437,7 +1456,7 @@ mod tests {
             decoded.character.dungeon_history["borrowed-ferry"].ending,
             "defer"
         );
-        assert_eq!(decoded.character.credits, 195);
+        assert_eq!(decoded.character.gold, 195);
         assert_eq!(decoded.character.dungeon_return, Some(s.content.map.spawn));
     }
 }

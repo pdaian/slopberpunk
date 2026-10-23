@@ -3,56 +3,56 @@
     "id": "human",
     "name": "Afterborn",
     "color": "#facb91",
-    "tagline": "Descendants of the emergency shelters.",
-    "description": "Humans with few or no body modifications. Their communities share medical knowledge, meals, and shelter supplies.",
+    "tagline": "Humans raised in the city’s shelters.",
+    "description": "Humans with few or no body modifications. Their communities share medicine, meals, and shelter.",
     "passive": {
-      "name": "Ordinary Courage",
-      "description": "Shelter medicine and practical endurance grant 20 additional maximum health.",
+      "name": "Extra health",
+      "description": "Start with 20 extra maximum health.",
       "stat": "health",
       "value": 20
     },
-    "lore": "The first Afterborn were children left out of the evacuation census. Shelter cooks wrote their names on meal bowls so they would still receive rations. Their descendants keep that practice. Your lineage quests trace missing clinic records, remove ancestry checks, and follow the water supply back to Mourning Fen."
+    "lore": "The first Afterborn were children left out of the evacuation census. Shelter cooks wrote their names on meal bowls so they would still receive rations. Their descendants keep that practice. Your character’s quests trace missing clinic records, remove ancestry checks, and follow the water supply back to Mourning Fen. Oru asks you to carry the names behind those bowls into the Living Record, including everyone still waiting for care."
   },
   {
     "id": "lattice",
     "name": "Lattice",
     "color": "#8bd5f0",
-    "tagline": "People living in repairable ceramic bodies.",
-    "description": "Their memories run through ceramic networks that can be repaired or copied. People who share old memories can still lead separate lives.",
+    "tagline": "People with repairable ceramic bodies.",
+    "description": "Their memories are stored in ceramic bodies. A memory can be copied, but each person can choose their own life.",
     "passive": {
-      "name": "Capacitive Thought",
-      "description": "Distributed ceramic reserves grant 20 additional maximum energy.",
+      "name": "Extra energy",
+      "description": "Start with 20 extra maximum energy for abilities.",
       "stat": "energy",
       "value": 20
     },
-    "lore": "During the Long Brownout, repair machines used damaged human records to recognize their patients. Some developed memories and wishes of their own. Tam of Nine Cups became the first recognized Lattice citizen. Your lineage quests challenge repossession and forced merging, then investigate the mineral seam used to make replacement bodies."
+    "lore": "During the Long Brownout, repair machines used damaged human records to recognize their patients. Some developed memories and wishes of their own. Tam of Nine Cups became the first recognized Lattice citizen. Your character’s quests challenge seizure for unpaid debts and forced merging, then investigate the mineral seam used to make replacement bodies. Your account in the Living Record keeps each chosen name beside the material cost of keeping that person alive."
   },
   {
     "id": "revenant",
     "name": "Revenant",
     "color": "#d1b6f4",
-    "tagline": "People restored after an earlier death.",
-    "description": "Revenants live in grown or constructed bodies. They may remember parts of an earlier life, and can change their instructions about future restoration.",
+    "tagline": "People brought back to life after death.",
+    "description": "Revenants live in new bodies and may remember their earlier lives. They choose whether they want to be brought back again.",
     "passive": {
-      "name": "Borrowed Second",
-      "description": "Practiced threat recognition grants 3 percentage points of critical-hit chance.",
+      "name": "More critical hits",
+      "description": "Add 3 percentage points to your chance of a critical hit, which deals extra damage.",
       "stat": "crit",
       "value": 3
     },
-    "lore": "The first restoration vaults served workers repairing Vesper’s sea barriers. Contractors later used restoration agreements to claim those workers’ labor. Your lineage quests uncover the hidden terms, free people from collection orders, and set new consent rules while the clinics face a shortage of water and nutrients."
+    "lore": "The first restoration vaults served workers repairing Vesper’s sea barriers. Contractors later used restoration agreements to claim those workers’ labor. Your character’s quests uncover the hidden terms, free people from collection orders, and set new consent rules while the clinics face a shortage of water and nutrients. Your account in the Living Record asks what a second life owes—and what no creditor may claim from it."
   },
   {
     "id": "bloom",
     "name": "Sporebound",
     "color": "#bddf7f",
-    "tagline": "People living with engineered fungal partners.",
-    "description": "Their fungal partners help filter toxins and support movement. Different cultures need different food and care.",
+    "tagline": "People whose bodies live with helpful fungi.",
+    "description": "Their fungal partners help them filter poisons and move faster. Each partnership needs its own food and care.",
     "passive": {
-      "name": "Rootstep",
-      "description": "Responsive muscle symbiosis increases movement speed by 8 percent.",
+      "name": "Faster movement",
+      "description": "Move 8% faster.",
       "stat": "speed",
       "value": 0.08
     },
-    "lore": "Companies developed these cultures to protect salt miners, then charged the miners to keep them alive. Workers shared recipes that ended their dependence on the licensed feed. Your lineage quests investigate that history, protect patients from seizure, and contain escaped strains that are spreading through the salt pans."
+    "lore": "Companies developed these cultures to protect salt miners, then charged the miners to keep them alive. Workers shared recipes that ended their dependence on the licensed feed. Your character’s quests investigate that history, protect patients from seizure, and contain escaped strains that are spreading through the salt pans. Your account in the Living Record keeps the hosts, caretakers, and displaced households visible beside the culture’s survival."
   }
 ]

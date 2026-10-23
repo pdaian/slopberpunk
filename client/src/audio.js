@@ -58,7 +58,7 @@ export class AudioEngine {
       loading:'Waiting for English voices to load…',
       starting:'Starting character voice…',
       speaking:'Playing character voice.',
-      blocked:'Speech is blocked. Click or tap TEST VOICE or a REPLAY button to try again.',
+      blocked:'Speech is blocked. Click TEST VOICE in Settings or a HEAR button to try again.',
       unavailable:'No working English voice was found. Check your device speech settings, then try TEST VOICE.',
       error:'Speech playback failed. Check your sound, speech settings, and connection, then try TEST VOICE.',
       ready:'Local English voices are preferred. Other browser voices may require an internet connection.',

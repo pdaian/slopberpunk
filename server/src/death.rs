@@ -15,7 +15,8 @@ pub(super) struct Recovery {
     pub graveyard: String,
     pub released: bool,
     pub release_at: f64,
-    pub credits_lost: u64,
+    #[serde(alias = "creditsLost")]
+    pub gold_lost: u64,
 }
 
 pub(super) fn validate(data: &Content) -> io::Result<()> {
@@ -34,7 +35,7 @@ pub(super) fn validate(data: &Content) -> io::Result<()> {
                 })
         })
         || [
-            "creditLossFraction",
+            "goldLossFraction",
             "healerLossFraction",
             "corpseHealthFraction",
             "healerHealthFraction",
@@ -46,7 +47,7 @@ pub(super) fn validate(data: &Content) -> io::Result<()> {
             !(0.0..=1.0).contains(&data.rule("death", key)) || data.rule("death", key) == 0.0
         })
         || [
-            "creditLossCap",
+            "goldLossCap",
             "healerLossCap",
             "reclaimRadius",
             "sicknessSeconds",
@@ -64,13 +65,13 @@ pub(super) fn is_spirit(c: &Character) -> bool {
     c.health <= 0.0 && c.death.as_ref().is_some_and(|d| d.released)
 }
 
-fn cost(credits: u64, fraction: f64, cap: f64) -> u64 {
-    ((credits as f64 * fraction).ceil() as u64)
+fn cost(gold: u64, fraction: f64, cap: f64) -> u64 {
+    ((gold as f64 * fraction).ceil() as u64)
         .min(cap as u64)
-        .min(credits)
+        .min(gold)
 }
 
-fn recovery(c: &Character, data: &Content, credits_lost: u64) -> Recovery {
+fn recovery(c: &Character, data: &Content, gold_lost: u64) -> Recovery {
     let graveyard = data
         .map
         .graveyards
@@ -82,7 +83,7 @@ fn recovery(c: &Character, data: &Content, credits_lost: u64) -> Recovery {
         graveyard: graveyard.id.clone(),
         released: false,
         release_at: now_millis() as f64 / 1000.0 + data.rule("player", "respawnSeconds"),
-        credits_lost,
+        gold_lost,
     }
 }
 
@@ -107,11 +108,11 @@ pub(super) fn fallen(p: &mut Player, data: &Content, time: f64) {
     p.ghost_trail.clear();
     if p.instance.is_none() && p.c.death.is_none() {
         let lost = cost(
-            p.c.credits,
-            data.rule("death", "creditLossFraction"),
-            data.rule("death", "creditLossCap"),
+            p.c.gold,
+            data.rule("death", "goldLossFraction"),
+            data.rule("death", "goldLossCap"),
         );
-        p.c.credits -= lost;
+        p.c.gold -= lost;
         p.c.death = Some(recovery(&p.c, data, lost));
     }
     p.dirty = true;
@@ -158,7 +159,7 @@ pub(super) fn action(
             relocate(p, graveyard.position);
             notice(
                 p,
-                "Spirit released. Follow the body marker, or ask the graveyard keeper for a costly resurrection.",
+                "You are now a ghost. Follow the marker to your body, or pay the graveyard healer to revive here.",
             );
         }
         "returnToGraveyard" if d.released => relocate(p, graveyard.position),
@@ -168,7 +169,7 @@ pub(super) fn action(
             {
                 notice(
                     p,
-                    "Move within 12 m of your body with a clear line of sight.",
+                    "Get within 12 m of your body with nothing blocking your view.",
                 );
                 return;
             }
@@ -182,11 +183,11 @@ pub(super) fn action(
                 return;
             }
             let lost = cost(
-                p.c.credits,
+                p.c.gold,
                 data.rule("death", "healerLossFraction"),
                 data.rule("death", "healerLossCap"),
             );
-            p.c.credits -= lost;
+            p.c.gold -= lost;
             relocate(p, graveyard.position);
             resurrect(p, data, time, true);
         }
@@ -218,9 +219,9 @@ fn resurrect(p: &mut Player, data: &Content, time: f64, healer: bool) {
     notice(
         p,
         if healer {
-            "Resurrected at the graveyard. Resurrection sickness weakens damage and movement for 60 seconds of living play."
+            "You are alive at the graveyard. For 60 seconds while alive and playing, you deal half damage and move 25% slower."
         } else {
-            "Body recovered. Health and energy restored to 50%."
+            "You are alive again with 50% health and energy."
         },
     );
 }
@@ -233,9 +234,10 @@ mod tests {
         let data =
             Content::load(&PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../client")).unwrap();
         let world = World::new(&data.map);
-        let c: Character = serde_json::from_value(json!({"version":2,"id":"runner","name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"credits":100,"position":[0,0,32],"yaw":0,"health":0,"energy":0,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{"relay-00":0},"completed":[],"introSeen":true})).unwrap();
+        let c: Character = serde_json::from_value(json!({"version":2,"id":"runner","name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"gold":100,"position":[0,0,32],"yaw":0,"health":0,"energy":0,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{"relay-00":0},"completed":[],"introSeen":true})).unwrap();
         let (output, _) = mpsc::channel(64);
         let p = Player {
+            live_social: live_social::Session::default(),
             instance: None,
             owner: "account".into(),
             previous_position: c.position,
@@ -274,8 +276,8 @@ mod tests {
         let (data, world, mut p) = fixture();
         fallen(&mut p, &data, 0.0);
         fallen(&mut p, &data, 0.1);
-        assert_eq!(p.c.credits, 95);
-        assert_eq!(p.c.death.as_ref().unwrap().credits_lost, 5);
+        assert_eq!(p.c.gold, 95);
+        assert_eq!(p.c.death.as_ref().unwrap().gold_lost, 5);
         assert_eq!(p.c.death.as_ref().unwrap().corpse, [0.0, 0.0, 32.0]);
         let deadline = p.c.death.as_ref().unwrap().release_at;
         action(&mut p, &data, &world, "respawn", 9.0, deadline - 0.1);
@@ -291,7 +293,7 @@ mod tests {
         assert!(is_spirit(&p.c));
         assert_eq!(p.c.death.as_ref().unwrap().release_at, deadline);
         assert_eq!(p.c.resurrection_sickness, 23.0);
-        assert_eq!(p.c.credits, 95);
+        assert_eq!(p.c.gold, 95);
     }
 
     #[test]
@@ -337,9 +339,9 @@ mod tests {
         assert_eq!(p.c.energy, Stats::new(&p.c, &data).energy * 0.5);
         assert!(p.c.death.is_none());
         assert_eq!(p.c.resurrection_sickness, 0.0);
-        assert_eq!(p.c.credits, 95);
+        assert_eq!(p.c.gold, 95);
         action(&mut p, &data, &world, "spiritHealer", 10.0, f64::MAX);
-        assert_eq!(p.c.credits, 95, "duplicate recovery is inert");
+        assert_eq!(p.c.gold, 95, "duplicate recovery is inert");
     }
 
     #[test]
@@ -351,11 +353,11 @@ mod tests {
         p.c.position = [0.0, 0.0, -50.0];
         action(&mut p, &data, &world, "spiritHealer", 10.0, f64::MAX);
         assert_eq!(p.c.health, 0.0);
-        assert_eq!(p.c.credits, 95);
+        assert_eq!(p.c.gold, 95);
         action(&mut p, &data, &world, "returnToGraveyard", 10.0, f64::MAX);
         assert_eq!(p.c.position, graveyard);
         action(&mut p, &data, &world, "spiritHealer", 10.0, f64::MAX);
-        assert_eq!(p.c.credits, 85);
+        assert_eq!(p.c.gold, 85);
         assert_eq!(p.c.resurrection_sickness, 60.0);
         let sick = Stats::new(&p.c, &data);
         assert_eq!(p.c.health, sick.health * 0.25);
@@ -377,8 +379,8 @@ mod tests {
     fn old_dead_saves_get_a_free_migration_and_dungeons_keep_their_recovery() {
         let (data, world, mut p) = fixture();
         restore(&mut p.c, &data);
-        assert_eq!(p.c.credits, 100);
-        assert_eq!(p.c.death.as_ref().unwrap().credits_lost, 0);
+        assert_eq!(p.c.gold, 100);
+        assert_eq!(p.c.death.as_ref().unwrap().gold_lost, 0);
         p.c.health = 10.0;
         restore(&mut p.c, &data);
         assert!(p.c.death.is_none());
@@ -387,7 +389,7 @@ mod tests {
         fallen(&mut p, &data, 5.0);
         action(&mut p, &data, &world, "releaseSpirit", 10.0, f64::MAX);
         assert!(p.c.death.is_none());
-        assert_eq!(p.c.credits, 100);
+        assert_eq!(p.c.gold, 100);
         assert_eq!(p.dead_at, 5.0);
     }
 }

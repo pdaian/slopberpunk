@@ -1,5 +1,5 @@
 [
-  { "id": "drone", "name": "Orphaned surveyor", "model": "drone", "health": 65, "damage": 9, "speed": 5, "color": "#ff946b", "description": "A municipal drone still enforcing a city that no longer exists." },
-  { "id": "scavenger", "name": "Wirejack", "model": "humanoid", "health": 100, "damage": 13, "speed": 6, "color": "#d9b2ef", "description": "An autonomous salvage chassis with a dangerously broad definition of scrap." },
-  { "id": "warden", "name": "Debt warden", "model": "warden", "health": 160, "damage": 19, "speed": 4, "color": "#ff6c7c", "description": "An armored collector serving a creditor that vanished decades ago." }
+  { "id": "drone", "name": "Orphaned surveyor", "model": "drone", "health": 65, "damage": 9, "speed": 5, "color": "#ff946b", "description": "An audit machine that counts allocations as deliveries. It still treats an unpaid household as an empty address." },
+  { "id": "scavenger", "name": "Wirejack", "model": "humanoid", "health": 100, "damage": 13, "speed": 6, "color": "#d9b2ef", "description": "An autonomous salvage machine that treats anything outside a paid inventory as scrap, including working public equipment. It is a machine, not a human salvager." },
+  { "id": "warden", "name": "Debt warden", "model": "warden", "health": 160, "damage": 19, "speed": 4, "color": "#ff6c7c", "description": "An armored collector enforcing Continuance’s inherited claims. Its orders can outlive the office that issued them." }
 ]

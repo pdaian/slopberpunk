@@ -7,7 +7,7 @@ import { ghostPosition } from './ghostline.js';
 import { dungeonZones, dungeonPosition } from './dungeons.js';
 import { box, pane, bevelBox, ellipsoid, transformMesh } from './geometry.js';
 import { CharacterMeshes } from './character.js';
-import { buildingExterior, buildingInterior, streetDetails, neighborhoodDetails, civilianProps, routeGeometry, streetScene } from './scenery.js';
+import { buildingExterior, buildingInterior, buildingLights, streetDetails, neighborhoodDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry } from './scenery.js';
 import { cityStage } from './citylife.js';
 import { incidentGeometry } from './events.js';
 export { box } from './geometry.js';
@@ -17,17 +17,17 @@ attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribu
 uniform mat4 uMatrix; uniform mediump vec3 uEye; uniform mediump vec3 uSun; uniform mediump float uDay; uniform mediump float uTime;
 varying mediump vec3 vColor; varying mediump float vGlow; varying mediump vec3 vPosition; varying mediump vec3 vNormal;
 void main(){
-  float light=mix(.48,.58,uDay)+max(dot(aNormal,normalize(uSun)),0.0)*.46*uDay;
   // Scenery glow values >= 2 mark rooted plants; the remainder is emission.
   vGlow=aGlow>=2.0?aGlow-2.0:aGlow;
   vec3 position=aPosition;
   if(aGlow>=2.0){float bend=sin(uTime*.8+aPosition.x*.12+aPosition.z*.07)*.055*clamp(aPosition.y,0.,15.);position.x+=bend;position.z+=bend*.4;}
-  vColor=aColor*mix(light,1.35,max(0.0,vGlow));
+  vColor=aColor;
   vPosition=position; vNormal=aNormal; gl_Position=uMatrix*vec4(position,1.0);
 }`;
 const fragmentSource = `
 precision mediump float; varying mediump vec3 vColor; varying mediump float vGlow; varying mediump vec3 vPosition; varying mediump vec3 vNormal;
 uniform vec3 uFog; uniform mediump vec3 uEye; uniform mediump vec3 uSun; uniform mediump float uDay; uniform float uVolume; uniform float uTime; uniform float uDetail; uniform vec4 uRoom; uniform float uRoomHeight;
+uniform vec4 uLightPosition[LIGHT_COUNT]; uniform vec4 uLightColor[LIGHT_COUNT];
 float hash(vec2 p){p=mod(p,251.0);return fract(sin(dot(p,vec2(12.9898,78.233)))*437.585);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.)),f.x),f.y);}
 // Analytic ray/cylinder intersection, clipped to the lamp's height and opaque surface.
@@ -49,12 +49,16 @@ float shaft(vec3 ray,float end,vec2 lamp){
 void main(){
   // Fragment distance keeps large ground polygons from inheriting fog from distant corners.
   vec3 offset=(vPosition-uEye)*.001;
-  float d=length(offset)*1000.0;vec3 ray=normalize(offset),normal=normalize(vNormal),surface=vColor;
-  float indoors=step(abs(vPosition.x-uRoom.x),uRoom.z)*step(abs(vPosition.z-uRoom.y),uRoom.w)*(1.0-step(uRoomHeight,vPosition.y));
+  float d=length(offset)*1000.0;vec3 ray=normalize(offset),normal=normalize(vNormal);
+  float ambient=mix(.115+.055*max(normal.y,0.0)+.04*max(normal.z,0.0),.58,uDay)+max(dot(normal,normalize(uSun)),0.0)*.46*uDay;
+  vec3 surface=vColor*mix(ambient,1.55,max(0.0,vGlow));float wet=0.0,wetBreakup=1.0;
+  // Inset the room mask so interpolation at an exterior wall cannot alternate
+  // between indoor and outdoor light on adjacent fragments.
+  float indoors=step(abs(vPosition.x-uRoom.x),uRoom.z-.08)*step(abs(vPosition.z-uRoom.y),uRoom.w-.08)*(1.0-step(uRoomHeight,vPosition.y));
   float weather=.5+.5*sin(uTime*.009);
   float density=.24+.76*exp(-max(0.0,(uEye.y+vPosition.y)*.5)*.023);
   float bank=noise(vPosition.xz*.008+vec2(uTime*.006,0.));
-  float fog=1.0-exp(-d*(.0021+weather*.0011)*density*(.85+bank*.5));
+  float fog=1.0-exp(-d*(.0015+weather*.0011)*density*(.85+bank*.5));
   fog=clamp(fog-max(0.0,vGlow)*.045,0.0,1.0);
   if(normal.y>.85&&vPosition.y<.25&&vGlow>=0.0){
     vec2 p=vPosition.xz;float city=1.0-step(1120.0,max(abs(p.x),abs(p.y)));
@@ -62,29 +66,57 @@ void main(){
     float plaza=1.0-step(46.0,max(abs(p.x),abs(p.y)));
     float road=(1.0-step(7.0,min(street.x,street.y)))*(1.0-plaza)*city;
     surface=mix(surface,surface*.6,road);
-    surface=mix(surface,vec3(.2,.225,.28)*mix(.48,.85,uDay),plaza);
+    surface=mix(surface,vec3(.2,.225,.28)*mix(.14,.85,uDay),plaza);
     float grain=hash(floor(mod(p,64.0)*70.0)),wear=noise(p*.19),fine=1.0-smoothstep(35.,160.,d);
     surface*=.87+wear*.2+(grain-.5)*.16*(1.0-smoothstep(4.,28.,d))*uDetail;
     vec2 tile=abs(fract(p*.5)-.5);float seam=smoothstep(.466,.49,max(tile.x,tile.y));
     surface*=1.0-seam*.26*(1.0-road)*city*fine;
     vec2 fracture=abs(fract(p*.18+vec2(.0,.37))-.5);
     float cracks=(1.0-smoothstep(.004,.02,min(fracture.x,fracture.y)))*step(.72,hash(floor(p*.18)));
-    surface*=1.0-cracks*.18*fine;
-    float puddle=smoothstep(.64,.8,noise(p*.12))*(.3+weather*.7)*city*(1.0-indoors);
+    surface*=1.0-cracks*.38*fine;
+    float asphaltPatch=step(.72,hash(floor(p*.09)))*smoothstep(.25,.5,noise(p*.45));
+    surface*=1.0-asphaltPatch*.32*city;
+    float puddle=smoothstep(.51,.76,noise(p*.12))*(.5+weather*.5)*city*(1.0-indoors);
+    wet=puddle;
+    if(uDetail>.5)wetBreakup=.4+.6*noise(vec2(p.x*.8,p.y*6.)+vec2(0.,uTime*.09))
+      +step(.97,hash(floor(p*10.)))*1.5*(1.0-smoothstep(6.,24.,d));
     float fresnel=pow(1.0-max(0.0,dot(normal,-ray)),3.0);
     surface=mix(surface,uFog*1.3,puddle*(.2+fresnel*.6));
-    vec3 neon=mix(vec3(.08,.5,.64),vec3(.72,.09,.28),step(.5,hash(floor((p+40.0)/80.0))));
-    float reflection=pow(.5+.5*sin(p.x*.28+p.y*.04+noise(p*.9)*.5),14.0);
-    surface+=neon*reflection*puddle*fresnel*.32*(1.0-uDay*.6);
-    float ripple=sin(length(fract(p*.28)-.5)*65.0-uTime*5.0)*.014;
-    surface+=ripple*puddle*fine*uDetail;
+    vec2 ripple=vec2(sin(p.x*3.1+p.y*.7+uTime*1.4),cos(p.y*3.7-p.x*.5+uTime*1.1));
+    normal=normalize(normal+vec3(ripple.x,0.,ripple.y)*puddle*.035*fine*uDetail);
     float edge=1.0-smoothstep(.03,.12,abs(min(street.x,street.y)-8.0));
     float lane=(1.0-step(.08,street.x))*step(16.0,mod(p.y+2.0,20.0))+(1.0-step(.08,street.y))*step(16.0,mod(p.x+2.0,20.0));
     float plazaLine=1.0-smoothstep(.02,.07,min(abs(mod(p.x+5.0,10.0)-5.0),abs(mod(p.y+5.0,10.0)-5.0)));
-    surface=mix(surface,vec3(.36,.4,.4),clamp((edge*.5+lane*.8)*(1.0-plaza)*city+plazaLine*plaza*.35,0.,1.)*fine);
+    surface=mix(surface,vec3(.36,.4,.4)*mix(.24,1.,uDay),clamp((edge*.5+lane*.8)*(1.0-plaza)*city+plazaLine*plaza*.35,0.,1.)*fine);
   }else if(vGlow<.2){
     float rim=pow(1.0-abs(dot(normal,-ray)),3.0);
-    surface+=vec3(.08,.16,.22)*rim*(1.0-uDay*.5);
+    surface+=vec3(.015,.03,.05)*rim*(1.0-uDay*.5);
+    if(uDetail>.5&&abs(normal.y)<.35&&d<150.0){
+      vec2 wall=vec2(abs(normal.x)>.5?vPosition.z:vPosition.x,vPosition.y);
+      float runoff=noise(wall*vec2(.65,.055));
+      float soot=smoothstep(.38,.78,runoff)*(1.0-smoothstep(0.,32.,wall.y));
+      float damp=1.0-smoothstep(.1,3.6,wall.y);
+      surface*=1.0-soot*.42-damp*.24;
+      float chip=step(.91,hash(floor(wall*9.0)))*(1.0-smoothstep(12.,65.,d));
+      surface+=vec3(.13,.10,.07)*chip*mix(.2,.6,uDay);
+    }
+  }
+  // Bounded fixture lights leave unlit service walls and alleys in shadow.
+  // The facing mask prevents a facade sign from lighting through its own wall.
+  for(int i=0;i<LIGHT_COUNT;i++){
+    vec3 delta=uLightPosition[i].xyz-vPosition;float radius=uLightPosition[i].w;
+    if(radius>0.0){
+      float ld=length(delta);vec3 L=delta/max(ld,.001);float direction=uLightColor[i].w;
+      float facing=abs(direction)<.5?1.0:abs(direction)>1.5?smoothstep(-.3,.1,-delta.z*sign(direction)):smoothstep(-.3,.1,-delta.x*sign(direction));
+      float falloff=pow(max(0.0,1.0-ld/radius),2.0)*facing*(1.0-indoors);
+      vec3 radiance=uLightColor[i].rgb*falloff*(1.0-uDay*.7);
+      surface+=vColor*radiance*(.12+max(dot(normal,L),0.0))*2.6*(1.0-clamp(vGlow,0.,1.));
+      if(wet>.01){
+        float specular=pow(max(dot(reflect(-L,normal),-ray),0.0),mix(18.,55.,wet));
+        float reflected=pow(max(0.0,1.0-ld/(radius*3.0)),2.0)*facing*(1.0-indoors);
+        surface+=uLightColor[i].rgb*reflected*specular*wet*wetBreakup*1.8*(1.0-uDay*.7);
+      }
+    }
   }
   surface+=vec3(.11,.08,.055)*indoors*(1.0-clamp(vGlow,0.,1.));
   vec3 c=mix(surface,uFog,fog);
@@ -116,11 +148,33 @@ void main(){
  c+=vec3(.9,.67,.3)*(exp(-sun*18.)*.28+1.-smoothstep(.018,.021,sun))*uSunScreen.z;
  float moon=length((uv-uMoonScreen.xy)*vec2(uAspect,1.));
  c+=vec3(.38,.43,.39)*(1.-smoothstep(.016,.018,moon))*uMoonScreen.z*(1.-uDay);
- vec2 cell=floor(uv*vec2(600.,340.)); float star=step(.998,hash(cell));
- c+=star*.22*smoothstep(.35,.9,uv.y)*(1.-uDay);
+ vec2 stars=uv*vec2(600.,340.),cell=floor(stars); float seed=hash(cell),star=step(.9975,seed);
+ float pin=1.-smoothstep(.05,.55,length(fract(stars)-.5));
+ float twinkle=.65+.35*sin(uTime*.7+seed*180.);
+ c+=vec3(.68,.8,1.)*star*pin*twinkle*smoothstep(.25,.8,uv.y)*(1.-uDay);
  float clouds=cloud(uv*vec2(6.,10.)+vec2(uTime*.003,0.))*.65+cloud(uv*vec2(15.,24.)-vec2(uTime*.006,0.))*.35;
  c=mix(c,horizon*.8,smoothstep(.47,.8,clouds)*.55);
  gl_FragColor=vec4(c,1.);
+}`;
+
+// Depth-tested point sprites add soft fixture glow without a full-screen bloom
+// buffer. Occluded lights disappear behind buildings instead of shining through.
+const glowVertex = `attribute vec4 aLight; attribute vec4 aTint;
+uniform mat4 uMatrix; uniform vec3 uEye; uniform float uHeight; uniform float uDay; uniform float uTime;
+varying mediump vec3 vTint;
+void main(){
+ vec3 delta=uEye-aLight.xyz;float d=max(length(delta),.01);
+ gl_Position=uMatrix*vec4(aLight.xyz+delta/d*.26,1.);
+ gl_PointSize=clamp(aLight.w*uHeight/d,2.,90.);
+ vTint=aTint.rgb*aTint.w*(1.-smoothstep(160.,600.,d))*mix(1.,.12,uDay)*(.94+.06*sin(uTime*.8+aLight.x+aLight.z));
+}`;
+const glowFragment = `precision mediump float; varying mediump vec3 vTint; uniform float uDetail;
+void main(){
+ vec2 p=gl_PointCoord*2.-1.;float r=dot(p,p);
+ float halo=exp(-r*5.)*(1.-smoothstep(.2,1.,r))*.4;
+ float core=exp(-r*85.);
+ float star=(exp(-abs(p.x)*65.-abs(p.y)*5.)+exp(-abs(p.y)*65.-abs(p.x)*5.))*.12*uDetail;
+ gl_FragColor=vec4(vTint,halo+core+star);
 }`;
 
 function shader(gl, type, source) {
@@ -189,14 +243,20 @@ export class Renderer {
     if (!this.gl) throw new Error('WebGL is unavailable. Enable hardware acceleration and reload to enter Vesper.');
     const gl = this.gl;
     const precision = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT)?.precision ? 'highp' : 'mediump';
-    this.sceneProgram = program(gl, vertexSource.replaceAll('mediump',precision), fragmentSource.replaceAll('mediump',precision), this.webgl2);
-    this.skyProgram = program(gl, skyVertex, skyFragment, this.webgl2);
-    this.locations = Object.fromEntries(['uMatrix','uEye','uFog','uSun','uDay','uVolume','uTime','uDetail','uRoom','uRoomHeight'].map(n => [n, gl.getUniformLocation(this.sceneProgram, n)]));
+    this.lightLimit=Math.max(1,Math.min(8,Math.floor(((gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS)||64)-12)/2)));
+    this.sceneProgram = program(gl, vertexSource.replaceAll('mediump',precision), fragmentSource.replaceAll('mediump',precision).replaceAll('LIGHT_COUNT',this.lightLimit), this.webgl2);
+    this.skyProgram = program(gl, skyVertex, skyFragment.replaceAll('mediump',precision), this.webgl2);
+    this.glowProgram = program(gl, glowVertex, glowFragment, this.webgl2);
+    this.locations = Object.fromEntries(['uMatrix','uEye','uFog','uSun','uDay','uVolume','uTime','uDetail','uRoom','uRoomHeight','uLightPosition','uLightColor'].map(n => [n, gl.getUniformLocation(this.sceneProgram, n)]));
+    this.glowLocations = Object.fromEntries(['uMatrix','uEye','uHeight','uDay','uTime','uDetail'].map(n=>[n,gl.getUniformLocation(this.glowProgram,n)]));
     this.attributes = ['aPosition','aNormal','aColor','aGlow'].map(n => gl.getAttribLocation(this.sceneProgram, n));
-    this.dynamic = gl.createBuffer(); this.sky = gl.createBuffer();
+    this.glowAttributes = ['aLight','aTint'].map(n=>gl.getAttribLocation(this.glowProgram,n));
+    this.dynamic = gl.createBuffer(); this.sky = gl.createBuffer(); this.glowBuffer=gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.sky); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,3,-1,-1,3]), gl.STATIC_DRAW);
     this.characters = new CharacterMeshes(models);
     this.chunks = []; this.details = new Map(); this.detailEye = null; this.quality = 1; this.volumetric = true; this.lost = false;
+    this.lights=[];this.nearLights=[];this.lightEye=null;
+    this.lightPositions=new Float32Array(this.lightLimit*4);this.lightColors=new Float32Array(this.lightLimit*4);
     this.build();
     canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); this.lost = true; window.dispatchEvent(new CustomEvent('graphicslost')); });
     canvas.addEventListener('webglcontextrestored', () => location.reload());
@@ -218,12 +278,49 @@ export class Renderer {
       this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d,20)/2,150,false));
     }
   }
+  updateLighting(eye) {
+    if(!this.lightEye||distance(eye,this.lightEye)>16){
+      this.lightEye=[...eye];
+      this.nearLights=this.lights.filter(l=>distance(eye,l.position)<640).sort((a,b)=>distance(eye,a.position)/a.size-distance(eye,b.position)/b.size);
+    }
+    const count=this.quality<=.5?Math.min(4,this.lightLimit):this.lightLimit;
+    const local=this.nearLights.filter(l=>l.radius>0&&distance(eye,l.position)<75).sort((a,b)=>distance(eye,a.position)/a.radius-distance(eye,b.position)/b.radius).slice(0,count);
+    this.lightPositions.fill(0);this.lightColors.fill(0);
+    for(const [i,l]of local.entries()){
+      const gain=l.strength*Math.min(1,Math.max(0,(75-distance(eye,l.position))/40));
+      this.lightPositions.set([...l.position,l.radius],i*4);
+      this.lightColors.set([...l.rgb.map(c=>c*gain),l.direction],i*4);
+    }
+    this.gl.uniform4fv(this.locations.uLightPosition,this.lightPositions);
+    this.gl.uniform4fv(this.locations.uLightColor,this.lightColors);
+  }
+  drawGlows(day,visible,height,time) {
+    const gl=this.gl,points=[],limit=this.quality<=.5?48:160;
+    for(const l of this.nearLights){
+      if(!visible({center:l.position,radius:l.size,range:600}))continue;
+      points.push(...l.position,l.size,...l.rgb,l.strength);
+      if(points.length/8>=limit)break;
+    }
+    if(!points.length)return;
+    gl.useProgram(this.glowProgram);
+    gl.uniformMatrix4fv(this.glowLocations.uMatrix,false,this.matrix);gl.uniform3fv(this.glowLocations.uEye,this.eye);
+    gl.uniform1f(this.glowLocations.uHeight,height);gl.uniform1f(this.glowLocations.uDay,day);
+    gl.uniform1f(this.glowLocations.uTime,this.reducedMotion?0:time);gl.uniform1f(this.glowLocations.uDetail,this.quality);
+    for(const a of this.attributes)gl.disableVertexAttribArray(a);
+    gl.bindBuffer(gl.ARRAY_BUFFER,this.glowBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(points),gl.DYNAMIC_DRAW);
+    for(const [i,a]of this.glowAttributes.entries()){gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,4,gl.FLOAT,false,32,i*16);}
+    gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);
+    gl.drawArrays(gl.POINTS,0,points.length/8);
+    gl.depthMask(true);gl.disable(gl.BLEND);
+    for(const a of this.glowAttributes)gl.disableVertexAttribArray(a);
+  }
   build() {
     const { data, buildings } = this.world, groups = new Map();
     for (const b of buildings) {
       const key = `${Math.floor(b.x / 240)},${Math.floor(b.z / 240)}`;
       if (!groups.has(key)) groups.set(key, { center: [Math.floor(b.x / 240) * 240 + 120, 50, Math.floor(b.z / 240) * 240 + 120], v: [] });
-      buildingExterior(groups.get(key).v,b,data,this.cityLife?.neighborhoods.get(this.world.district([b.x,0,b.z]).id)?.color);
+      buildingExterior(groups.get(key).v,b,data,this.lights);
+      this.lights.push(...buildingLights(b));
     }
     for (const g of groups.values()) this.upload(g.v, g.center, 180);
     const ground = [];
@@ -271,16 +368,20 @@ export class Renderer {
     for(const route of data.routes||[]){const v=[];routeGeometry(v,route);this.upload(v,route.start.map((n,i)=>(n+route.end[i])/2),distance(route.start,route.end)/2+route.width,700);}
     for(const biome of data.biomes||[])this.upload(biomeGeometry(biome),biome.center,biome.radius+30);
     const props=[];
+    tutorialGeometry(props,data);
     for(const l of data.landmarks) {
+      if(['training-pad','practice'].includes(l.kind))continue;
       const p=l.position;
       box(props,[p[0],p[1]+1.2,p[2]],[1.4,2.4,1.2],'#344c48');
       box(props,[p[0],p[1]+1.9,p[2]+.63],[1.1,.7,.06],l.color,.85);
       box(props,[p[0],p[1]+3.4,p[2]],[.14,2,.14],l.color,.9);
+      this.lights.push({position:[p[0],p[1]+4.45,p[2]],color:l.color,radius:8,direction:0,size:1.8,strength:.55});
     }
     for(const [x,z] of [[-32,32],[32,32],[-32,-32],[32,-32],[-8,60],[8,60]]) {
       box(props,[x,5,z],[.3,10,.3],'#46615b');
       box(props,[x,9.6,z],[4,.35,.35],'#bce1b4',.95);
       box(props,[x,.1,z],[4,.2,4],'#3c5650');
+      this.lights.push({position:[x,9.39,z],color:'#bce1b4',radius:19,direction:0,size:4,strength:1.1});
     }
     // A freestanding signal monument; all geometry is original and editable here.
     for(let i=0;i<7;i++) box(props,[0,4+i*2.2,-42],[18-i*1.5,.35,1.1],'#a1cfa3',.65,i*.16);
@@ -291,6 +392,7 @@ export class Renderer {
       neighborhoodDetails(v,neighborhood,neighborhood.sites.map(id=>data.landmarks.find(l=>l.id===id)));
       this.upload(v,center,65,220);
     }
+    for(const l of this.lights)l.rgb=color(l.color);
   }
   bind(buffer) {
     const gl=this.gl; gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
@@ -456,6 +558,7 @@ export class Renderer {
     const room=this.world.interiorAt(camera.eye)||this.world.interiorAt(camera.target);
     gl.uniform4fv(this.locations.uRoom,room?[room.x,room.z,room.w/2,room.d/2]:[0,0,-1,-1]);
     gl.uniform1f(this.locations.uRoomHeight,(this.world.data.interiors?.height||0)*3);
+    this.updateLighting(camera.eye);
     for(const chunk of [...this.chunks,...this.details.values()])if(visible(chunk)){this.bind(chunk.buffer);gl.drawArrays(gl.TRIANGLES,0,chunk.count);}
     const v=[],mist=[];this.shadows=mist;
     if(dungeon)this.dungeon(v,dungeon.catalog,dungeon.run,ghostTime);
@@ -482,6 +585,7 @@ export class Renderer {
       gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mist),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,mist.length/10);
       gl.depthMask(true);gl.disable(gl.BLEND);
     }
+    this.drawGlows(light.light,visible,height,time);
   }
   project(p) {return this.matrix?project(p,this.matrix,this.canvas.clientWidth,this.canvas.clientHeight):null;}
 }

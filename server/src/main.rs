@@ -5,11 +5,16 @@
 mod config;
 mod death;
 mod dungeons;
+mod economy;
 mod founders;
 mod ghostline;
+mod live_social;
+mod morality;
+mod progression;
 mod quests;
 mod social;
 mod terrain;
+mod tutorial;
 mod web;
 mod world_events;
 use ghostline::{GhostTrail, Ghostline};
@@ -54,7 +59,7 @@ fn bad(text: &'static str) -> ApiError {
 fn internal() -> ApiError {
     ApiError(
         StatusCode::INTERNAL_SERVER_ERROR,
-        "The server could not persist this change.",
+        "The server could not save this change. Please try again.",
     )
 }
 fn num(v: &Value) -> f64 {
@@ -93,6 +98,10 @@ fn valid_name(s: &str) -> bool {
     (2..=24).contains(&s.chars().count())
         && s.chars().all(|c| c.is_alphanumeric() || " _-".contains(c))
 }
+fn character_name_key(name: &str) -> String {
+    // Full case mappings also unify names such as Straße/STRASSE and final sigma.
+    name.trim().to_uppercase().to_lowercase()
+}
 fn read_json<T: for<'de> Deserialize<'de>>(path: impl AsRef<FsPath>) -> io::Result<T> {
     serde_json::from_slice(&fs::read(path)?).map_err(io::Error::other)
 }
@@ -125,10 +134,17 @@ struct Character {
     level: u32,
     xp: u64,
     #[serde(default)]
+    progression_version: u32,
+    #[serde(default)]
+    work_order: Option<progression::WorkOrder>,
+    #[serde(default)]
+    orders_completed: u32,
+    #[serde(default)]
     founder_halo: Option<u16>,
     #[serde(default)]
     founder_xp_remainder: u8,
-    credits: u64,
+    #[serde(alias = "credits")]
+    gold: u64,
     position: Vec3,
     yaw: f64,
     health: f64,
@@ -139,16 +155,30 @@ struct Character {
     resurrection_sickness: f64,
     medkits: u32,
     weapon_rank: u32,
+    #[serde(default)]
+    items: HashMap<String, u32>,
+    #[serde(default)]
+    equipment: HashMap<String, String>,
+    #[serde(default)]
+    buffs: HashMap<String, f64>,
+    #[serde(default)]
+    mob_kills: HashMap<String, u32>,
     talents: HashMap<String, u32>,
     active_quests: HashMap<String, u32>,
     #[serde(default)]
     quest_stages: HashMap<String, quests::Stage>,
     completed: Vec<String>,
     #[serde(default)]
+    morality: morality::State,
+    #[serde(default)]
     dungeon_history: HashMap<String, dungeons::History>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     dungeon_return: Option<Vec3>,
     intro_seen: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    tutorial_stage: Option<tutorial::Stage>,
+    #[serde(default)]
+    social_tutorial: live_social::Tutorial,
 }
 #[derive(Clone, Serialize, Deserialize)]
 struct StoredCharacter {
@@ -185,7 +215,8 @@ struct Objective {
 #[derive(Clone, Deserialize)]
 struct Reward {
     xp: u64,
-    credits: u64,
+    #[serde(alias = "credits")]
+    gold: u64,
 }
 #[derive(Clone, Deserialize)]
 struct Quest {
@@ -218,16 +249,30 @@ struct Ability {
     duration: f64,
     #[serde(default)]
     radius: f64,
+    #[serde(default)]
+    effect: String,
+}
+#[derive(Clone, Deserialize)]
+struct TalentRequirement {
+    id: String,
+    rank: u32,
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Talent {
     id: String,
     name: String,
+    branch: String,
     stat: String,
     amount: f64,
     level: u32,
     max_rank: u32,
+    row: u32,
+    column: u32,
+    branch_points: u32,
+    requires: Vec<TalentRequirement>,
+    #[serde(default)]
+    exclusive: String,
 }
 #[derive(Clone, Deserialize)]
 struct Npc {
@@ -294,8 +339,12 @@ struct Interiors {
 #[serde(rename_all = "camelCase")]
 struct Map {
     seed: u32,
+    city_radius: f64,
+    districts: Vec<live_social::Zone>,
+    biomes: Vec<live_social::Zone>,
     bounds: f64,
     spawn: Vec3,
+    tutorial: tutorial::Area,
     building_grid: Grid,
     interiors: Option<Interiors>,
     platforms: Vec<Platform>,
@@ -307,6 +356,8 @@ struct Map {
     graveyards: Vec<death::Graveyard>,
 }
 struct Content {
+    morality: morality::Catalog,
+    economy: economy::Catalog,
     dungeons: dungeons::Catalog,
     world_events: world_events::Catalog,
     rules: Value,
@@ -337,6 +388,8 @@ impl Content {
                 "talents",
                 "abilities",
                 "enemies",
+                "economy",
+                "morality",
                 "npcs",
                 "intro",
                 "audio",
@@ -350,7 +403,9 @@ impl Content {
         }
         let quests: Vec<Quest> = read_json(dir.join("quests.json"))?;
         let values: Vec<Value> = read_json(dir.join("quests.json"))?;
-        let content = Self {
+        let mut content = Self {
+            morality: read_json(dir.join("morality.json"))?,
+            economy: read_json(dir.join("economy.json"))?,
             dungeons: read_json(dir.join("dungeons.json"))?,
             world_events: read_json(dir.join("events.json"))?,
             rules: read_json(dir.join("rules.json"))?,
@@ -367,18 +422,24 @@ impl Content {
             map: read_json(dir.join("world.json"))?,
             enemies: read_json(dir.join("enemies.json"))?,
         };
+        content.economy.prepare()?;
         content.validate()?;
         Ok(content)
     }
     fn validate(&self) -> io::Result<()> {
+        live_social::validate(&self.map)?;
         if self.map.routes.len() > 128 || self.map.routes.iter().any(|r| !r.valid(self.map.bounds))
         {
             return Err(io::Error::other("Invalid city stairs, ramp, or hill"));
         }
         self.dungeons.validate(self)?;
+        self.economy.validate(self)?;
+        progression::validate(self)?;
         self.world_events.validate(self)?;
         quests::validate(self)?;
+        self.morality.validate(self)?;
         death::validate(self)?;
+        tutorial::validate(self)?;
         let ghost_rule = |key| self.rule("ghostline", key);
         if ![
             "historySeconds",
@@ -945,6 +1006,25 @@ impl Database {
     fn character_path(&self, id: &str) -> PathBuf {
         self.root.join("characters").join(format!("{id}.json"))
     }
+    // The caller holds mutation through both this check and character/account writes.
+    // Read every saved character, including characters that have never joined a shard.
+    fn ensure_name_available(&self, name: &str) -> ResultApi<()> {
+        let key = character_name_key(name);
+        for entry in fs::read_dir(self.root.join("characters")).map_err(|_| internal())? {
+            let path = entry.map_err(|_| internal())?.path();
+            if path.extension().and_then(|s| s.to_str()) != Some("json") {
+                continue;
+            }
+            let saved: StoredCharacter = read_json(path).map_err(|_| internal())?;
+            if character_name_key(&saved.character.name) == key {
+                return Err(ApiError(
+                    StatusCode::CONFLICT,
+                    "That callsign (character name) is already taken. Choose another name; capitalization does not make it unique.",
+                ));
+            }
+        }
+        Ok(())
+    }
     fn account(&self, name: &str) -> io::Result<Account> {
         let mut account: Account = read_json(self.account_path(name))?;
         migrate_version(&mut account.version)?;
@@ -964,6 +1044,7 @@ impl Database {
             }
         }
         // Ownership comes from the account, including after reconnect or character recreation.
+        progression::migrate(&mut saved.character)?;
         saved.character.founder_halo = self.account(&saved.owner)?.founder_halo;
         Ok(saved)
     }
@@ -1106,7 +1187,7 @@ fn rate_limit(app: &App, ip: IpAddr) -> ResultApi<()> {
     if rates.len() >= 10000 && !rates.contains_key(&ip) {
         return Err(ApiError(
             StatusCode::TOO_MANY_REQUESTS,
-            "Authentication is busy. Try again later.",
+            "Sign-in is busy. Try again later.",
         ));
     }
     let rate = rates.entry(ip).or_insert(Rate {
@@ -1145,7 +1226,7 @@ async fn auth(
     let permit = app.auth_slots.clone().try_acquire_owned().map_err(|_| {
         ApiError(
             StatusCode::TOO_MANY_REQUESTS,
-            "Authentication is busy. Try again shortly.",
+            "Sign-in is busy. Try again shortly.",
         )
     })?;
     let db = app.db.clone();
@@ -1307,15 +1388,21 @@ async fn create_character(
 ) -> ResultApi<Json<Value>> {
     mutation(&headers, &app)?;
     let (_, session) = authenticate(&headers, &app)?;
-    if !valid_name(new.name.trim())
-        || !app.content.races.iter().any(|r| text(&r["id"]) == new.race)
+    if !valid_name(new.name.trim()) {
+        return Err(bad(
+            "Your callsign is your character name. Use 2–24 letters, numbers, spaces, hyphens, or underscores.",
+        ));
+    }
+    if !app.content.races.iter().any(|r| text(&r["id"]) == new.race)
         || !app
             .content
             .factions
             .iter()
             .any(|f| text(&f["id"]) == new.faction)
     {
-        return Err(bad("Choose a valid name, lineage, and faction."));
+        return Err(bad(
+            "Choose a valid character name, character type, and faction.",
+        ));
     }
     let mut c = Character {
         version: DATA_VERSION,
@@ -1326,10 +1413,13 @@ async fn create_character(
         faction: new.faction,
         level: 0,
         xp: 0,
+        progression_version: progression::VERSION,
+        work_order: None,
+        orders_completed: 0,
         founder_halo: None,
         founder_xp_remainder: 0,
-        credits: app.content.r("startingCredits") as u64,
-        position: app.content.map.spawn,
+        gold: app.content.r("startingGold") as u64,
+        position: app.content.map.tutorial.spawn,
         yaw: 0.0,
         health: 0.0,
         energy: 0.0,
@@ -1337,13 +1427,20 @@ async fn create_character(
         resurrection_sickness: 0.0,
         medkits: app.content.r("startingMedkits") as u32,
         weapon_rank: 0,
+        items: HashMap::new(),
+        equipment: HashMap::new(),
+        buffs: HashMap::new(),
+        mob_kills: HashMap::new(),
         talents: HashMap::new(),
         active_quests: HashMap::new(),
         quest_stages: HashMap::new(),
         completed: vec![],
+        morality: morality::State::default(),
         dungeon_history: HashMap::new(),
         dungeon_return: None,
         intro_seen: false,
+        tutorial_stage: Some(tutorial::Stage::Move),
+        social_tutorial: live_social::Tutorial::default(),
     };
     let stats = Stats::new(&c, &app.content);
     c.health = stats.health;
@@ -1363,9 +1460,10 @@ async fn create_character(
         if account.characters.len() >= 8 {
             return Err(ApiError(
                 StatusCode::CONFLICT,
-                "All eight character slots are occupied.",
+                "You already have eight characters. Delete one to make room.",
             ));
         }
+        db.ensure_name_available(&saved.character.name)?;
         saved.character.founder_halo = account.founder_halo;
         db.save_character(&saved).map_err(|_| internal())?;
         account.characters.push(saved.character.id.clone());
@@ -1429,6 +1527,13 @@ struct Stats {
     shield: f64,
     healing: f64,
     regen: f64,
+    armor: f64,
+    haste: f64,
+    efficiency: f64,
+    penetration: f64,
+    leech: f64,
+    combo: f64,
+    gold_find: f64,
 }
 impl Stats {
     fn new(c: &Character, data: &Content) -> Self {
@@ -1447,9 +1552,20 @@ impl Stats {
         for t in &data.talents {
             s.add(
                 &t.stat,
-                f64::from(*c.talents.get(&t.id).unwrap_or(&0)) * t.amount,
+                f64::from(c.talents.get(&t.id).copied().unwrap_or(0).min(t.max_rank)) * t.amount,
             );
         }
+        economy::apply_stats(c, data, &mut s);
+        morality::apply_stats(c, data, &mut s);
+        s.speed = s.speed.min(1.6);
+        s.crit = s.crit.min(60.0);
+        s.armor = s.armor.min(0.6);
+        s.haste = s.haste.min(0.4);
+        s.efficiency = s.efficiency.min(0.4);
+        s.penetration = s.penetration.min(0.16);
+        s.leech = s.leech.min(0.2);
+        s.combo = s.combo.min(1.0);
+        s.gold_find = s.gold_find.min(0.5);
         if c.resurrection_sickness > 0.0 {
             s.damage *= data.rule("death", "sicknessDamageMultiplier");
             s.speed *= data.rule("death", "sicknessSpeedMultiplier");
@@ -1466,6 +1582,13 @@ impl Stats {
             "shield" => self.shield += amount,
             "healing" => self.healing += amount,
             "regen" => self.regen += amount,
+            "armor" => self.armor += amount,
+            "haste" => self.haste += amount,
+            "efficiency" => self.efficiency += amount,
+            "penetration" => self.penetration += amount,
+            "leech" => self.leech += amount,
+            "combo" => self.combo += amount,
+            "goldFind" => self.gold_find += amount,
             _ => {}
         }
     }
@@ -1495,8 +1618,8 @@ struct Enemy {
     speed: f64,
     #[serde(skip)]
     attack_at: f64,
-    #[serde(skip)]
     stun_until: f64,
+    exposed_until: f64,
     #[serde(skip)]
     respawn_at: f64,
     #[serde(skip)]
@@ -1512,6 +1635,7 @@ struct Movement {
     sprint: bool,
 }
 struct Player {
+    live_social: live_social::Session,
     instance: Option<u64>,
     owner: String,
     c: Character,
@@ -1554,7 +1678,11 @@ fn damage_enemy(
     from: Vec3,
     multiplier: f64,
 ) {
-    if e.health <= 0.0 || e.instance != p.instance {
+    if e.health <= 0.0
+        || e.instance != p.instance
+        || p.instance.is_none()
+            && (data.map.tutorial.contains(p.c.position) || data.map.tutorial.contains(e.position))
+    {
         return;
     }
     let stats = Stats::new(&p.c, data);
@@ -1562,11 +1690,29 @@ fn damage_enemy(
     let miss = (data.rule("combat", "miss") + f64::from(e.level.saturating_sub(p.c.level)) * 2.0)
         .clamp(0.0, 65.0);
     let critical = roll > data.rule("combat", "die") - stats.crit;
+    let exposed = e.exposed_until > time;
+    let stun_combo = a.id == "lance" && e.stun_until > time;
+    let execute =
+        a.effect == "execute" && e.health / e.max_health <= data.rule("combat", "executeThreshold");
+    let combo = if exposed {
+        data.rule("combat", "exposeMultiplier") + stats.combo
+    } else {
+        0.0
+    } + if stun_combo {
+        data.rule("combat", "stunComboMultiplier") + stats.combo
+    } else {
+        0.0
+    } + if execute {
+        data.rule("combat", "executeMultiplier") + stats.combo
+    } else {
+        0.0
+    };
     let power = (a.power
         + f64::from(p.c.level) * 3.0
         + f64::from(p.c.weapon_rank) * data.rule("inventory", "weaponUpgradeDamage"))
         * stats.damage
-        * multiplier;
+        * multiplier
+        * (1.0 + combo);
     let damage = if roll <= miss {
         0.0
     } else {
@@ -1576,11 +1722,30 @@ fn damage_enemy(
             } else {
                 1.0
             }
-            * (1.0 - data.rule("combat", "armorReduction")))
+            * (1.0 - (data.rule("combat", "armorReduction") - stats.penetration).max(0.0)))
         .round()
         .max(1.0)
     };
+    let dealt = damage.min(e.health);
     e.health = (e.health - damage).max(0.0);
+    if damage > 0.0 {
+        if stun_combo {
+            e.stun_until = 0.0;
+        }
+        if a.id == "echo" && exposed {
+            e.exposed_until = 0.0;
+        }
+        if a.effect == "expose" {
+            e.exposed_until = time + data.rule("combat", "exposeSeconds");
+        }
+        let recovery = stats.leech
+            + if a.effect == "siphon" {
+                data.rule("combat", "siphonFraction")
+            } else {
+                0.0
+            };
+        p.c.health = (p.c.health + dealt * recovery).min(stats.health);
+    }
     p.last_combat = time;
     p.dirty = true;
     e.aggro = Some((p.c.id.clone(), time + 6.0));
@@ -1589,7 +1754,7 @@ fn damage_enemy(
     }
     emit(
         p,
-        json!({"type":"hit","roll":roll,"damage":damage,"critical":critical&&damage>0.0,"target":e.id,"position":e.position,"color":a.color,"ability":a.name}),
+        json!({"type":"hit","roll":roll,"damage":damage,"combo":combo>0.0&&damage>0.0,"critical":critical&&damage>0.0,"target":e.id,"position":e.position,"color":a.color,"ability":a.name}),
     );
     emit(
         p,
@@ -1598,13 +1763,18 @@ fn damage_enemy(
     if e.health <= 0.0 && e.instance.is_none() && e.event.is_none() {
         e.respawn_at = time + data.rule("combat", "enemyRespawnSeconds");
         progress(p, data, "kill", &e.kind);
+        progression::order_progress(&mut p.c, e, data);
         let xp = (data.rule("xp", "killBase")
             + f64::from(e.level) * data.rule("xp", "killPerLevel")
             - f64::from(p.c.level.saturating_sub(e.level)) * 4.0)
             .max(3.0) as u64;
         let xp = gain_xp(p, data, xp);
-        p.c.credits += 5 + u64::from(e.level);
-        emit(p, json!({"type":"reward","xp":xp,"credits":5+e.level}));
+        let gold = economy::grant_gold(
+            &mut p.c,
+            ((5.0 + f64::from(e.level)) * (1.0 + stats.gold_find)).floor() as u64,
+        );
+        emit(p, json!({"type":"reward","xp":xp,"gold":gold}));
+        economy::loot(p, e, data, seed);
     }
 }
 fn quest_event(p: &Player, data: &Content, q: &Quest, kind: &str) {
@@ -1617,9 +1787,7 @@ fn gain_xp(p: &mut Player, data: &Content, amount: u64) -> u64 {
     let (amount, remainder) = founders::xp_reward(&p.c, data, amount);
     p.c.founder_xp_remainder = remainder;
     p.c.xp = p.c.xp.saturating_add(amount);
-    let cost = |level: u32| {
-        (data.rule("xp", "base") + f64::from(level) * data.rule("xp", "perLevel")) as u64
-    };
+    let cost = |level: u32| progression::xp_cost(level, data);
     while p.c.level < data.r("levelCap") as u32 && p.c.xp >= cost(p.c.level) {
         p.c.xp -= cost(p.c.level);
         p.c.level += 1;
@@ -1649,6 +1817,7 @@ fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
     }
     if p.c.health > 0.0 {
         p.c.resurrection_sickness = (p.c.resurrection_sickness - dt).max(0.0);
+        economy::tick(&mut p.c, data, dt);
     }
     if time - p.last_input > 0.3 {
         p.input = Movement {
@@ -1933,6 +2102,7 @@ impl Shard {
                     speed: num(&e["speed"]),
                     attack_at: 0.0,
                     stun_until: 0.0,
+                    exposed_until: 0.0,
                     respawn_at: 0.0,
                     aggro: None,
                 }
@@ -1974,7 +2144,7 @@ impl Shard {
                 _=interval.tick()=>{self.tick();if self.ticks%2==0{self.snapshots();}if self.ticks%(self.content.rule("network","checkpointSeconds") as u64*20).max(20)==0{self.checkpoint();}}
                 command=commands.recv()=>{match command{
                     Some(Command::Join{mut stored,output,reply})=>{
-                        if self.players.len()>=self.content.rule("network","maxPlayersPerShard") as usize{let _=reply.send(Err("This world shard is full. Try again later.".into()));continue;}
+                        if self.players.len()>=self.content.rule("network","maxPlayersPerShard") as usize{let _=reply.send(Err("This copy of the world is full. Try again later.".into()));continue;}
                         let db=self.db.clone();let data=self.content.clone();let registering=stored.clone();
                         let registration=tokio::task::spawn_blocking(move || {
                             let request_id=token()?;
@@ -1982,7 +2152,7 @@ impl Shard {
                         }).await;
                         match registration {
                             Ok(Ok((updated,_)))=>stored=updated,
-                            _=>{let _=reply.send(Err("Community storage is unavailable. Try again after storage recovers.".into()));continue;}
+                            _=>{let _=reply.send(Err("The server cannot load social features right now. Try again later.".into()));continue;}
                         }
                         let clock=SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs_f64();
                         let cooldowns=stored.cooldowns.into_iter().map(|(id,ready)|(id,self.time+(ready-clock).max(0.0))).collect();
@@ -1990,13 +2160,14 @@ impl Shard {
                         let mut c=stored.character;
                         if let Some(destination)=c.dungeon_return.take(){c.position=destination;c.health=Stats::new(&c,&self.content).health;c.revision+=1;}
                         death::restore(&mut c, &self.content);
+                        let stats=Stats::new(&c,&self.content);c.health=c.health.min(stats.health);c.energy=c.energy.min(stats.energy);
                         let cleared=self.world.clear_saved_position(c.position);
                         let mut relocated=cleared!=c.position;c.position=cleared;
                         if let Some(recovery)=&mut c.death{let corpse=self.world.clear_saved_position(recovery.corpse);relocated|=corpse!=recovery.corpse;recovery.corpse=corpse;}
                         if relocated{c.revision+=1;}
                         let id=c.id.clone();let yaw=c.yaw;
                         let previous_position=c.position;
-                        self.players.insert(id,Player{instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:relocated});
+                        self.players.insert(id,Player{live_social:live_social::Session::default(),instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:relocated});
                         let _=reply.send(Ok(()));self.snapshots();
                     }
                     Some(Command::Transfer{player,source_time,request,reply})=>self.accept_dungeon_transfer(player,source_time,request,reply),
@@ -2034,12 +2205,12 @@ impl Shard {
             } else {
                 notice(
                     p,
-                    "Persistence is busy. Keep your connection open while the server catches up.",
+                    "The server is still saving your progress. Stay connected while it finishes.",
                 );
             }
         }
     }
-    fn snapshots(&self) {
+    fn snapshots(&mut self) {
         if self.players.is_empty() {
             return;
         }
@@ -2047,6 +2218,7 @@ impl Shard {
         let radius = self.content.rule("network", "interestRadius");
         let cell = 80.0;
         let reach = (radius / cell).ceil() as i32;
+        let mut delivered_chat = Vec::new();
         let mut buckets: HashMap<(i32, i32), Vec<&Player>> = HashMap::new();
         for p in self.players.values() {
             buckets
@@ -2116,7 +2288,18 @@ impl Shard {
                     .then_with(|| a.owner.cmp(&b.owner))
             });
             ghosts.truncate(self.content.rule("ghostline", "maxVisible") as usize);
-            let _=p.output.try_send(json!({"type":"snapshot","version":DATA_VERSION,"character":p.c,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id),"worldEvents":self.world_event_snapshot(p)}));
+            let delivered=p.output.try_send(json!({"type":"snapshot","social":p.live_social.pending,"chatContext":live_social::context(&self.content.map,p),"version":DATA_VERSION,"character":p.c,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id),"worldEvents":self.world_event_snapshot(p)})).is_ok();
+            if delivered && !p.live_social.pending.is_empty() {
+                delivered_chat.push(p.c.id.clone());
+            }
+        }
+        for id in delivered_chat {
+            self.players
+                .get_mut(&id)
+                .unwrap()
+                .live_social
+                .pending
+                .clear();
         }
     }
     fn tick(&mut self) {
@@ -2127,11 +2310,14 @@ impl Shard {
             p.c.revision += 1;
             p.previous_position = p.c.position;
             movement(p, &self.content, &self.world, self.time, 0.05);
+            tutorial::tick(p, &self.content, &self.world);
         }
         for e in &mut self.enemies {
             if e.health <= 0.0 {
                 if e.instance.is_none() && e.event.is_none() && self.time >= e.respawn_at {
                     e.health = e.max_health;
+                    e.exposed_until = 0.0;
+                    e.stun_until = 0.0;
                     e.position = e.home;
                     e.aggro = None;
                 }
@@ -2143,6 +2329,8 @@ impl Shard {
             if dist(e.position, e.home) > self.content.rule("combat", "leash") {
                 e.position = e.home;
                 e.health = e.max_health;
+                e.exposed_until = 0.0;
+                e.stun_until = 0.0;
                 e.aggro = None;
                 continue;
             }
@@ -2157,6 +2345,7 @@ impl Shard {
                 .filter(|p| {
                     p.c.health > 0.0
                         && p.instance == e.instance
+                        && (p.instance.is_some() || !self.content.map.tutorial.contains(p.c.position))
                         && (p.c.position[1] - e.position[1]).abs() < 4.0
                         && (e.instance.is_some()
                             || dist(p.c.position, e.position)
@@ -2188,6 +2377,7 @@ impl Shard {
                             next[axis] +=
                                 (p.c.position[axis] - e.position[axis]) / distance * e.speed * 0.05;
                             if !self.world.collides(next, 0.65)
+                                && (e.instance.is_some() || !self.content.map.tutorial.contains(next))
                                 && (e.event.is_none()
                                     || (self.world.floor(
                                         next[0],
@@ -2211,6 +2401,7 @@ impl Shard {
                         } else {
                             (e.damage + f64::from(e.level) * 2.0).round()
                         };
+                        let damage = damage * (1.0 - Stats::new(&p.c, &self.content).armor);
                         let absorbed = p.shield.min(damage);
                         p.shield -= absorbed;
                         p.c.health = (p.c.health - damage + absorbed).max(0.0);
@@ -2247,6 +2438,10 @@ impl Shard {
         }
     }
     fn action(&mut self, id: &str, value: &Value) {
+        if matches!(text(&value["type"]), "chat" | "emote") {
+            self.live_social_action(id, value);
+            return;
+        }
         if text(&value["type"]) == "worldEvent" {
             self.world_event_action(id, value);
             return;
@@ -2304,11 +2499,16 @@ impl Shard {
         let data = &self.content;
         let kind = text(&value["type"]);
         if p.instance.is_some() && matches!(kind, "quest" | "interact" | "lift" | "buy") {
-            notice(p, "Use the expedition casebook and recovery station.");
+            notice(
+                p,
+                "Press G for dungeon details. Use the recovery station to heal.",
+            );
             return;
         }
         let id = text(&value["id"]);
         match kind {
+            "moralGear" => morality::equip(p, data, id),
+            "workOrder" => progression::order_action(p, data, value),
             "ability" => {
                 let Some(a) = data.abilities.iter().find(|a| a.id == id) else {
                     return;
@@ -2321,8 +2521,22 @@ impl Shard {
                 if self.time < *p.cooldowns.get(id).unwrap_or(&0.0) || self.time < p.global_ready {
                     return;
                 }
-                if p.c.energy < a.cost {
+                let energy_cost = a.cost * (1.0 - stats.efficiency);
+                if p.c.energy < energy_cost {
                     notice(p, "Not enough energy.");
+                    return;
+                }
+                if text(&value["target"]) == data.map.tutorial.target
+                    && matches!(a.kind.as_str(), "damage" | "stun" | "area")
+                {
+                    tutorial::practice(p, data, &self.world, a, self.time);
+                    return;
+                }
+                if p.instance.is_none()
+                    && data.map.tutorial.contains(p.c.position)
+                    && matches!(a.kind.as_str(), "damage" | "stun" | "area" | "ghostline")
+                {
+                    notice(p, "This is a safe training area. Select the practice target and use Shoot, or leave the courtyard to fight.");
                     return;
                 }
                 let target = self.enemies.iter().position(|e| {
@@ -2333,7 +2547,10 @@ impl Shard {
                         && self.world.visible(p.c.position, e.position)
                 });
                 if matches!(a.kind.as_str(), "damage" | "stun" | "area") && target.is_none() {
-                    notice(p, "Choose a visible target within range.");
+                    notice(
+                        p,
+                        "Select an enemy, move closer, and make sure nothing blocks your view.",
+                    );
                     return;
                 }
                 let ghost = if a.kind == "ghostline" {
@@ -2343,7 +2560,7 @@ impl Shard {
                     let Some(ghost) = p.ghost_trail.release(&p.c, self.time, data) else {
                         notice(
                             p,
-                            "Ghostline needs a fresh route: move at least 12 m over 2 seconds.",
+                            "Move at least 12 m over at least 2 seconds, then use Ghostline.",
                         );
                         return;
                     };
@@ -2351,13 +2568,17 @@ impl Shard {
                 } else {
                     None
                 };
-                p.c.energy -= a.cost;
-                p.cooldowns.insert(id.to_owned(), self.time + a.cooldown);
+                p.c.energy -= energy_cost;
+                p.cooldowns
+                    .insert(id.to_owned(), self.time + a.cooldown * (1.0 - stats.haste));
                 p.global_ready = self.time + data.rule("combat", "globalCooldown");
                 p.dirty = true;
                 if let Some(ghost) = ghost {
                     self.ghostlines.insert(p.c.id.clone(), ghost);
-                    notice(p, "Ghostline released. Cross the cyan runner to braid.");
+                    notice(
+                        p,
+                        "Ghostline is active. Touch your moving blue ghost to blast enemies.",
+                    );
                     emit(p, json!({"type":"sound","name":"surge"}));
                 } else if a.kind == "heal" {
                     let power = a.power + f64::from(p.c.level) * 3.0 + stats.healing;
@@ -2441,17 +2662,29 @@ impl Shard {
                         .is_some_and(|v| *v >= q.objective.count)
                     && !p.c.completed.iter().any(|s| s == id)
                 {
+                    let settlement =
+                        match morality::settle(&mut p.c, data, id, text(&value["choice"])) {
+                            Ok(settlement) => settlement,
+                            Err(reason) => {
+                                notice(p, reason);
+                                return;
+                            }
+                        };
                     p.c.active_quests.remove(id);
                     p.c.quest_stages.remove(id);
                     p.c.completed.push(id.to_owned());
-                    p.c.credits += q.reward.credits;
+                    let gold = economy::grant_gold(
+                        &mut p.c,
+                        q.reward.gold * settlement.gold_percent / 100,
+                    );
                     let xp = gain_xp(p, data, q.reward.xp);
+                    p.dirty = true;
                     emit(
                         p,
-                        json!({"type":"questComplete","quest":data.quest_values.get(&q.id),"xp":xp}),
+                        json!({"type":"questComplete","quest":data.quest_values.get(&q.id),"xp":xp,"gold":gold,"outcome":settlement.outcome,"choice":value["choice"]}),
                     );
                 } else {
-                    notice(p, "This contract is not ready.");
+                    notice(p, "Finish the quest steps before choosing an ending.");
                 }
             }
             "interact" => {
@@ -2464,8 +2697,12 @@ impl Shard {
                         && self.world.visible(p.c.position, l.position)
                 }) {
                     p.last_interact = self.time;
+                    if tutorial::interact(p, data, id) {
+                        self.ghostlines.remove(&p.c.id);
+                        return;
+                    }
                     progress(p, data, "interact", &l.id);
-                    notice(p, &format!("{} · connection established", l.name));
+                    notice(p, &format!("{} · record read", l.name));
                 } else {
                     notice(p, "Move closer to the terminal.");
                 }
@@ -2492,17 +2729,16 @@ impl Shard {
             }
             "talent" => {
                 if let Some(t) = data.talents.iter().find(|t| t.id == id) {
-                    let spent: u32 = p.c.talents.values().sum();
                     let rank = *p.c.talents.get(id).unwrap_or(&0);
-                    if p.c.level >= t.level
-                        && spent < p.c.level / data.rule("talents", "levelsPerPoint") as u32
-                        && rank < t.max_rank
-                    {
+                    if progression::can_learn(&p.c, data, t) {
                         p.c.talents.insert(id.to_owned(), rank + 1);
                         p.dirty = true;
                         notice(p, &format!("{} improved", t.name));
                     } else {
-                        notice(p, "No talent point is available for that node.");
+                        notice(
+                            p,
+                            "Open Talents [T] to see the required level, points, and earlier talents.",
+                        );
                     }
                 }
             }
@@ -2541,8 +2777,9 @@ impl Shard {
                 } else {
                     return;
                 };
-                if p.c.credits < price {
-                    notice(p, "Not enough credits.");
+                let price = morality::vendor_price(&p.c, price);
+                if p.c.gold < price {
+                    notice(p, "Not enough gold.");
                     return;
                 }
                 if item == "medkit" {
@@ -2558,7 +2795,7 @@ impl Shard {
                     }
                     p.c.weapon_rank += 1;
                 }
-                p.c.credits -= price;
+                p.c.gold -= price;
                 p.dirty = true;
                 emit(p, json!({"type":"sound","name":"confirm"}));
             }
@@ -2615,7 +2852,7 @@ async fn world_socket(mut socket: WebSocket, app: Arc<App>, token: String, sessi
         if stored.owner != session.username {
             return Err(ApiError(
                 StatusCode::FORBIDDEN,
-                "Character ownership does not match.",
+                "This character belongs to another account.",
             ));
         }
         leases.insert(character_id);
@@ -2887,6 +3124,23 @@ mod tests {
         assert!(!valid_id("../../data"));
         assert!(valid_name("Oru-7"));
         assert!(!valid_name("<script>"));
+    }
+    #[test]
+    fn character_names_ignore_case_and_outer_whitespace() {
+        for (name, existing) in [
+            ("  EcHo  ", "echo"),
+            ("ÉCHO", "écho"),
+            ("ORU-7", "Oru-7"),
+            ("Straße", "STRASSE"),
+            ("οσ", "ος"),
+        ] {
+            assert_eq!(character_name_key(name), character_name_key(existing));
+        }
+        assert_ne!(character_name_key("Echo_2"), character_name_key("Echo-2"));
+        assert_ne!(character_name_key("Echo 2"), character_name_key("Echo2"));
+        assert!(!valid_name("  ".trim()));
+        assert!(!valid_name("a"));
+        assert!(!valid_name(&"a".repeat(25)));
     }
     #[test]
     fn map_and_content_are_consistent() {

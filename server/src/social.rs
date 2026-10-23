@@ -3,7 +3,11 @@ use super::*;
 use ed25519_dalek::{Signer, SigningKey};
 
 const PAGE: usize = 40;
-const MAX_CREDITS: u64 = 9_000_000_000;
+const MAX_GOLD: u64 = economy::MAX_GOLD;
+
+fn legacy_auction_item() -> String {
+    "medkit".into()
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 struct KeyFile {
@@ -125,6 +129,8 @@ struct Auction {
     version: u32,
     id: u64,
     seller: String,
+    #[serde(default = "legacy_auction_item")]
+    item: String,
     quantity: u32,
     minimum: u64,
     buyout: u64,
@@ -138,8 +144,11 @@ struct Delivery {
     version: u32,
     id: u64,
     recipient: String,
-    credits: u64,
+    #[serde(alias = "credits")]
+    gold: u64,
     medkits: u32,
+    #[serde(default)]
+    items: HashMap<String, u32>,
     reason: String,
     claimed: bool,
 }
@@ -227,7 +236,7 @@ impl SocialState {
         self.sequence += 1;
         self.sequence
     }
-    fn blocked(&self, a: &str, b: &str) -> bool {
+    pub(super) fn blocked(&self, a: &str, b: &str) -> bool {
         self.blocks.get(a).is_some_and(|s| s.contains(b))
             || self.blocks.get(b).is_some_and(|s| s.contains(a))
     }
@@ -260,17 +269,33 @@ impl SocialState {
         }
         false
     }
-    fn deliver(&mut self, recipient: String, credits: u64, medkits: u32, reason: &str) {
+    fn deliver(&mut self, recipient: String, gold: u64, medkits: u32, reason: &str) {
         let id = self.next();
         self.deliveries.push(Delivery {
             version: DATA_VERSION,
             id,
             recipient,
-            credits,
+            gold,
             medkits,
+            items: HashMap::new(),
             reason: reason.into(),
             claimed: false,
         });
+    }
+    fn deliver_item(&mut self, recipient: String, item: &str, quantity: u32, reason: &str) {
+        self.deliver(
+            recipient,
+            0,
+            if item == "medkit" { quantity } else { 0 },
+            reason,
+        );
+        if item != "medkit" {
+            self.deliveries
+                .last_mut()
+                .unwrap()
+                .items
+                .insert(item.into(), quantity);
+        }
     }
     fn settle(&mut self, index: usize) {
         let a = self.auctions[index].clone();
@@ -281,10 +306,10 @@ impl SocialState {
             // A 5% sink supports the economy. Bid escrow was already debited durably.
             let fee = a.bid.div_ceil(20);
             self.deliver(a.seller, a.bid - fee, 0, "Auction proceeds (5% market fee)");
-            self.deliver(buyer, 0, a.quantity, "Auction purchase");
+            self.deliver_item(buyer, &a.item, a.quantity, "Auction purchase");
             self.auctions[index].status = "sold".into();
         } else {
-            self.deliver(a.seller, 0, a.quantity, "Expired auction returned");
+            self.deliver_item(a.seller, &a.item, a.quantity, "Expired auction returned");
             self.auctions[index].status = "expired".into();
         }
     }
@@ -346,6 +371,9 @@ impl SocialState {
         );
         match kind {
             "register" => {}
+            "equip" | "unequip" | "consume" | "craft" | "sell" | "salvage" | "respec" => {
+                return economy::action(c, request, data);
+            }
             "chat" | "dm" => {
                 let body = bounded_text(&request["body"], 1, 1000)?;
                 let target = text(&request["target"]);
@@ -486,16 +514,27 @@ impl SocialState {
                 {
                     return Err(bad("At most 20 active auctions per character."));
                 }
-                let quantity = number(request, "quantity", 1, u64::from(c.medkits))? as u32;
+                let item_id = request.get("item").map_or("medkit", |v| text(v));
+                let item = data
+                    .economy
+                    .item(item_id)
+                    .ok_or_else(|| bad("Unknown or untradeable item."))?;
+                let quantity = number(
+                    request,
+                    "quantity",
+                    1,
+                    u64::from(economy::count(c, item_id)),
+                )? as u32;
                 let minimum = number(request, "minimum", 1, 1_000_000)?;
                 let buyout = number(request, "buyout", minimum, 1_000_000)?;
                 let hours = number(request, "hours", 1, 48)?;
-                c.medkits -= quantity;
+                economy::remove(c, item_id, quantity)?;
                 let auction = self.next();
                 self.auctions.push(Auction {
                     version: DATA_VERSION,
                     id: auction,
                     seller: id,
+                    item: item.id.clone(),
                     quantity,
                     minimum,
                     buyout,
@@ -516,9 +555,11 @@ impl SocialState {
                 let a = self.auctions[index].clone();
                 if kind == "auction_cancel" {
                     if a.seller != id || a.bidder.is_some() {
-                        return Err(bad("Only an unbid auction's seller may cancel it."));
+                        return Err(bad(
+                            "You can cancel only your own listing, and only before someone bids.",
+                        ));
                     }
-                    self.deliver(id, 0, a.quantity, "Cancelled auction returned");
+                    self.deliver_item(id, &a.item, a.quantity, "Cancelled auction returned");
                     self.auctions[index].status = "cancelled".into();
                 } else {
                     if a.seller == id {
@@ -535,12 +576,17 @@ impl SocialState {
                         0
                     };
                     let cost = amount - held;
-                    if c.credits < cost {
-                        return Err(bad("Not enough credits."));
+                    if c.gold < cost {
+                        return Err(bad("Not enough gold."));
                     }
-                    c.credits -= cost;
+                    c.gold -= cost;
                     if let Some(previous) = a.bidder.filter(|p| p != &id) {
-                        self.deliver(previous, a.bid, 0, "Outbid: escrow refunded");
+                        self.deliver(
+                            previous,
+                            a.bid,
+                            0,
+                            "Someone bid more. Your gold was returned.",
+                        );
                     }
                     self.auctions[index].bidder = Some(id);
                     self.auctions[index].bid = amount;
@@ -558,38 +604,45 @@ impl SocialState {
                     .ok_or_else(|| bad("Delivery is already claimed or unavailable."))?;
                 let room = (data.rule("inventory", "slots") as u32).saturating_sub(c.medkits);
                 let kits = item.medkits.min(room);
-                let credits = item.credits.min(MAX_CREDITS.saturating_sub(c.credits));
-                if kits == 0 && credits == 0 {
+                let gold = item.gold.min(MAX_GOLD.saturating_sub(c.gold));
+                let mut taken = 0;
+                item.items.retain(|id, quantity| {
+                    if let Some(definition) = data.economy.item(id) {
+                        let count = economy::add(c, definition, *quantity);
+                        *quantity -= count;
+                        taken += count;
+                    }
+                    *quantity > 0
+                });
+                if kits == 0 && gold == 0 && taken == 0 {
                     return Err(bad(
                         "Make room in your pack or wallet before claiming this delivery.",
                     ));
                 }
                 c.medkits += kits;
-                c.credits += credits;
+                c.gold += gold;
                 item.medkits -= kits;
-                item.credits -= credits;
-                item.claimed = item.medkits == 0 && item.credits == 0;
+                item.gold -= gold;
+                item.claimed = item.medkits == 0 && item.gold == 0 && item.items.is_empty();
             }
             "gift" => {
                 let other = text(&request["target"]);
                 self.target(&id, other)?;
-                let amount = number(request, "amount", 1, c.credits.min(1_000_000))?;
-                c.credits -= amount;
+                let amount = number(request, "amount", 1, c.gold.min(1_000_000))?;
+                c.gold -= amount;
                 self.deliver(other.into(), amount, 0, &format!("Gift from {}", c.name));
             }
             "lineage_reward" => {
                 let day = now / 86400;
                 if self.lineage_claims.get(&id) == Some(&day) {
-                    return Err(bad("Today's lineage supply has already been claimed."));
+                    return Err(bad("You already claimed today’s daily supplies."));
                 }
                 if !data
                     .quests
                     .iter()
                     .any(|q| q.race.as_ref() == Some(&c.race) && c.completed.contains(&q.id))
                 {
-                    return Err(bad(
-                        "Complete your first lineage chapter to unlock daily community supplies.",
-                    ));
+                    return Err(bad("Finish Oru’s first quest to unlock daily supplies."));
                 }
                 let in_lineage_guild = self
                     .guilds
@@ -598,9 +651,9 @@ impl SocialState {
                 self.lineage_claims.insert(id.clone(), day);
                 self.deliver(
                     id,
+                    if in_lineage_guild { 36 } else { 18 },
                     0,
-                    if in_lineage_guild { 2 } else { 1 },
-                    "Daily lineage supply",
+                    "Daily character reward",
                 );
             }
             _ => return Err(bad("Unknown social action.")),
@@ -686,7 +739,7 @@ impl SocialState {
                     .as_ref()
                     .is_some_and(|r| self.profiles.get(target).is_none_or(|p| &p.race != r))
                 {
-                    return Err(bad("This charter is reserved for your lineage."));
+                    return Err(bad("This group only accepts your character type."));
                 }
                 g.invitations.insert(target.into());
             }
@@ -729,7 +782,7 @@ impl SocialState {
             }
             "tabard" if guild && officer => {
                 let tabard: Tabard = serde_json::from_value(request["tabard"].clone())
-                    .map_err(|_| bad("Invalid tabard."))?;
+                    .map_err(|_| bad("Choose valid colors and a design for the guild outfit."))?;
                 if !valid_color(&tabard.base)
                     || !valid_color(&tabard.trim)
                     || !["stripe", "cross", "split"].contains(&tabard.pattern.as_str())
@@ -934,7 +987,7 @@ impl Shard {
             .get(id)
             .filter(|p| p.owner == owner)
             .ok_or_else(|| {
-                bad("Enter the world with this character before using community actions.")
+                bad("Start playing with this character before using social features.")
             })?;
         let saved = saved_player(p, self.time);
         let db = self.db.clone();
@@ -965,6 +1018,15 @@ pub(super) struct Browse {
     before: Option<u64>,
     #[serde(default)]
     search: String,
+    #[serde(default)]
+    sort: String,
+    #[serde(default)]
+    rarity: String,
+    #[serde(default)]
+    kind: String,
+    tier: Option<u32>,
+    #[serde(default)]
+    scope: String,
 }
 fn page<T: Serialize>(rows: impl Iterator<Item = (u64, T)>, before: Option<u64>) -> Value {
     let mut rows: Vec<_> = rows
@@ -976,7 +1038,109 @@ fn page<T: Serialize>(rows: impl Iterator<Item = (u64, T)>, before: Option<u64>)
     json!({"items":rows.iter().map(|(_, value)|value).collect::<Vec<_>>(),"before":if more { rows.last().map(|r|r.0) } else { None }})
 }
 impl SocialState {
-    fn browse(&self, c: &Character, query: &Browse, active: &HashSet<String>) -> ResultApi<Value> {
+    fn auction_page(
+        &self,
+        c: &Character,
+        q: &Browse,
+        catalog: &economy::Catalog,
+    ) -> ResultApi<Value> {
+        if ![
+            "",
+            "newest",
+            "unit_asc",
+            "unit_desc",
+            "buyout_asc",
+            "buyout_desc",
+            "bid_asc",
+            "ending",
+            "rarity",
+            "tier",
+            "name",
+            "quantity",
+        ]
+        .contains(&q.sort.as_str())
+            || !["", "open", "mine", "bids", "history"].contains(&q.scope.as_str())
+            || (!q.rarity.is_empty() && !catalog.rarities.iter().any(|r| r.id == q.rarity))
+            || (!q.kind.is_empty()
+                && !["material", "equipment", "consumable"].contains(&q.kind.as_str()))
+            || q.tier
+                .is_some_and(|tier| !catalog.tiers.iter().any(|t| t.id == tier))
+        {
+            return Err(bad("Unknown auction filter or sort order."));
+        }
+        // Sort the complete matching market before paging. The listing ID breaks every tie.
+        // Unit prices use exact cross multiplication, never rounded display prices.
+        let compare = |a: &Auction, b: &Auction| {
+            let ai = catalog.item(&a.item);
+            let bi = catalog.item(&b.item);
+            let unit =
+                || (a.buyout * u64::from(b.quantity)).cmp(&(b.buyout * u64::from(a.quantity)));
+            let order = match q.sort.as_str() {
+                "unit_asc" => unit(),
+                "unit_desc" => unit().reverse(),
+                "buyout_asc" => a.buyout.cmp(&b.buyout),
+                "buyout_desc" => b.buyout.cmp(&a.buyout),
+                "bid_asc" => a.minimum.max(a.bid + 1).cmp(&b.minimum.max(b.bid + 1)),
+                "ending" => a.expires.cmp(&b.expires),
+                "rarity" => bi
+                    .map_or(0, |i| catalog.rarity(&i.rarity))
+                    .cmp(&ai.map_or(0, |i| catalog.rarity(&i.rarity))),
+                "tier" => bi.map_or(0, |i| i.tier).cmp(&ai.map_or(0, |i| i.tier)),
+                "name" => ai
+                    .map_or(a.item.as_str(), |i| i.name.as_str())
+                    .cmp(bi.map_or(b.item.as_str(), |i| i.name.as_str())),
+                "quantity" => b.quantity.cmp(&a.quantity),
+                _ => b.id.cmp(&a.id),
+            };
+            order.then_with(|| b.id.cmp(&a.id))
+        };
+        let search = q.search.trim().to_lowercase();
+        let mut rows: Vec<_> = self
+            .auctions
+            .iter()
+            .filter(|a| {
+                let scope = match q.scope.as_str() {
+                    "mine" => a.seller == c.id && a.status == "open",
+                    "bids" => a.bidder.as_ref() == Some(&c.id) && a.status == "open",
+                    "history" => {
+                        a.status != "open" && (a.seller == c.id || a.bidder.as_ref() == Some(&c.id))
+                    }
+                    _ => a.status == "open",
+                };
+                scope
+                    && catalog.item(&a.item).is_some_and(|i| {
+                        (search.is_empty()
+                            || i.name.to_lowercase().contains(&search)
+                            || i.id.contains(&search))
+                            && (q.rarity.is_empty() || i.rarity == q.rarity)
+                            && (q.kind.is_empty() || i.kind == q.kind)
+                            && q.tier.is_none_or(|t| i.tier == t)
+                    })
+            })
+            .collect();
+        let total = rows.len();
+        if let Some(cursor) = q.before {
+            let cursor = self
+                .auctions
+                .iter()
+                .find(|a| a.id == cursor)
+                .ok_or_else(|| bad("These listings have changed. Return to the first page."))?;
+            rows.retain(|a| compare(a, cursor).is_gt());
+        }
+        rows.sort_by(|a, b| compare(a, b));
+        let more = rows.len() > PAGE;
+        rows.truncate(PAGE);
+        Ok(
+            json!({"items":rows,"total":total,"before":if more { rows.last().map(|a| a.id) } else { None }}),
+        )
+    }
+    fn browse(
+        &self,
+        c: &Character,
+        query: &Browse,
+        active: &HashSet<String>,
+        data: &Content,
+    ) -> ResultApi<Value> {
         let id = &c.id;
         let visible = |p: &&Post| !self.blocks.get(id).is_some_and(|b| b.contains(&p.author));
         let result = match query.view.as_str() {
@@ -999,7 +1163,7 @@ impl SocialState {
                     page(self.threads.iter().filter(|t| t.section == query.section && !self.blocks.get(id).is_some_and(|b| b.contains(&t.author))).map(|t| (t.id, t)), query.before)
                 }
             }
-            "auctions" => page(self.auctions.iter().filter(|a| a.status == "open" || &a.seller == id || a.bidder.as_ref() == Some(id)).map(|a| (a.id, a)), query.before),
+            "auctions" => self.auction_page(c, query, &data.economy)?,
             "deliveries" => page(self.deliveries.iter().filter(|d| &d.recipient == id && !d.claimed).map(|d| (d.id, d)), query.before),
             "guilds" => page(self.guilds.iter().filter(|g| g.name.to_lowercase().contains(&query.search.to_lowercase())).map(|g| (g.id, json!({"id":g.id,"name":g.name,"race":g.race,"members":g.members.len(),"leader":g.owner,"tabard":g.tabard}))), query.before),
             "people" => {
@@ -1093,11 +1257,12 @@ pub(super) async fn read(
         app.db.expire_auctions()?;
         // Copy the lease set first: admission and deletion lock active before storage.
         let active = app.active.lock().map_err(|_| internal())?.clone();
-        app.db
-            .social
-            .lock()
-            .map_err(|_| internal())?
-            .browse(&saved.character, &query, &active)
+        app.db.social.lock().map_err(|_| internal())?.browse(
+            &saved.character,
+            &query,
+            &active,
+            &app.content,
+        )
     })
     .await
     .map_err(|_| internal())??;
@@ -1198,7 +1363,7 @@ mod tests {
     fn runner(letter: char, race: &str) -> StoredCharacter {
         serde_json::from_value(json!({"version":2,"owner":format!("user_{letter}"),"character":{
             "version":2,"revision":0,"id":letter.to_string().repeat(64),"name":format!("Runner {letter}"),
-            "race":race,"faction":"relay","level":5,"xp":0,"credits":1000,"position":[0,0,0],"yaw":0,
+            "race":race,"faction":"relay","level":5,"xp":0,"gold":1000,"position":[0,0,0],"yaw":0,
             "health":100,"energy":100,"medkits":10,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true}})).unwrap()
     }
     fn request(mut value: Value) -> Value {
@@ -1225,6 +1390,303 @@ mod tests {
     }
     fn register(s: &mut SocialState, c: &mut StoredCharacter) {
         commit(s, c, json!({"action":"register"}), 1).unwrap();
+    }
+
+    #[test]
+    fn item_auctions_preserve_escrow_partial_delivery_and_legacy_records() {
+        let mut s = SocialState::default();
+        let mut seller = runner('a', "human");
+        let mut buyer = runner('b', "lattice");
+        seller.character.items.insert("wire-scrap".into(), 10);
+        buyer.character.items.insert("wire-scrap".into(), 998);
+        register(&mut s, &mut seller);
+        register(&mut s, &mut buyer);
+        commit(&mut s, &mut seller, json!({"action":"auction_list","item":"wire-scrap","quantity":5,"minimum":10,"buyout":101,"hours":1}), 2).unwrap();
+        let auction = s.auctions[0].id;
+        assert_eq!(seller.character.items["wire-scrap"], 5);
+        commit(
+            &mut s,
+            &mut buyer,
+            json!({"action":"auction_buy","auction":auction}),
+            3,
+        )
+        .unwrap();
+        assert_eq!(buyer.character.gold, 899);
+        let purchase = s
+            .deliveries
+            .iter()
+            .find(|d| d.recipient == buyer.character.id)
+            .unwrap()
+            .id;
+        commit(
+            &mut s,
+            &mut buyer,
+            json!({"action":"claim","delivery":purchase}),
+            4,
+        )
+        .unwrap();
+        assert_eq!(buyer.character.items["wire-scrap"], 999);
+        let remaining = s.deliveries.iter().find(|d| d.id == purchase).unwrap();
+        assert_eq!(remaining.items["wire-scrap"], 4);
+        assert!(!remaining.claimed);
+        assert!(
+            commit(
+                &mut s,
+                &mut buyer,
+                json!({"action":"claim","delivery":purchase}),
+                5
+            )
+            .is_err()
+        );
+        assert_eq!(
+            s.deliveries
+                .iter()
+                .find(|d| d.recipient == seller.character.id)
+                .unwrap()
+                .gold,
+            95
+        );
+        let saved = serde_json::to_value(&s).unwrap();
+        let restored: SocialState = serde_json::from_value(saved).unwrap();
+        assert_eq!(
+            restored
+                .deliveries
+                .iter()
+                .find(|d| d.id == purchase)
+                .unwrap()
+                .items["wire-scrap"],
+            4
+        );
+        let mut old = serde_json::to_value(&s.auctions[0]).unwrap();
+        old.as_object_mut().unwrap().remove("item");
+        assert_eq!(
+            serde_json::from_value::<Auction>(old).unwrap().item,
+            "medkit"
+        );
+        let mut old = serde_json::to_value(&s.deliveries[0]).unwrap();
+        old.as_object_mut().unwrap().remove("items");
+        assert!(
+            serde_json::from_value::<Delivery>(old)
+                .unwrap()
+                .items
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn item_returns_and_inventory_retry_receipts_are_exactly_once() {
+        let data = content();
+        let mut s = SocialState::default();
+        let mut c = runner('a', "human");
+        c.character.position = data
+            .npcs
+            .iter()
+            .find(|n| n.id == "merchant")
+            .unwrap()
+            .position;
+        c.character.items.insert("wire-scrap".into(), 8);
+        register(&mut s, &mut c);
+        let req = request(json!({"action":"craft","item":"street-coil"}));
+        let (next, saved, receipt) = s.stage(c.clone(), req.clone(), &data, 2).unwrap();
+        s = next.unwrap();
+        c = saved;
+        let (next, saved, repeated) = s.stage(c.clone(), req, &data, 3).unwrap();
+        assert!(next.is_none());
+        assert_eq!(receipt, repeated);
+        assert_eq!(saved.character.items["street-coil"], 1);
+        assert_eq!(saved.character.gold, 988);
+        commit(&mut s, &mut c, json!({"action":"auction_list","item":"street-coil","quantity":1,"minimum":1,"buyout":20,"hours":1}), 4).unwrap();
+        let auction = s.auctions[0].id;
+        assert_eq!(economy::count(&c.character, "street-coil"), 0);
+        commit(
+            &mut s,
+            &mut c,
+            json!({"action":"auction_cancel","auction":auction}),
+            5,
+        )
+        .unwrap();
+        assert!(!s.expire(10000));
+        let delivery = s.deliveries[0].id;
+        commit(
+            &mut s,
+            &mut c,
+            json!({"action":"claim","delivery":delivery}),
+            6,
+        )
+        .unwrap();
+        assert_eq!(c.character.items["street-coil"], 1);
+        assert!(
+            commit(
+                &mut s,
+                &mut c,
+                json!({"action":"claim","delivery":delivery}),
+                7
+            )
+            .is_err()
+        );
+        commit(
+            &mut s,
+            &mut c,
+            json!({"action":"equip","item":"street-coil"}),
+            8,
+        )
+        .unwrap();
+        assert!(commit(&mut s, &mut c, json!({"action":"auction_list","item":"street-coil","quantity":1,"minimum":1,"buyout":20,"hours":1}), 9).is_err());
+        assert!(commit(&mut s, &mut c, json!({"action":"auction_list","item":"first-signal-halo","quantity":1,"minimum":1,"buyout":20,"hours":1}), 9).is_err());
+    }
+
+    #[test]
+    fn auction_sorting_and_filters_apply_before_stable_pagination() {
+        let data = content();
+        let mut s = SocialState::default();
+        let c = runner('a', "human").character;
+        for id in 1..=45 {
+            let quantity = (id % 3 + 1) as u32;
+            s.auctions.push(Auction {
+                version: DATA_VERSION,
+                id,
+                seller: c.id.clone(),
+                item: "wire-scrap".into(),
+                quantity,
+                minimum: 1,
+                buyout: id * u64::from(quantity),
+                bid: 0,
+                bidder: None,
+                expires: 10000 - id,
+                status: "open".into(),
+            });
+        }
+        let query = Browse {
+            view: "auctions".into(),
+            sort: "unit_asc".into(),
+            search: "reclaimed".into(),
+            tier: Some(1),
+            rarity: "common".into(),
+            kind: "material".into(),
+            ..Browse::default()
+        };
+        let first = s.auction_page(&c, &query, &data.economy).unwrap();
+        assert_eq!(first["total"], 45);
+        assert_eq!(first["items"][0]["id"], 1);
+        assert_eq!(first["items"][39]["id"], 40);
+        let cursor = first["before"].as_u64().unwrap();
+        // A new cheaper listing sorts before the cursor and must not repeat old rows.
+        let mut inserted = s.auctions[0].clone();
+        inserted.id = 46;
+        inserted.buyout = 1;
+        inserted.quantity = 99;
+        s.auctions.push(inserted);
+        let next = s
+            .auction_page(
+                &c,
+                &Browse {
+                    before: Some(cursor),
+                    ..query
+                },
+                &data.economy,
+            )
+            .unwrap();
+        assert_eq!(next["items"].as_array().unwrap().len(), 5);
+        assert_eq!(next["items"][0]["id"], 41);
+        assert_eq!(next["before"], Value::Null);
+        let high = s
+            .auction_page(
+                &c,
+                &Browse {
+                    sort: "unit_desc".into(),
+                    ..Browse::default()
+                },
+                &data.economy,
+            )
+            .unwrap();
+        assert_eq!(high["items"][0]["id"], 45);
+        let empty = s
+            .auction_page(
+                &c,
+                &Browse {
+                    rarity: "legendary".into(),
+                    ..Browse::default()
+                },
+                &data.economy,
+            )
+            .unwrap();
+        assert_eq!(empty["total"], 0);
+        assert!(
+            s.auction_page(
+                &c,
+                &Browse {
+                    sort: "invalid".into(),
+                    ..Browse::default()
+                },
+                &data.economy
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn auction_unit_prices_use_exact_fractions_and_history_stays_private() {
+        let data = content();
+        let mut s = SocialState::default();
+        let a = runner('a', "human").character;
+        let b = runner('b', "human").character;
+        for (id, quantity) in [(1, 999), (2, 998), (3, 999)] {
+            s.auctions.push(Auction {
+                version: DATA_VERSION,
+                id,
+                seller: a.id.clone(),
+                item: "wire-scrap".into(),
+                quantity,
+                minimum: 1,
+                buyout: 1,
+                bid: 0,
+                bidder: None,
+                expires: 10000,
+                status: "open".into(),
+            });
+        }
+        let sorted = s
+            .auction_page(
+                &a,
+                &Browse {
+                    sort: "unit_asc".into(),
+                    ..Browse::default()
+                },
+                &data.economy,
+            )
+            .unwrap();
+        let ids: Vec<_> = sorted["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|a| a["id"].as_u64().unwrap())
+            .collect();
+        assert_eq!(ids, [3, 1, 2]);
+        s.auctions[0].status = "cancelled".into();
+        let query = Browse {
+            scope: "history".into(),
+            ..Browse::default()
+        };
+        assert_eq!(
+            s.auction_page(&a, &query, &data.economy).unwrap()["total"],
+            1
+        );
+        assert_eq!(
+            s.auction_page(&b, &query, &data.economy).unwrap()["total"],
+            0
+        );
+        assert_eq!(
+            s.auction_page(
+                &b,
+                &Browse {
+                    scope: "mine".into(),
+                    ..Browse::default()
+                },
+                &data.economy
+            )
+            .unwrap()["total"],
+            0
+        );
     }
 
     #[test]
@@ -1269,7 +1731,8 @@ mod tests {
                     thread: Some(thread),
                     ..Browse::default()
                 },
-                &HashSet::new()
+                &HashSet::new(),
+                &content()
             )
             .is_err()
         );
@@ -1359,14 +1822,16 @@ mod tests {
             ..Browse::default()
         };
         assert_eq!(
-            s.browse(&b.character, &query, &HashSet::new()).unwrap()["data"]["items"]
+            s.browse(&b.character, &query, &HashSet::new(), &content())
+                .unwrap()["data"]["items"]
                 .as_array()
                 .unwrap()
                 .len(),
             1
         );
         assert!(
-            s.browse(&c.character, &query, &HashSet::new()).unwrap()["data"]["items"]
+            s.browse(&c.character, &query, &HashSet::new(), &content())
+                .unwrap()["data"]["items"]
                 .as_array()
                 .unwrap()
                 .is_empty()
@@ -1403,7 +1868,9 @@ mod tests {
             channel: "world".into(),
             ..Browse::default()
         };
-        let first = s.browse(&a.character, &query, &HashSet::new()).unwrap();
+        let first = s
+            .browse(&a.character, &query, &HashSet::new(), &content())
+            .unwrap();
         assert_eq!(first["data"]["items"].as_array().unwrap().len(), 40);
         let cursor = first["data"]["before"].as_u64().unwrap();
         s.post(
@@ -1422,6 +1889,7 @@ mod tests {
                     ..query
                 },
                 &HashSet::new(),
+                &content(),
             )
             .unwrap();
         assert!(
@@ -1458,7 +1926,7 @@ mod tests {
             11,
         )
         .unwrap();
-        assert_eq!(buyer.character.credits, 980);
+        assert_eq!(buyer.character.gold, 980);
         assert!(
             commit(
                 &mut s,
@@ -1475,9 +1943,9 @@ mod tests {
             12,
         )
         .unwrap();
-        assert_eq!(rival.character.credits, 900);
+        assert_eq!(rival.character.gold, 900);
         assert_eq!(s.auctions[0].status, "sold");
-        assert_eq!(s.deliveries.iter().map(|d| d.credits).sum::<u64>(), 115);
+        assert_eq!(s.deliveries.iter().map(|d| d.gold).sum::<u64>(), 115);
         assert_eq!(s.deliveries.iter().map(|d| d.medkits).sum::<u32>(), 3);
         assert!(
             commit(
@@ -1501,7 +1969,7 @@ mod tests {
             14,
         )
         .unwrap();
-        assert_eq!(buyer.character.credits, 1000);
+        assert_eq!(buyer.character.gold, 1000);
         assert!(
             commit(
                 &mut s,
@@ -1571,12 +2039,12 @@ mod tests {
         a = saved;
         let persisted = serde_json::to_vec(&s).unwrap();
         let recovered: SocialState = serde_json::from_slice(&persisted).unwrap();
-        assert_eq!(recovered.characters[&a.character.id].character.credits, 970);
+        assert_eq!(recovered.characters[&a.character.id].character.gold, 970);
         let (no_write, retry, repeated) = recovered
             .stage(a.clone(), r.clone(), &content(), 11)
             .unwrap();
         assert!(no_write.is_none());
-        assert_eq!(retry.character.credits, 970);
+        assert_eq!(retry.character.gold, 970);
         assert_eq!(repeated, result);
         assert!(
             recovered
@@ -1621,7 +2089,8 @@ mod tests {
         )
         .unwrap();
         commit(&mut s, &mut a, json!({"action":"lineage_reward"}), 86402).unwrap();
-        assert_eq!(s.deliveries[0].medkits, 2);
+        assert_eq!(s.deliveries[0].medkits, 0);
+        assert_eq!(s.deliveries[0].gold, 36);
         assert!(commit(&mut s, &mut a, json!({"action":"lineage_reward"}), 172799).is_err());
         commit(&mut s, &mut a, json!({"action":"lineage_reward"}), 172800).unwrap();
         assert_eq!(s.deliveries.len(), 2);
@@ -1638,7 +2107,7 @@ mod tests {
             record,
         };
         let envelope = identity
-            .sign(json!({"version":2,"character":{"credits":100}}))
+            .sign(json!({"version":2,"character":{"gold":100}}))
             .unwrap();
         let signature: Vec<u8> = text(&envelope["signature"])
             .as_bytes()

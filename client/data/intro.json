@@ -1,13 +1,13 @@
 {
   "format": "sloperberpunk-cinematic",
   "version": 1,
-  "title": "Welcome to Vesper",
+  "title": "The Living Record",
   "duration": 38,
   "music": "afterlight",
   "shots": [
-    { "start": 0, "end": 9, "from": [1660, 75, 520], "to": [1510, 30, 410], "lookFrom": [1440, 2, 320], "lookTo": [1440, 2, 290], "caption": "The sea has gone. Vesper gets its water from the wetlands, where the wells are running dry.", "label": "THE PALE BASIN · MOURNING FEN" },
-    { "start": 9, "end": 18, "from": [-110, 65, 130], "to": [-65, 34, 80], "lookFrom": [0, 25, 0], "lookTo": [0, 7, 0], "caption": "The city grew upward. Homes, workshops, and clinics share old warehouses and the walkways above them.", "label": "VESPER · STREETS AND SKYWAYS" },
-    { "start": 18, "end": 28, "from": [45, 18, 65], "to": [24, 9, 42], "lookFrom": [0, 6, 0], "lookTo": [0, 3, 8], "caption": "Four factions keep the city running. They need help with repairs, deliveries, and the companies still collecting old debts.", "label": "AFTERLIGHT COMMONS · MEET YOUR CONTACT" },
-    { "start": 28, "end": 38, "from": [12, 6, 46], "to": [0, 3.6, 39], "lookFrom": [0, 2, 24], "lookTo": [0, 2, 14], "caption": "Nella’s kitchen has lost its water. Find your faction contact in the Commons, then help get it running again.", "label": "AFTERLIGHT COMMONS · RESTORE THE KITCHEN" }
+    { "start": 0, "end": 9, "from": [1660, 75, 520], "to": [1510, 30, 410], "lookFrom": [1440, 2, 320], "lookTo": [1440, 2, 290], "caption": "Welcome to Vesper. This city needs water, food, and fuel from the land around it. Supplies are running low.", "label": "THE PALE BASIN · MOURNING FEN" },
+    { "start": 9, "end": 18, "from": [-110, 65, 130], "to": [-65, 34, 80], "lookFrom": [0, 25, 0], "lookTo": [0, 7, 0], "caption": "The city’s leaders have left. Their computer system, Continuance, still sends machines to collect old debts. People lose water and heat when they cannot pay.", "label": "VESPER · STREETS AND SKYWAYS" },
+    { "start": 18, "end": 28, "from": [45, 18, 65], "to": [24, 9, 42], "lookFrom": [0, 6, 0], "lookTo": [0, 3, 8], "caption": "Four factions are trying to help. Your faction gives you quests. Oru gives you quests about your character’s background.", "label": "AFTERLIGHT COMMONS · MEET YOUR CONTACT" },
+    { "start": 28, "end": 38, "from": [28, 18, -40], "to": [0, 6, -48], "lookFrom": [0, 1, -74], "lookTo": [0, 1, -70], "caption": "Learn the controls in the First Steps Courtyard, then meet your faction contact. Nella’s kitchen has no water and fourteen diners are missing. Help reopen it and find out what happened.", "label": "FIRST STEPS COURTYARD · LEARN THE CONTROLS" }
   ]
 }

@@ -6,6 +6,7 @@ import { glyphs, pixelGlyph, GlyphAtlas } from '../src/pixel-font.js';
 import { WebGLUI, rgba, intersection, clippedQuad, wrapLines } from '../src/webgl-ui.js';
 import { Input } from '../src/input.js';
 import { Community } from '../src/social.js';
+const economyData={economy:JSON.parse(readFileSync(new URL('../data/economy.json',import.meta.url),'utf8'))};
 
 function globals(t,values) {
   const previous=Object.fromEntries(Object.keys(values).map(k=>[k,Object.getOwnPropertyDescriptor(globalThis,k)]));
@@ -152,6 +153,94 @@ test('gameplay bindings, guild shortcut, Escape, text entry and composition do n
   const count=actions.length;key('Escape',{defaultPrevented:true});assert.equal(actions.length,count);
 });
 
+test('chat and gestures open without submitting a focused HUD button or firing gameplay keys',t=>{
+  const {input,actions,key}=keyboard(t);input.menu=false;
+  assert.equal(key('Enter').prevented,true);key('KeyB');assert.deepEqual(actions,['chat','gestures']);
+  for(const code of ['Enter','KeyB','Digit1','KeyW'])key(code,{target:{tagName:'INPUT'}});
+  assert.deepEqual(actions,['chat','gestures']);assert.equal(input.sample(.016).forward,0);
+  input.menu=true;
+  for(const code of ['Enter','KeyB','Digit1','KeyW'])key(code);
+  assert.deepEqual(actions,['chat','gestures']);assert.equal(input.sample(.016).forward,0);
+});
+
+test('expanded chat paints above the HUD and below modal dialogs',()=>{
+  const ui=Object.create(WebGLUI.prototype);
+  assert.ok(ui.order({id:'live-chat',dataset:{expanded:'true'}})>ui.order({id:'hotbar'}));
+  assert.ok(ui.order({id:'live-chat',dataset:{expanded:'true'}})<ui.order({id:'panel-dialog'}));
+});
+
+test('controller navigation stays in expanded chat and B returns without moving or casting',t=>{
+  const {input,actions}=keyboard(t);input.menu=true;
+  const focused=[],clicked=[],buttons=Array.from({length:16},()=>({pressed:false}));
+  const controls=[0,1].map(id=>({getClientRects:()=>[{}],focus(){document.activeElement=this;focused.push(id);},click(){clicked.push(id);}}));
+  document.querySelector=selector=>selector==='#live-chat[data-expanded="true"]'?{querySelectorAll:()=>controls}:null;
+  navigator.getGamepads=()=>[{id:'Standard',mapping:'standard',axes:[1,1,1,1],buttons}];
+  input.sample(.016);assert.deepEqual(focused,[0]);
+  buttons[0].pressed=true;input.sample(.016);assert.deepEqual(clicked,[0]);
+  buttons[1].pressed=true;
+  assert.deepEqual(input.sample(.016),{forward:0,strafe:0,jump:false,dash:false,sprint:false});
+  assert.deepEqual(actions,['escape']);
+});
+
+function pointer(t) {
+  const windowEvents=new Map(),canvasEvents=new Map(),documentEvents=new Map(),actions=[],looks=[],captures=new Set();
+  globals(t,{window:{addEventListener:(name,fn)=>windowEvents.set(name,fn)},document:{addEventListener:(name,fn)=>documentEvents.set(name,fn),querySelector:()=>null},navigator:{getGamepads:()=>[]}});
+  const canvas={addEventListener:(name,fn)=>canvasEvents.set(name,fn),getBoundingClientRect:()=>({left:0,top:0,right:800,bottom:600}),
+    setPointerCapture:id=>captures.add(id),hasPointerCapture:id=>captures.has(id),releasePointerCapture:id=>captures.delete(id),
+    requestPointerLock(){assert.fail('mouse locking is forbidden');}};
+  const input=new Input(canvas,(action,event)=>actions.push({action,event}),(x,y)=>looks.push([x,y]));input.active=true;input.menu=false;
+  const emit=(name,extra={})=>{
+    const event={pointerId:1,pointerType:'mouse',button:0,buttons:1,clientX:100,clientY:100,target:canvas,...extra};
+    (name==='pointerdown'||name==='dblclick'||name==='lostpointercapture'?canvasEvents:windowEvents).get(name)?.(event);
+  };
+  return {input,emit,actions,looks,captures,documentEvents};
+}
+
+test('mouse clicks select on release; repeated clicks never lock the cursor or fire',t=>{
+  const {emit,actions,looks,captures}=pointer(t);
+  emit('pointermove');assert.equal(looks.length,0);
+  emit('pointerdown');assert.equal(actions.length,0);assert.equal(captures.size,0);
+  emit('pointerup');emit('pointerdown');emit('pointerup');emit('dblclick');
+  assert.deepEqual(actions.map(a=>a.action),['pick','pick']);assert.equal(looks.length,0);
+  emit('pointerdown',{button:2,buttons:2});emit('pointerup',{button:2,buttons:0});
+  assert.equal(actions.at(-1).action,'pick-activate');assert.equal(captures.size,0);
+});
+
+test('right drag rotates without selecting, even after returning to the start',t=>{
+  const {emit,actions,looks}=pointer(t);
+  emit('pointerdown',{button:2,buttons:2});
+  emit('pointermove',{buttons:2,clientX:140,clientY:120});
+  assert.deepEqual(looks[0],[.1,.05]);
+  emit('pointermove',{buttons:2});emit('pointerup',{button:2,buttons:0});
+  assert.equal(actions.length,0);
+  const count=looks.length;emit('pointermove',{buttons:0,clientX:200});assert.equal(looks.length,count);
+  emit('pointerdown');emit('pointermove',{clientX:180});emit('pointerup',{clientX:180});
+  assert.equal(actions.length,0);assert.equal(looks.length,count,'left drag never rotates the camera');
+});
+
+test('touch taps select while touch drags only look and release pointer capture',t=>{
+  const {emit,actions,looks,captures}=pointer(t);
+  emit('pointerdown',{pointerType:'touch'});assert.equal(captures.size,1);
+  emit('pointerup',{pointerType:'touch'});assert.equal(actions[0].action,'pick');assert.equal(captures.size,0);
+  emit('pointerdown',{pointerType:'touch'});emit('pointermove',{pointerType:'touch',clientX:130});
+  emit('pointerup',{pointerType:'touch',clientX:130});assert.equal(actions.length,1);assert.equal(looks.length,1);assert.equal(captures.size,0);
+});
+
+test('cancellation, focus loss, menus, and unrelated pointers cannot leave dragging or activate UI',t=>{
+  const {input,emit,actions,looks,captures,documentEvents}=pointer(t);
+  emit('pointerdown',{button:2,buttons:2});emit('pointerup',{pointerId:2,button:2});assert.ok(input.drag);
+  emit('pointermove',{pointerId:2,buttons:2,clientX:140});assert.equal(looks.length,0);
+  emit('pointercancel');assert.equal(input.drag,null);emit('pointerup',{button:2});assert.equal(actions.length,0);
+  emit('pointerdown',{button:2,buttons:2});emit('pointermove',{buttons:0});assert.equal(input.drag,null);
+  emit('pointerdown');emit('blur');emit('pointerup');assert.equal(actions.length,0);
+  emit('pointerdown',{pointerType:'touch'});globalThis.document.hidden=true;documentEvents.get('visibilitychange')();assert.equal(captures.size,0);
+  emit('pointerdown');input.menu=true;emit('pointerup');assert.equal(actions.length,0);
+  emit('pointerdown');assert.equal(input.drag,null);input.menu=false;
+  emit('pointerdown');emit('pointerup',{target:{tagName:'BUTTON'}});assert.equal(actions.length,0);
+  emit('pointerdown',{clientX:799});emit('pointerup',{clientX:801});assert.equal(actions.length,0);
+  emit('pointerdown',{pointerType:'touch'});emit('lostpointercapture');assert.equal(input.drag,null);
+});
+
 function form(action,values) {
   const elements=Object.entries(values).map(([name,value])=>({name,value:typeof value==='object'?value.value:value,type:typeof value==='object'?value.type:'text'}));
   elements.namedItem=name=>elements.find(f=>f.name===name);
@@ -160,7 +249,7 @@ function form(action,values) {
 function social(t,forms=[]) {
   const c=Object.create(Community.prototype);let character={id:'runner-a'};
   globals(t,{document:{querySelectorAll:()=>forms,querySelector:()=>null}});
-  Object.assign(c,{character:()=>character,owner:character.id,view:'chat',query:{},drafts:new Map(),pending:null,pendingDraft:null,busy:false,isOpen:()=>false});
+  Object.assign(c,{character:()=>character,owner:character.id,data:economyData,view:'chat',query:{},drafts:new Map(),pending:null,pendingDraft:null,busy:false,isOpen:()=>false});
   return {c,setCharacter:value=>character=value};
 }
 
@@ -211,7 +300,7 @@ test('numeric text controls retain integer and amount bounds before any social r
 
 test('social rendering keeps all sections and permissioned guild management available',t=>{
   const {c}=social(t);let html='';
-  Object.assign(c,{character:()=>({id:'runner-a',race:'human',credits:20,medkits:2}),races:[{id:'human',name:'Afterborn'}],showPanel:(_,value)=>html=value,summary:{deliveries:0,inbox:[],contacts:[],blocked:[],members:[],channels:['world','trade','race:human'],guildInvites:[],partyInvites:[]}});
+  Object.assign(c,{character:()=>({id:'runner-a',race:'human',gold:20,medkits:2}),races:[{id:'human',name:'Afterborn'}],showPanel:(_,value)=>html=value,summary:{deliveries:0,inbox:[],contacts:[],blocked:[],members:[],channels:['world','trade','race:human'],guildInvites:[],partyInvites:[]}});
   for(const view of ['chat','dm','guild','party','auctions','forum','people','deliveries']) {
     c.view=view;c.query={};c.render();
     for(const tab of ['chat','dm','guild','party','auctions','forum','people','deliveries'])assert.ok(html.includes(`data-view="${tab}"`));

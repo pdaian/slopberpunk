@@ -5,9 +5,9 @@
     "shortName": "RELAY",
     "color": "#47e5e2",
     "motto": "Keep the routes open.",
-    "description": "Couriers and lift crews work to remove tolls and open public roads. Iri needs help moving food and medicine, repairing crossings, and stopping collectors. Those same roads also let drilling companies reach the basin.",
+    "description": "Keep roads and lifts open. Help Iri deliver food and medicine, fix crossings, and stop toll collectors. Decide how to share roads when companies also want to use them.",
     "giver": "iri",
-    "role": "Mobility, rescue, and shared infrastructure"
+    "role": "Roads, deliveries, and rescues"
   },
   {
     "id": "covenant",
@@ -15,9 +15,9 @@
     "shortName": "COVENANT",
     "color": "#be9aff",
     "motto": "Ask before using someone’s memories.",
-    "description": "Archivists protect personal memories from sale and unauthorized copying. Sera needs help checking permissions and exposing forged records. Keeping the vaults cold uses water that nearby households also need.",
+    "description": "Protect people’s memories and privacy. Help Sera stop unauthorized copies and check who gave permission. Decide how to share the water needed to keep memories safely stored.",
     "giver": "sera",
-    "role": "Control, protection, and memory stewardship"
+    "role": "Memories, privacy, and permission"
   },
   {
     "id": "foundry",
@@ -25,9 +25,9 @@
     "shortName": "FOUNDRY",
     "color": "#ffad66",
     "motto": "Everyone gets a break.",
-    "description": "Welders and heat engineers want safe shifts, paid rest, and shared control of the furnaces. Bram needs help repairing the city and ending inherited work debts. Cutting fuel use protects the forest but leaves some homes cold.",
+    "description": "Protect workers and keep homes warm. Help Bram repair machinery, make shifts safer, and end inherited work debts. Decide how to share limited fuel and heat.",
     "giver": "bram",
-    "role": "Frontline defense, fabrication, and recovery"
+    "role": "Repairs, workers, and heating"
   },
   {
     "id": "choir",
@@ -35,8 +35,8 @@
     "shortName": "CHOIR",
     "color": "#c0ef72",
     "motto": "Let people choose what they hear.",
-    "description": "Interpreters and communications workers remove forced broadcasts and build accessible warnings. Ves needs help separating alarms from advertisements. Floods and shortages still threaten the neighborhoods after their speakers are switched off.",
+    "description": "Let people choose what they hear while keeping useful warnings. Help Ves stop forced broadcasts and build alarms people can see or feel. Decide when an emergency justifies an interruption.",
     "giver": "ves",
-    "role": "Disruption, concealment, and coordinated support"
+    "role": "Broadcasts, warnings, and choice"
   }
 ]

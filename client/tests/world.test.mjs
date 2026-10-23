@@ -217,8 +217,10 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
   const gl=new Proxy({
     createBuffer:()=>({}),createShader:()=>({}),createProgram:()=>({}),
     getShaderParameter:()=>true,getProgramParameter:()=>true,getShaderPrecisionFormat:()=>({precision:23}),
-    getAttribLocation:(_,name)=>['aPosition','aNormal','aColor','aGlow'].indexOf(name),getUniformLocation:(_,name)=>name,
+    getParameter:()=>16,
+    getAttribLocation:(_,name)=>['aPosition','aNormal','aColor','aGlow','aLight','aTint'].indexOf(name),getUniformLocation:(_,name)=>name,
     uniform1f:(name,value)=>uniforms.set(name,value),
+    uniform4fv:(name,value)=>{assert.ok([...value].every(Number.isFinite));uniforms.set(name,[...value]);},
     bufferData:(_,array)=>{assert.ok(array instanceof Float32Array);assert.ok(array.every(Number.isFinite));},
     drawArrays:(_,__,count)=>{assert.ok(Number.isInteger(count)&&count>=0);calls++;},
     deleteBuffer:()=>deleted++,depthMask:value=>{depthWrite=value;}
@@ -231,11 +233,17 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
     assert.ok(residents.length>8);
     renderer.render(camera,residents,[],10,epoch);
     assert.ok(renderer.details.size>0&&renderer.details.size<40);assert.ok(calls>0);assert.ok(depthWrite);
-    const residentBuffers=renderer.details.size;
+    assert.equal(renderer.lightLimit,2,'fit fixture lighting within the WebGL 1 minimum uniform budget');
+    assert.equal(uniforms.get('uLightPosition').length,8);
+    assert.ok(uniforms.get('uLightPosition').some((v,i)=>i%4===3&&v>0),'nearby fixtures illuminate the Commons');
     renderer.quality=.5;renderer.reducedMotion=true;
+    renderer.render(camera,residents,[],11,Date.UTC(2026,0,1,0));
+    assert.equal(uniforms.get('uDay'),0);assert.equal(uniforms.get('uTime'),0);assert.ok(depthWrite);
+    const residentBuffers=renderer.details.size;
     renderer.render({eye:[0,3,2700],target:[0,2,2600]},[],[],20);
     assert.equal(canvas.width,480);assert.equal(canvas.height,270);
     assert.equal(renderer.details.size,0);assert.equal(deleted,residentBuffers);
+    assert.ok(uniforms.get('uLightPosition').every(v=>v===0),'leaving the city clears stale fixture lights');
     assert.equal(uniforms.get('uTime'),0);assert.equal(uniforms.get('uVolume'),.4);
     renderer.lost=true;const draws=calls;renderer.render(camera,[],[],21);assert.equal(calls,draws);
   }finally{if(previousRatio===undefined)delete globalThis.devicePixelRatio;else globalThis.devicePixelRatio=previousRatio;}

@@ -13,7 +13,7 @@ export function recoveryView(c, data, world, now) {
     distance: Math.ceil(distance(c.position, death.corpse)),
     canReclaim: spirit && distance(c.position, death.corpse) <= rules.reclaimRadius && world.lineOfSight(c.position, death.corpse),
     atHealer: spirit && Boolean(graveyard) && distance(c.position, graveyard.position) <= data.rules.interactionRadius && world.lineOfSight(c.position, graveyard.position),
-    healerCost: Math.min(c.credits, rules.healerLossCap, Math.ceil(c.credits * rules.healerLossFraction)),
+    healerCost: Math.min(c.gold, rules.healerLossCap, Math.ceil(c.gold * rules.healerLossFraction)),
   };
 }
 

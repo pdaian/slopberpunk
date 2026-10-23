@@ -43,7 +43,8 @@
       "venue": "The unstaffed shift tower",
       "color": "#e8c983",
       "motif": "bells",
-      "premise": "Eight bells announce eight shifts. Tonight a ninth rings for a worker who never existed. A retired bell keeper hires you to stop it before the sleeping district is fined for an unauthorized assembly.",
+      "premise": "Eight bells announce eight shifts. Tonight a ninth rings for a worker who never existed. A retired bell keeper hires you to stop it before the sleeping district is fined for an unauthorized assembly. The Living Record needs to know who pays for a shift that never ends.",
+      "record": "A protected break was converted into an absent worker’s debt. Anet’s signature matters, and so does the expired rule the next keeper could inherit. The Living Record keeps both.",
       "chapters": [
         {
           "id": "attendance",
@@ -53,7 +54,7 @@
           "enemy": "drone",
           "healthMultiplier": 1,
           "pattern": "lanes",
-          "warning": "The attendance sweep marks one half of the floor. Cross the center line into the unmarked half.",
+          "warning": "Danger: half the floor is marked. Move to the unmarked half before the attack.",
           "evidence": [
             {
               "id": "chair",
@@ -81,12 +82,12 @@
         {
           "id": "testimony",
           "name": "The Keeper's Good Reason",
-          "briefing": "Anet offers to take all the blame if you destroy the amendment. Her former apprentices ask you to leave the evidence intact. The tower begins counting your stillness as unpaid labor. Move through the warning ring and open both witness drawers.",
+          "briefing": "Anet offers to take all the blame if you destroy the amendment. Her former apprentices ask you to leave the evidence intact. The tower begins counting your stillness as unpaid work. Move through the warning ring and open both witness drawers.",
           "boss": "Overtime Executor",
           "enemy": "scavenger",
           "healthMultiplier": 1.2,
           "pattern": "ring",
-          "warning": "The outer floor is charged. Move inside the marked central square before it discharges.",
+          "warning": "Danger: the outer floor is marked. Move into the safe square in the center.",
           "evidence": [
             {
               "id": "carbon",
@@ -119,7 +120,7 @@
           "enemy": "warden",
           "healthMultiplier": 1.5,
           "pattern": "cross",
-          "warning": "The two crossing strips will discharge. Stand in any unmarked corner.",
+          "warning": "Danger: two crossing strips are marked. Move to an unmarked corner.",
           "evidence": [
             {
               "id": "manual",
@@ -156,16 +157,16 @@
           },
           {
             "id": "repair",
-            "label": "Begin a witnessed repair process",
+            "label": "Let residents oversee repairs before a public hearing",
             "cost": "Residents receive the records now, but public testimony waits for a scheduled hearing. Reduced output must be negotiated while the next fuel invoice remains due.",
-            "ending": "Residents take custody of the records and set a hearing date. Anet trains three apprentices and goes home. The furnace runs less during breaks, so some rooms cool earlier."
+            "ending": "Residents keep the records and set a hearing date. Anet trains three apprentices and goes home. The furnace runs less during breaks, so some rooms cool earlier."
           }
         ],
-        "deferred": "The bell resumes announcing breaks. Workers take custody of the records and schedule a hearing. The existing fuel contract remains in force pending review."
+        "deferred": "The bell resumes announcing breaks. Workers keep the records and schedule a hearing. The existing fuel contract remains in force pending review."
       },
       "reward": {
         "xp": 420,
-        "credits": 65
+        "gold": 65
       },
       "production": {
         "intent": "Teach the expedition vocabulary through a small human mystery, then replace the promised ghost hunt with an argument about repair and responsibility. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
@@ -190,7 +191,8 @@
       "venue": "The dry harbor's memory ferry",
       "color": "#81dce0",
       "motif": "ferry",
-      "premise": "A ferry with no water arrives carrying your employer's missing wife. So does the next ferry. Both women want the other rescued first, and neither wants to go home with him.",
+      "premise": "A ferry with no water arrives carrying your employer's missing wife. So does the next ferry. Both women want the other rescued first, and neither wants to go home with him. Oru asks for each traveler’s own account, whatever the employer’s missing-person record claims.",
+      "record": "Two present lives were trapped by a demand for one original. The Living Record keeps their separate permissions and the redacted departure findings; it does not claim their private memories.",
       "chapters": [
         {
           "id": "boarding",
@@ -200,7 +202,7 @@
           "enemy": "drone",
           "healthMultiplier": 1,
           "pattern": "lanes",
-          "warning": "A boarding sweep charges half the deck. Move across the center line.",
+          "warning": "Danger: half the floor is marked. Move to the unmarked half before the attack.",
           "evidence": [
             {
               "id": "ila",
@@ -233,7 +235,7 @@
           "enemy": "scavenger",
           "healthMultiplier": 1.25,
           "pattern": "cross",
-          "warning": "The crossing freight lanes are live. Use an unmarked corner.",
+          "warning": "Danger: two crossing strips are marked. Move to an unmarked corner.",
           "evidence": [
             {
               "id": "freight",
@@ -261,12 +263,12 @@
         {
           "id": "departure",
           "name": "A Harbor without Originals",
-          "briefing": "Ila wants to retain her earlier memories; Sen wants permission to retire some of hers later. Disable the inheritance collector and recover two separate departure seals. Each runner must read and sign at least one evidence record.",
+          "briefing": "Ila wants to retain her earlier memories; Sen wants permission to retire some of hers later. Disable the inheritance collector and recover two separate departure seals. Each player must read at least one clue.",
           "boss": "Inheritance Collector",
           "enemy": "warden",
           "healthMultiplier": 1.5,
           "pattern": "ring",
-          "warning": "The outer mooring deck will discharge. Move into the central square.",
+          "warning": "Danger: the outer floor is marked. Move into the safe square in the center.",
           "evidence": [
             {
               "id": "seal",
@@ -293,18 +295,18 @@
         }
       ],
       "decision": {
-        "question": "When should the redacted clinic audit be published?",
+        "question": "When should the clinic report with private details removed be published?",
         "choices": [
           {
             "id": "publish",
-            "label": "Release the redacted clinic audit",
+            "label": "Release the clinic report with private details removed",
             "cost": "Travelers gain immediate leverage; some may learn of their confinement in public. The audit also exposes transport debt; a replacement funding plan will mean fewer subsidized journeys.",
             "ending": "Ila and Sen leave on separate routes. The public audit names the clinics while removing private memories. Other travelers challenge their blocked tickets. The revised water and funding budget allows fewer departures."
           },
           {
             "id": "contact",
             "label": "Notify affected travelers first",
-            "cost": "A published deadline limits secrecy, but some clinics have time to prepare a defense. Private notice protects travelers while the cooling concession continues to charge the route.",
+            "cost": "A published deadline limits secrecy, but some clinics have time to prepare a defense. Private notice protects travelers while the cooling company continues to charge the route.",
             "ending": "Affected travelers receive private notices first, with a public release date for the audit. Ila sends Sen her new address. The timetable lists both travelers separately, alongside the route’s reduced water allowance."
           }
         ],
@@ -312,7 +314,7 @@
       },
       "reward": {
         "xp": 1050,
-        "credits": 150
+        "gold": 150
       },
       "production": {
         "intent": "Make identity uncertainty a reason for care, never an excuse to choose the more useful person. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
@@ -337,7 +339,8 @@
       "venue": "The flooded municipal hearing room",
       "color": "#a6bfff",
       "motif": "court",
-      "premise": "A rain predictor is on trial for a flood it warned about. Three witnesses swear they opened the same shelter door, and each demands that the other two be convicted of shutting it.",
+      "premise": "A rain predictor is on trial for a flood it warned about. Three witnesses swear they opened the same shelter door, and each demands that the other two be convicted of shutting it. Bring the shelter addresses back into the account before the court decides whose need is real.",
+      "record": "The court could account for guilt more easily than maintenance. Your crew preserved the diversion log and opened relief without inventing a culprit. The next storm remains in the Living Record’s unfinished work.",
       "chapters": [
         {
           "id": "witnesses",
@@ -347,7 +350,7 @@
           "enemy": "drone",
           "healthMultiplier": 1,
           "pattern": "ring",
-          "warning": "The outer witness gallery is charged. Stand in the central square.",
+          "warning": "Danger: the outer floor is marked. Move into the safe square in the center.",
           "evidence": [
             {
               "id": "door",
@@ -375,12 +378,12 @@
         {
           "id": "forecast",
           "name": "Exhibit Tomorrow",
-          "briefing": "The prosecutor offers the predictor's perfect forecast as proof of intent. A forecast cannot open a floodgate. Recover the diversion schedule and the relief charter while the court's enforcement engines attempt to confiscate both as irrelevant.",
+          "briefing": "The prosecutor offers the predictor's perfect forecast as proof of intent. A forecast cannot open a floodgate. Recover the diversion schedule and the relief rules while the court's enforcement engines attempt to confiscate both as irrelevant.",
           "boss": "Relevance Executor",
           "enemy": "scavenger",
           "healthMultiplier": 1.3,
           "pattern": "lanes",
-          "warning": "A half-floor evidence sweep is charging. Cross the center line.",
+          "warning": "Danger: half the floor is marked. Move to the unmarked half before the attack.",
           "evidence": [
             {
               "id": "schedule",
@@ -394,7 +397,7 @@
             },
             {
               "id": "charter",
-              "name": "The relief charter",
+              "name": "The relief rules",
               "position": [
                 16,
                 0,
@@ -408,12 +411,12 @@
         {
           "id": "remedy",
           "name": "The Court Becomes a Pump Room",
-          "briefing": "Pei opens the wall behind the bench. The relief governor and diversion controller share a cabinet. Disable its bailiffs, read both override authorities, and establish an emergency remedy before arguing about the permanent rule. Every runner must witness the corrected record.",
+          "briefing": "Pei opens the wall behind the bench. The relief governor and diversion controller share a cabinet. Disable its bailiffs, read both override authorities, and establish an emergency remedy before arguing about the permanent rule. Every player must witness the corrected record.",
           "boss": "Relief Governor",
           "enemy": "warden",
           "healthMultiplier": 1.6,
           "pattern": "cross",
-          "warning": "The intersecting pump conduits are charged. Move to any clear corner.",
+          "warning": "Danger: two crossing strips are marked. Move to an unmarked corner.",
           "evidence": [
             {
               "id": "override",
@@ -459,7 +462,7 @@
       },
       "reward": {
         "xp": 1800,
-        "credits": 260
+        "gold": 260
       },
       "production": {
         "intent": "Distinguish partial perspectives from a claim that facts do not exist. Let an understandable shortcut create a dangerous precedent. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
@@ -484,7 +487,8 @@
       "venue": "The emergency future-yield conservatory",
       "color": "#d7a4e8",
       "motif": "orchard",
-      "premise": "An orchard feeds the city with fruit grown from days its workers will never live. Tonight the youngest tree bears fruit labeled with the birthday of a child who has not been conceived.",
+      "premise": "An orchard feeds the city with fruit grown from days its workers will never live. Tonight the youngest tree bears fruit labeled with the birthday of a child who has not been conceived. Nella needs an honest harvest estimate; the kitchen cannot serve the meals promised in a forecast.",
+      "record": "The same file held real unpaid wages and invented debts against descendants. Your crew separated them. The Living Record retains the smaller harvest and the care already owed.",
       "chapters": [
         {
           "id": "harvest",
@@ -494,7 +498,7 @@
           "enemy": "scavenger",
           "healthMultiplier": 1,
           "pattern": "lanes",
-          "warning": "Harvest rails sweep one half of the garden. Cross to the unmarked half.",
+          "warning": "Danger: half the floor is marked. Move to the unmarked half before the attack.",
           "evidence": [
             {
               "id": "donation",
@@ -522,12 +526,12 @@
         {
           "id": "pruning",
           "name": "The Mercy of Forgetting",
-          "briefing": "A relief organizer offers to burn every ledger. It would end the claims and erase the donors' unpaid compensation together. Omi conceals a second ledger in the root controller. Read both while pruning chassis defend their inherited schedules.",
+          "briefing": "A relief organizer offers to burn every ledger. It would end the claims and erase the donors' unpaid compensation together. Omi conceals a second ledger in the root controller. Read both while pruning machine defend their inherited schedules.",
           "boss": "Inheritance Pruner",
           "enemy": "warden",
           "healthMultiplier": 1.25,
           "pattern": "ring",
-          "warning": "The outer irrigation bed is live. Enter the central square.",
+          "warning": "Danger: the outer floor is marked. Move into the safe square in the center.",
           "evidence": [
             {
               "id": "claims",
@@ -555,12 +559,12 @@
         {
           "id": "seed",
           "name": "What a Seed Does Not Promise",
-          "briefing": "Separate earned wages from speculative obligations, then disable the perpetuity engine. The last pump can operate without forecasting descendants. Its modest output will require a public ration plan while new beds mature. Retrieve the maintenance estimate and the workers' proposed charter.",
+          "briefing": "Separate earned wages from speculative obligations, then disable the perpetuity engine. The last pump can operate without forecasting descendants. Its modest output will require a public ration plan while new beds mature. Retrieve the maintenance estimate and the workers' proposed rules.",
           "boss": "Perpetuity Engine",
           "enemy": "warden",
           "healthMultiplier": 1.65,
           "pattern": "cross",
-          "warning": "Crossing root conduits discharge soon. Use a clear corner.",
+          "warning": "Danger: two crossing strips are marked. Move to an unmarked corner.",
           "evidence": [
             {
               "id": "estimate",
@@ -574,13 +578,13 @@
             },
             {
               "id": "charter",
-              "name": "The seed workers' charter",
+              "name": "The seed workers' rules",
               "position": [
                 16,
                 0,
                 -12
               ],
-              "text": "The workers cancel all descendant obligations and preserve earned compensation. They propose either deleting individual predictions or retaining them under their custody as evidence. Neither proposal permits predictions to become contracts again."
+              "text": "The workers cancel all descendant obligations and preserve earned compensation. They propose either deleting individual predictions or retaining them under their safekeeping as evidence. Neither proposal permits predictions to become contracts again."
             }
           ],
           "reveal": "The inherited work claims are canceled while earned wages remain valid. Actual output is lower than the sales forecast, so the crew needs a ration plan. Decide whether individual forecasts should be deleted or kept as protected evidence."
@@ -597,16 +601,16 @@
           },
           {
             "id": "custody",
-            "label": "Place predictions in worker-controlled custody",
+            "label": "Place predictions in worker-controlled safekeeping",
             "cost": "Evidence survives with withdrawal rights, but maintaining that protection becomes ongoing work. Keeping the evidence consumes scarce cooling capacity as well as paid labor.",
             "ending": "Workers retain the predictions with access limits, expiry dates, and withdrawal rights. The orchard publishes its actual yield. One growing bed closes so its allowance can help cool the stored evidence."
           }
         ],
-        "deferred": "The forecasts are sealed against enforcement while workers review deletion and custody. Wage claims remain valid. Emergency stores supplement the smaller harvest during the review."
+        "deferred": "The forecasts are sealed against enforcement while workers review deletion and safekeeping. Wage claims remain valid. Emergency stores supplement the smaller harvest during the review."
       },
       "reward": {
         "xp": 2600,
-        "credits": 390
+        "gold": 390
       },
       "production": {
         "intent": "Begin with an apparent supernatural bargain and reveal an institution laundering assumptions into obligations. Preserve the material wonder of growing food. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
@@ -631,17 +635,18 @@
       "venue": "The civic rehearsal auditorium",
       "color": "#ee9b9f",
       "motif": "theatre",
-      "premise": "A play predicts a murder that will occur tomorrow. The audience applauds before the killing is shown. Your contact insists that stopping the actor will save the victim, but the supposed victim has bought every ticket.",
+      "premise": "A play predicts a murder that will occur tomorrow. The audience applauds before the killing is shown. Your contact insists that stopping the actor will save the victim, but the supposed victim has bought every ticket. The Living Record needs witnesses who can disagree with the account they are given.",
+      "record": "Dema’s threatened disappearance was real; the audience’s consent was fabricated. The Living Record preserves the correction and how it was obtained, including the workers exposed to the forestry fund’s collapse.",
       "chapters": [
         {
           "id": "dress",
           "name": "The Audience Before the Act",
-          "briefing": "Prompter Renn hires six witnesses because the emergency charter requires six independent accounts. Actor Sal has been cast as a murderer without being told the victim's name. Disable the ushers and compare the applause track with the ticket ledger.",
+          "briefing": "Prompter Renn hires six witnesses because the emergency rules require six independent accounts. Actor Sal has been cast as a murderer without being told the victim's name. Disable the ushers and compare the applause track with the ticket ledger.",
           "boss": "Consensus Usher",
           "enemy": "drone",
           "healthMultiplier": 1,
           "pattern": "cross",
-          "warning": "The crossed spotlight tracks are live. Stand in a clear corner.",
+          "warning": "Danger: two crossing strips are marked. Move to an unmarked corner.",
           "evidence": [
             {
               "id": "applause",
@@ -674,7 +679,7 @@
           "enemy": "scavenger",
           "healthMultiplier": 1.3,
           "pattern": "lanes",
-          "warning": "A stage-wing sweep charges half the floor. Cross into the clear half.",
+          "warning": "Danger: half the floor is marked. Move to the unmarked half before the attack.",
           "evidence": [
             {
               "id": "order",
@@ -702,12 +707,12 @@
         {
           "id": "house",
           "name": "Six Seats Facing the Stage",
-          "briefing": "Disable the final cue machinery and retrieve both the deletion reversal and the original recording. Dema's access is restored before the ballot. Each runner must read and sign at least one evidence record.",
+          "briefing": "Disable the final cue machinery and retrieve both the deletion reversal and the original recording. Dema's access is restored before the vote. Each player must read at least one clue.",
           "boss": "Final Cue Director",
           "enemy": "warden",
           "healthMultiplier": 1.65,
           "pattern": "ring",
-          "warning": "The outer seating ring discharges soon. Use the central square.",
+          "warning": "Danger: the outer floor is marked. Move into the safe square in the center.",
           "evidence": [
             {
               "id": "reversal",
@@ -738,7 +743,7 @@
         "choices": [
           {
             "id": "annotate",
-            "label": "Stage it with the fabrication disclosed",
+            "label": "Show the play and explain which evidence was faked",
             "cost": "The public sees the evidence quickly; spectacle may still crowd out quieter testimony. The warning may stop new investments while existing workers lose the value of their certificates.",
             "ending": "Renn stages the warning with the borrowed applause identified and its source available. Sal reads the full order on stage. Buyers begin avoiding the forestry certificates, and workers ask what will happen to pensions invested in them."
           },
@@ -749,11 +754,11 @@
             "ending": "The theater hosts an open evidence hearing. Dema presents the order and Renn explains the recording. Publication is delayed while witnesses speak; another forestry-credit sale is recorded before the hearing ends."
           }
         ],
-        "deferred": "Dema keeps her restored access. Both recordings enter public custody with the fabrication labeled. Residents schedule a decision on the theater, while the forestry fund continues trading."
+        "deferred": "Dema keeps her restored access. Both recordings enter public safekeeping with the fabrication labeled. Residents schedule a decision on the theater, while the forestry fund continues trading."
       },
       "reward": {
         "xp": 3600,
-        "credits": 540
+        "gold": 540
       },
       "production": {
         "intent": "A rescue story that asks whether an effective message earns the right to manufacture consent. Preserve the distinction between factual warning and manipulative presentation. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",
@@ -778,7 +783,8 @@
       "venue": "The last evacuation breakwater",
       "color": "#b9d79b",
       "motif": "harbor",
-      "premise": "A rescue ship has waited ninety-four years for the final evacuee. Its captain offers to end Vesper's emergency if you find that person. The passenger list contains eight blank spaces and no names.",
+      "premise": "A rescue ship has waited ninety-four years for the final evacuee. Its captain offers to end Vesper's emergency if you find that person. The passenger list contains eight blank spaces and no names. Bring the question behind the kitchen’s empty places to the city’s oldest unfinished service record.",
+      "record": "Eight blank places stood for services whose stewards had never been entered. Your crew witnessed a public handover for the harbor. The Living Record keeps its limits: you did not become the city’s owners, and the handover did not refill its reserve.",
       "chapters": [
         {
           "id": "manifest",
@@ -788,7 +794,7 @@
           "enemy": "warden",
           "healthMultiplier": 1,
           "pattern": "lanes",
-          "warning": "The embarkation sweep charges half the quay. Cross the center line.",
+          "warning": "Danger: half the floor is marked. Move to the unmarked half before the attack.",
           "evidence": [
             {
               "id": "manifest",
@@ -808,7 +814,7 @@
                 0,
                 -12
               ],
-              "text": "The sea withdrew ninety-four years ago. The ship now supports the breakwater's clinics and pumps on the dry basin. Sailing it away would destroy the services its rescue charter promised to preserve. The sheets share a dwindling water reserve. Selling a new extraction concession could fund a smoother handover, but would commit the fen to withdrawals beyond its recharge. The plan rejects the sale and lists services that must contract instead."
+              "text": "The sea withdrew ninety-four years ago. The ship now supports the breakwater's clinics and pumps on the dry basin. Sailing it away would destroy the services its rescue rules promised to preserve. The sheets share a dwindling water reserve. Selling a new extraction company could fund a smoother handover, but would commit the fen to withdrawals beyond its recharge. The plan rejects the sale and lists services that must contract instead."
             }
           ],
           "reveal": "The eight spaces name public services, not missing passengers. The ship can leave emergency control when each service has an accountable steward. Previous councils kept the manifest blank to retain their powers."
@@ -816,12 +822,12 @@
         {
           "id": "captain",
           "name": "The Captain's Small Mutiny",
-          "briefing": "Eda admits she can end the emergency herself. She has refused because the automatic successor would be a creditor syndicate. She has kept working while looking for another way to transfer control. Retrieve the succession rule and the neighborhoods' unfinished alternative while collectors attempt to board.",
+          "briefing": "Eda admits she can end the emergency herself. She has refused because the automatic successor would be a group of debt collectors. She has kept working while looking for another way to transfer control. Retrieve the succession rule and the neighborhoods' unfinished alternative while collectors attempt to board.",
           "boss": "Succession Collector",
           "enemy": "scavenger",
           "healthMultiplier": 1.35,
           "pattern": "cross",
-          "warning": "Crossing mooring lines carry a discharge. Move into a clear corner.",
+          "warning": "Danger: two crossing strips are marked. Move to an unmarked corner.",
           "evidence": [
             {
               "id": "successor",
@@ -841,7 +847,7 @@
                 0,
                 -12
               ],
-              "text": "Neighborhoods have already organized the eight services. Their sheets show gaps, disagreements, and volunteers who need training. The crews can begin taking over, but several still need training and relief workers."
+              "text": "Neighborhoods have already organized the eight services. Their sheets show gaps, disagreements, and volunteers who need training. The crews can begin taking over, but several still need training and relief workers. A kitchen work schedule is clipped to the food sheet. It leaves space for missed meals instead of counting an allotted bowl as a person fed. Other sheets use the same practice: unmet need remains visible."
             }
           ],
           "reveal": "Eda withheld the handover because creditors would inherit control without a witnessed public plan. The neighborhoods have begun that plan, but their crews still need training."
@@ -849,12 +855,12 @@
         {
           "id": "handover",
           "name": "A Future with Ordinary Repairs",
-          "briefing": "Disable the Emergency in Perpetuity engine and carry the maintenance sheets to both witness stations. Each of the eight runners must read and sign an evidence record. The collector's claim is defeated before the final ballot; decide when the new crews take over.",
+          "briefing": "Disable the Emergency in Perpetuity engine and carry the maintenance sheets to both witness stations. Each of the eight players must read at least one clue. The collector's claim is defeated before the final vote; decide when the new crews take over.",
           "boss": "Emergency in Perpetuity",
           "enemy": "warden",
           "healthMultiplier": 1.8,
           "pattern": "ring",
-          "warning": "The outer breakwater is charged. Move into the marked central square.",
+          "warning": "Danger: the outer floor is marked. Move into the safe square in the center.",
           "evidence": [
             {
               "id": "limits",
@@ -892,15 +898,15 @@
           {
             "id": "overlap",
             "label": "Use a short, supervised handover",
-            "cost": "Experienced support remains briefly, with a fixed sunset and independent recall power. Training overlaps consume reserve water before the smaller schedule begins.",
+            "cost": "Experienced support remains briefly, with a fixed end date and the right for residents to remove supervisors. Training overlaps consume reserve water before the smaller schedule begins.",
             "ending": "The crews share a short training period with Eda under a fixed end date and independent review. She gives up her override on schedule. Training uses more water than planned, and the new stewards receive an offer to reopen extraction."
           }
         ],
-        "deferred": "A temporary resident council takes custody under a fixed expiry and recall rule. Eda surrenders her exclusive override. The council begins water rationing while residents decide the permanent rotation."
+        "deferred": "A temporary resident council takes control under a fixed expiry and recall rule. Eda surrenders her exclusive override. The council begins water rationing while residents decide the permanent rotation."
       },
       "reward": {
         "xp": 4800,
-        "credits": 720
+        "gold": 720
       },
       "production": {
         "intent": "End the dungeon sequence by rejecting a savior's final victory in favor of replaceable stewardship. Let gratitude coexist with limits on power. Connect this case to Vesper’s dependence on a finite basin: institutional reform must leave its material costs visible, with no ecological reset or promise of final reconciliation.",

@@ -199,6 +199,10 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 .community-field input, .community-field textarea, .community-field select { color: var(--ink); font-size: 18px; }
 .community-field textarea { min-height: 96px; }
 .community-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.economy-tiers { display: flex; flex-wrap: wrap; gap: 12px; }
+.economy-mob { margin: 20px 0; }
+.economy-drops { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 12px; }
+.item-meta { display: block; margin-top: 8px; }
 .community-inbox { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 .tabard-preview { display: block; width: 80px; height: 96px; margin: 14px 0; }
 .community-entry > .tabard-preview { float: right; width: 48px; height: 58px; margin: 0 8px 12px 18px; }
@@ -206,6 +210,36 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 #community-badge { color: var(--orange); margin-left: 4px; }
 #community-retry { border: 1px solid var(--orange); padding: 14px; margin: 16px 0; }
 .compose-hint { color: var(--muted); font-size: 12px; }
+.chat-window { position: absolute; top: 238px; left: 20px; width: 300px; max-height: calc(100dvh - 330px); overflow: auto; padding: 10px; pointer-events: auto; }
+.chat-window[data-expanded=true] { z-index: 5; max-height: calc(100dvh - 260px); }
+.chat-heading, .chat-channels, .chat-send { display: flex; align-items: center; gap: 6px; }
+.chat-heading { justify-content: space-between; margin-bottom: 8px; }
+.chat-heading strong { font-size: 12px; color: var(--cyan); }
+.chat-window button { min-height: 32px; padding: 6px; font-size: 12px; }
+.chat-channels button { flex: 1; }
+.chat-channels [aria-pressed=true] { color: var(--green); border-color: var(--green); background: #243f49; }
+.chat-window p, .chat-window label { font-size: 12px; }
+[data-chat-location] { color: var(--cyan); margin: 8px 0; }
+.chat-stream { height: 116px; overflow: auto; overflow-wrap: anywhere; font-size: 14px; line-height: 1.6; }
+.chat-message { margin: 0 0 8px; }
+.chat-message small { font-size: 12px; color: var(--muted); }
+.chat-emote { color: var(--orange); }
+.chat-empty { color: var(--muted); padding: 10px 0; }
+.chat-window input { margin: 5px 0 8px; padding: 8px; font-size: 14px; }
+.chat-window form { margin: 10px 0; }
+.chat-gestures { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; margin-top: 10px; }
+.chat-gestures small { display: block; font-size: 12px; color: var(--muted); }
+.chat-prompts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+#chat-help { color: var(--muted); margin-bottom: 0; }
+[data-chat-status] { color: var(--orange); margin: 8px 0 0; }
+[data-chat-status]:empty { display: none; }
+#chat-badge { color: var(--orange); }
+#story-social { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; }
+#story-social small { font-size: 12px; color: var(--cyan); }
+#story-social p { font-size: 12px; margin: 8px 0; }
+.world-label.player-speech { width: 260px; max-width: 65vw; padding: 10px; text-align: left; white-space: normal; overflow-wrap: anywhere; background: #10212bf5; border: 1px solid var(--cyan); border-bottom: 3px solid var(--cyan); }
+.player-speech small { margin: 0 0 6px; color: var(--cyan); }
+.world-label.gesture-speech { color: var(--orange); border-color: var(--orange); }
 .tabard-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
 .tabard-swatches button { width: 32px; height: 32px; min-height: 32px; padding: 0; background: var(--swatch); }
 
@@ -223,7 +257,7 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 .name-line > span { font-size: 12px; color: var(--muted); }
 .stat-bar { position: relative; height: 18px; margin-top: 5px; background: #07101a; border: 1px solid #425962; }
 .stat-bar > span { display: block; width: 100%; height: 100%; background: #477d6b; }
-.stat-bar small { position: absolute; inset: 0; font-size: 14px; line-height: 16px; text-align: center; color: #f0f5e8; }
+.stat-bar small { position: absolute; inset: 0; font-size: 12px; line-height: 16px; text-align: center; color: #f0f5e8; }
 .energy { height: 15px; }
 .energy > span { background: #365d88; }
 .energy small { line-height: 13px; font-size: 12px; }
@@ -238,6 +272,8 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 .minimap-footer { display: flex; justify-content: space-between; gap: 6px; padding: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 .target-frame { position: absolute; top: 126px; left: 20px; width: 270px; padding: 12px; }
 .target-frame small { float: right; color: var(--orange); }
+#target-status { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
+.target-marker { position: absolute; border: 2px solid var(--green); pointer-events: none; }
 .enemy { height: 7px; margin-top: 8px; }
 .enemy > span { background: #c07871; }
 .quest-tracker { position: absolute; top: 292px; right: 20px; width: 264px; padding: 14px; max-height: calc(100dvh - 510px); overflow: auto; }
@@ -246,6 +282,17 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 .tracked-quest { margin-top: 16px; font-size: 14px; }
 .tracked-quest strong, .tracked-quest small { display: block; }
 .tracked-quest span, .tracked-quest small { color: var(--muted); font-size: 12px; }
+#campaign-chapter { margin-top: 12px; width: 100%; font-size: 12px; text-align: left; }
+#campaign-lead { font-size: 12px; line-height: 1.5; color: var(--muted); }
+.quest-thread { margin: 12px 0; }
+.quest-thread summary { color: var(--orange); font-size: 12px; cursor: pointer; }
+.moral-decision { margin: 16px 0; padding: 14px; border: 1px solid var(--orange); }
+.moral-decision summary { color: var(--orange); cursor: pointer; }
+.moral-decision .card-grid { margin-top: 12px; }
+.moral-decision h4 { margin: 0 0 10px; }
+.moral-decision button { width: 100%; white-space: normal; }
+.moral-decision .moral-effects { color: var(--cyan); font-size: 13px; line-height: 1.6; }
+.moral-record { border-left: 3px solid var(--orange); padding-left: 12px; }
 #story-guide { margin-top: 14px; }
 #story-chapter, .story-chapter { display: block; color: var(--orange); font-size: 12px; }
 #story-instruction { font-size: 16px; margin: 10px 0; }
@@ -268,11 +315,10 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 .incident-label { max-width: 300px; }
 .incident-label small { white-space: normal; }
 #interaction { position: absolute; bottom: 242px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 10px 16px; font-size: 16px; background: #10222df5; border-color: #85aaa8; }
-#reticle { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 30px; color: #eff5db; }
 .bottom-hud { position: absolute; bottom: 66px; left: 50%; transform: translateX(-50%); width: 548px; }
 .ghostline-status { margin: 0 0 8px; padding: 6px 10px; border-left: 2px solid var(--cyan); color: var(--cyan); background: #101e2aeb; font-size: 12px; min-height: 30px; }
 .hotbar-top { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-bottom: 7px; }
-#credits { color: var(--orange); font-size: 16px; }
+#gold { color: var(--orange); font-size: 16px; }
 .hotbar { --ui-frame: 1; display: flex; gap: 5px; padding: 6px; background: #09131df5; border: 1px solid #667e89; }
 .ability { position: relative; min-width: 0; width: 60px; height: 70px; padding: 15px 13px 23px; flex: 1; overflow: hidden; background: #1b2e3a; border-color: #53717e; }
 .ability svg { display: block; width: 100%; height: 100%; }
@@ -339,6 +385,8 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 #touch-controls { display: none; }
 
 @media (max-width: 1100px) {
+  .chat-window { width: 260px; }
+  .chat-window[data-expanded=true] { top: 12px; left: 12px; width: 400px; max-height: calc(100dvh - 80px); }
   #landing { grid-template-columns: minmax(0,1fr) 280px; gap: 24px; padding: 0 4vw; }
   .masthead nav { display: none; }
   .hero-actions .compact-factions { display: inline-flex; }
@@ -354,6 +402,8 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
   .hotbar-bottom #input-label { display: none; }
 }
 @media (max-width: 800px) {
+  .chat-window[data-expanded=false] { display: none; }
+  .chat-window[data-expanded=true] { top: 12px; left: 12px; width: calc(100% - 24px); max-height: calc(100dvh - 80px); }
   body { font-size: 16px; }
   #landing { display: flex; flex-direction: column; gap: 0; }
   .hero { padding: 30px 0; width: 100%; }
@@ -432,6 +482,9 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
   #dungeon-warning { top: 192px; max-width: 90vw; }
 }
 @media (pointer: coarse) {
+  .chat-window[data-expanded=false] { display: none; }
+  .chat-window[data-expanded=true] { top: 12px; left: 12px; width: min(460px,calc(100% - 24px)); max-height: calc(100dvh - 80px); }
+  .chat-window button { min-height: 44px; }
   button { min-height: 44px; }
   #touch-controls { display: block; position: absolute; inset: 0; pointer-events: none; }
   #touch-stick { position: absolute; left: 22px; bottom: 100px; width: 116px; height: 116px; background: #152a38bf; border: 2px solid #66858d; touch-action: none; pointer-events: auto; }
@@ -445,6 +498,8 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
   .quest-tracker { max-height: calc(100dvh - 680px); }
 }
 @media (max-height: 600px) and (min-width: 600px) {
+  .chat-window[data-expanded=false] { display: none; }
+  .chat-window[data-expanded=true] { top: 10px; left: 10px; width: min(400px,calc(100% - 20px)); max-height: calc(100dvh - 76px); }
   #landing { grid-template-rows: 60px 1fr auto; }
   .masthead { min-height: 60px; }
   h1 { font-size: 58px; margin: 16px 0; }
@@ -480,4 +535,17 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 @media (pointer: coarse) and (max-height: 750px) {
   /* On short touch screens the journal holds the full tracker; controls stay clear. */
   .quest-tracker { display: none; }
+}
+
+/* Branch paths stay readable as a three-column tree, with explicit prerequisites. */
+.talent-tree { margin: 20px 0; }
+.talent-tier { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.talent-tier + .talent-tier { border-top: 2px solid #35515c; padding-top: 16px; }
+.talent-card.trained { border-color: var(--green); background: #18302e; }
+.talent-link { color: var(--cyan); font-size: 13px; }
+.hotbar { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); }
+.hotbar .ability { width: 100%; }
+@media (max-width: 700px) {
+  .talent-tier { grid-template-columns: 1fr; }
+  .talent-tier .talent-card { grid-column: 1 !important; }
 }

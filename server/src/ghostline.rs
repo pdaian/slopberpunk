@@ -282,9 +282,10 @@ mod tests {
         )
     }
     fn player(id: &str, position: Vec3) -> Player {
-        let c: Character = serde_json::from_value(json!({"version":2,"id":id,"name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"credits":45,"position":position,"yaw":0,"health":140,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
+        let c: Character = serde_json::from_value(json!({"version":2,"id":id,"name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"gold":45,"position":position,"yaw":0,"health":140,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
         let (output, _) = mpsc::channel(4);
         Player {
+            live_social: live_social::Session::default(),
             instance: None,
             owner: "account".into(),
             c,
@@ -464,10 +465,10 @@ mod tests {
         assert_eq!(s.enemies[0].health, 0.0);
         assert_eq!(s.players["owner"].c.energy, 70.0);
         assert_eq!(s.players["owner"].c.xp, 28);
-        assert_eq!(s.players["owner"].c.credits, 50);
+        assert_eq!(s.players["owner"].c.gold, 50);
         assert_eq!(s.players["owner"].c.active_quests[&q], 1);
         s.tick_ghostlines();
-        assert_eq!(s.players["owner"].c.credits, 50);
+        assert_eq!(s.players["owner"].c.gold, 50);
     }
 
     #[test]
@@ -519,7 +520,7 @@ mod tests {
             assert!(s.ghostlines.is_empty());
             assert_eq!(s.enemies[0].health, 100.0);
             if let Some(p) = s.players.get("owner") {
-                assert_eq!(p.c.credits, 45);
+                assert_eq!(p.c.gold, 45);
                 assert_eq!(p.dash_ready, 99.0);
             }
         }

@@ -2,6 +2,7 @@
 // GPL-3.0-or-later. See LICENSE.
 import { distance, mix3 } from './math.js';
 import { routeHeight } from './world.js';
+import { residentTreatment, neighborhoodOutcome } from './morality.js';
 
 const mod = (n, d) => ((n % d) + d) % d;
 const races = ['human', 'lattice', 'revenant', 'bloom'];
@@ -76,9 +77,12 @@ export function validateCityLife(content, data, world) {
 }
 
 export class CityLife {
-  constructor(world, content) {
+  constructor(world, content, data = null) {
     this.world = world;
     this.content = content;
+    this.data = data;
+    this.morality = null;
+    this.outcomes = new Map();
     this.neighborhoods = new Map(content.neighborhoods.map(n => [n.id, n]));
     this.locals = [];
     this.blocks = new Map();
@@ -153,11 +157,17 @@ export class CityLife {
     this.actors = [];
     this.lastTime = null;
     this.incidents = [];
+    this.morality = null;
+    this.outcomes.clear();
   }
-  update(epoch, origin, { enemies = [], incidents = [], completed = [], quality = 1, focus = null } = {}) {
+  update(epoch, origin, { enemies = [], incidents = [], completed = [], morality = null, quality = 1, focus = null } = {}) {
     const seconds = epoch / 1000, dt = Math.max(0, Math.min(.1, seconds - (this.lastTime ?? seconds)));
     this.lastTime = seconds;
     this.completed = completed;
+    if (this.morality !== morality) {
+      this.morality = morality;
+      this.outcomes = new Map(this.content.neighborhoods.map(n => [n.id,neighborhoodOutcome(n.id,{completed,morality},this.data)]));
+    }
     this.incidents = incidents;
     const hazards = incidents.filter(e => e.phase === 'active' && e.hazard).map(e => ({ health: 1, position: e.hazard.position, radius: e.hazard.radius + 3 }));
     const threats = [...enemies, ...hazards];
@@ -233,13 +243,20 @@ export class CityLife {
       if (activity === 'walk' && resident.role === 'courier') activity = 'carry';
       const title = activity === 'flee' ? 'Taking cover' : activity === 'walk' ? 'Walking to the next stop' : activity === 'carry' ? 'Carrying neighborhood supplies' : activity === 'talk' ? 'Talking with a neighbor' : working ? role.work : role.rest;
       const incidentLine = incident && (incident.phase === 'recovery' ? incident.success : incident.phase === 'failed' ? incident.failure : incident.warning);
-      actors.push({ ...resident, position, velocity, yaw, activity, title, line: activity === 'flee' ? incident?.hazard ? 'Get out of the marked circle. The line is about to discharge!' : 'Keep back from the machines. Get behind a wall!' : incidentLine || (base.activity==='scene'?event.detail:resident.local?stage?.line:resident.personal) || role.line });
+      const treatment = residentTreatment(morality,resident.neighborhood,resident.role);
+      const nearby = distance(origin,position) < 6, stopped = Math.hypot(velocity[0],velocity[2]) < .1;
+      let greeting = '';
+      if (!incident && activity !== 'flee' && nearby && stopped) {
+        if (treatment.wary) { if (activity === 'talk') activity = 'wait';yaw = Math.atan2(position[0]-origin[0],position[2]-origin[2]); }
+        else if (treatment.warm) { greeting = 'nod';yaw = Math.atan2(origin[0]-position[0],origin[2]-position[2]); }
+      }
+      actors.push({ ...resident, position, velocity, yaw, activity, title: treatment.wary && nearby && stopped ? 'Keeping their distance' : title, gesture: greeting, treatment, line: activity === 'flee' ? incident?.hazard ? 'Get out of the marked circle. The line is about to discharge!' : 'Keep back from the machines. Get behind a wall!' : incidentLine || (nearby && treatment.line) || this.outcomes.get(resident.neighborhood) || (base.activity==='scene'?event.detail:resident.local?stage?.line:resident.personal) || role.line });
     }
     for (const [id, state] of this.states) if (seconds - state.seen > 20 || seconds < state.seen) this.states.delete(id);
     // Keep authored residents and the open conversation present when density is reduced.
     actors.sort((a, b) => Number(b.id === focus) - Number(a.id === focus) || Number(b.local) - Number(a.local) || distance(origin, a.position) - distance(origin, b.position) || a.id.localeCompare(b.id));
     this.actors = actors.slice(0, limit);
-    for (const actor of this.actors) if (actor.activity === 'talk' && actor.id !== focus) {
+    for (const actor of this.actors) if (actor.activity === 'talk' && actor.id !== focus && !actor.gesture) {
       const partner = this.actors.find(other => other.id !== actor.id && other.activity !== 'flee' && Math.hypot(other.velocity[0], other.velocity[2]) < .1 && distance(actor.position, other.position) < 5 && this.world.lineOfSight(actor.position, other.position));
       if (partner) actor.yaw = Math.atan2(partner.position[0] - actor.position[0], partner.position[2] - actor.position[2]);
       else { actor.activity = 'wait';actor.title = 'Waiting for a neighbor'; }
@@ -249,7 +266,8 @@ export class CityLife {
   conversation(actor, epoch) {
     const n = this.neighborhoods.get(actor.neighborhood), role = this.content.roles[actor.role];
     const incident = this.incidents.find(e => e.neighborhood === n?.id && e.phase !== 'idle');
-    return { role: role.title, personal: actor.personal||role.line, building:actor.building, neighborhood: n, stage: n && cityStage(n, this.completed), event: incident ? { name: incident.name, detail: actor.line } : n && cityEvent(n, epoch) };
+    const treatment = residentTreatment(this.morality,actor.neighborhood,actor.role), stage = n && cityStage(n,this.completed);
+    return { role: role.title, treatment, personal: treatment.wary ? treatment.line : [treatment.line,actor.personal||role.line].filter(Boolean).join(' '), building: treatment.wary ? null : actor.building, neighborhood: n, stage: stage && this.outcomes.get(n.id) ? { ...stage,line: this.outcomes.get(n.id) } : stage, event: incident ? { name: incident.name, detail: actor.line } : n && cityEvent(n, epoch) };
   }
   overheard(origin, epoch) {
     const seconds = epoch / 1000;

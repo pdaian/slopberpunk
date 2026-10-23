@@ -7,8 +7,8 @@
     "level": 0,
     "requires": [],
     "giver": "iri",
-    "briefing": "Nella’s kitchen has lost its water. Get Oru’s welcome record first, then read the shutoff notice at the Commons exchange. Help restore the feed and post the opening hours at the Relay terminal.",
-    "completion": "The kitchen is open and its hours are posted. Return Oru’s record, then speak to Nella west of the exchange about the repeated bills.",
+    "briefing": "Nella’s kitchen has lost its water. Get Oru’s welcome record first, then read the shutoff notice at the Commons exchange. Help restore the water supply and post the opening hours at the Relay terminal.",
+    "completion": "The kitchen is open and its hours are posted. Return Oru’s record, then speak to Nella west of the exchange about the repeated bills. Iri keeps the supplied delivery receipt beside the shutoff notice. “One jug, two accounts. Let’s find who went thirsty.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -16,29 +16,29 @@
     },
     "reward": {
       "xp": 220,
-      "credits": 30
+      "gold": 30
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "relay-node",
         "count": 1,
-        "text": "Post the opening hours after the kitchen feed is restored. Press E, then return to Iri.",
-        "voice": "Post the opening hours after the kitchen feed is restored. Press E, then return to Iri."
+        "text": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and press E, then return to Iri.",
+        "voice": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and press E, then return to Iri."
       }
     ],
     "story": {
@@ -57,7 +57,7 @@
       "relay-00"
     ],
     "giver": "iri",
-    "briefing": "Stallholders are paying freight charges on goods they carry in themselves. Pull the billing record from the Commons exchange for Iri.",
+    "briefing": "Stallholders are paying freight charges on goods they carry in themselves. Pull the billing record from the Commons exchange for Iri. The kitchen’s double account gives Iri a reason to check the other supposedly completed deliveries.",
     "completion": "The bill names a lift demolished nineteen years ago. Iri circles the contract number and asks for the receipts.",
     "objective": {
       "type": "interact",
@@ -66,7 +66,7 @@
     },
     "reward": {
       "xp": 370,
-      "credits": 54
+      "gold": 54
     }
   },
   {
@@ -88,7 +88,7 @@
     },
     "reward": {
       "xp": 520,
-      "credits": 78
+      "gold": 78
     }
   },
   {
@@ -110,7 +110,7 @@
     },
     "reward": {
       "xp": 670,
-      "credits": 102
+      "gold": 102
     }
   },
   {
@@ -123,8 +123,8 @@
       "relay-03"
     ],
     "giver": "iri",
-    "briefing": "Check the water carriers' path at the Fen drawdown gauge, east of Vesper. Iri needs room for relief carts; Mara wants the drilling rigs kept off the reed bank.",
-    "completion": "The carts will fit without cutting the bank. Iri marks the route, then adds a barrier the concession's rigs cannot clear.",
+    "briefing": "Check the water carriers' path at the Fen water gauge, east of Vesper. Iri needs room for relief carts; Mara wants the drilling rigs kept off the reed bank.",
+    "completion": "The carts will fit without cutting the bank. Iri marks the route, then adds a barrier the company's rigs cannot clear.",
     "objective": {
       "type": "explore",
       "target": "fen-gauge",
@@ -132,7 +132,7 @@
     },
     "reward": {
       "xp": 820,
-      "credits": 126
+      "gold": 126
     }
   },
   {
@@ -154,7 +154,7 @@
     },
     "reward": {
       "xp": 970,
-      "credits": 150
+      "gold": 150
     }
   },
   {
@@ -176,7 +176,7 @@
     },
     "reward": {
       "xp": 1120,
-      "credits": 174
+      "gold": 174
     }
   },
   {
@@ -198,7 +198,7 @@
     },
     "reward": {
       "xp": 1270,
-      "credits": 198
+      "gold": 198
     }
   },
   {
@@ -220,7 +220,7 @@
     },
     "reward": {
       "xp": 1420,
-      "credits": 222
+      "gold": 222
     }
   },
   {
@@ -242,7 +242,7 @@
     },
     "reward": {
       "xp": 1570,
-      "credits": 246
+      "gold": 246
     }
   },
   {
@@ -255,7 +255,7 @@
       "relay-09"
     ],
     "giver": "iri",
-    "briefing": "Survey the old service path at Cinderwood's Canopy refuge. It may carry relief carts without cutting through the last living trees.",
+    "briefing": "Survey the old service path at Cinderwood's Last canopy refuge. It may carry relief carts without cutting through the last living trees.",
     "completion": "The detour works, but it takes longer. Carriers raise their prices; Iri revises the food budget.",
     "objective": {
       "type": "explore",
@@ -264,7 +264,7 @@
     },
     "reward": {
       "xp": 1720,
-      "credits": 270
+      "gold": 270
     }
   },
   {
@@ -286,7 +286,7 @@
     },
     "reward": {
       "xp": 1870,
-      "credits": 294
+      "gold": 294
     }
   },
   {
@@ -300,7 +300,7 @@
     ],
     "giver": "iri",
     "briefing": "A debt warden is enforcing permits from the vanished council. Shut it down so the crossing stewards can remove the old toll schedule.",
-    "completion": "The barrier is open. The stewards post their maintenance rota on its empty control box.",
+    "completion": "The barrier is open. The stewards post their maintenance work schedule on its empty control box.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -308,7 +308,7 @@
     },
     "reward": {
       "xp": 2020,
-      "credits": 318
+      "gold": 318
     }
   },
   {
@@ -330,7 +330,7 @@
     },
     "reward": {
       "xp": 2170,
-      "credits": 342
+      "gold": 342
     }
   },
   {
@@ -344,7 +344,7 @@
     ],
     "giver": "iri",
     "briefing": "The lower-deck stewards will maintain the network if they can control closures and repairs in their districts. Register their compact at the Commons exchange.",
-    "completion": "Iri hands over the exclusive access key. Copper Walk files its first repair request without going through her.",
+    "completion": "Iri hands over the exclusive access key. Copper Walk files its first repair request without going through her. A copy enters the Living Record with the kitchen work schedule. Routes now have people who can amend them, not just accounts that can be charged.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -352,7 +352,7 @@
     },
     "reward": {
       "xp": 2320,
-      "credits": 366
+      "gold": 366
     }
   },
   {
@@ -374,7 +374,7 @@
     },
     "reward": {
       "xp": 2470,
-      "credits": 390
+      "gold": 390
     }
   },
   {
@@ -396,7 +396,7 @@
     },
     "reward": {
       "xp": 2620,
-      "credits": 414
+      "gold": 414
     }
   },
   {
@@ -418,7 +418,7 @@
     },
     "reward": {
       "xp": 2770,
-      "credits": 438
+      "gold": 438
     }
   },
   {
@@ -440,7 +440,7 @@
     },
     "reward": {
       "xp": 2920,
-      "credits": 462
+      "gold": 462
     }
   },
   {
@@ -462,7 +462,7 @@
     },
     "reward": {
       "xp": 3070,
-      "credits": 486
+      "gold": 486
     }
   },
   {
@@ -484,7 +484,7 @@
     },
     "reward": {
       "xp": 3220,
-      "credits": 510
+      "gold": 510
     }
   },
   {
@@ -497,7 +497,7 @@
       "relay-20"
     ],
     "giver": "iri",
-    "briefing": "The short water route cuts through the bank protecting the fen's remaining well. Check the longer path at the drawdown gauge and report its carrying time.",
+    "briefing": "The short water route cuts through the bank protecting the fen's remaining well. Check the longer path at the water gauge and report its carrying time.",
     "completion": "The detour protects the bank but cuts daily deliveries. Iri posts the reduced ration beside the new route.",
     "objective": {
       "type": "explore",
@@ -506,7 +506,7 @@
     },
     "reward": {
       "xp": 3370,
-      "credits": 534
+      "gold": 534
     }
   },
   {
@@ -520,7 +520,7 @@
     ],
     "giver": "iri",
     "briefing": "The Relay terminal rejects basin messages unless the sender owns the surrounding land. Replace the deed check with a local maintenance signature.",
-    "completion": "The roadside crews connect using their own station records. The first message requests replacement batteries.",
+    "completion": "The roadside crews connect using their own station records. The first message requests replacement batteries. Iri adds their water stops to the Living Record. “We have the routes. Now we have to say what they can actually carry.”",
     "objective": {
       "type": "interact",
       "target": "relay-node",
@@ -528,7 +528,7 @@
     },
     "reward": {
       "xp": 3520,
-      "credits": 558
+      "gold": 558
     }
   },
   {
@@ -550,7 +550,7 @@
     },
     "reward": {
       "xp": 3670,
-      "credits": 582
+      "gold": 582
     }
   },
   {
@@ -564,7 +564,7 @@
     ],
     "giver": "iri",
     "briefing": "Retrieve the outer toll chain's founding clause from the Public memory archive. Iri thinks its emergency authority expired with the harbor evacuation.",
-    "completion": "The toll order expired years ago. The water concessions did not. Iri separates the two stacks of contracts.",
+    "completion": "The toll order expired years ago. The water companies did not. Iri separates the two stacks of contracts. The expired order still points to a closed council office. Iri writes the current stewards’ appeal address beside it in the Living Record.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -572,7 +572,7 @@
     },
     "reward": {
       "xp": 3820,
-      "credits": 606
+      "gold": 606
     }
   },
   {
@@ -594,7 +594,7 @@
     },
     "reward": {
       "xp": 3970,
-      "credits": 630
+      "gold": 630
     }
   },
   {
@@ -616,7 +616,7 @@
     },
     "reward": {
       "xp": 4120,
-      "credits": 654
+      "gold": 654
     }
   },
   {
@@ -629,7 +629,7 @@
       "relay-26"
     ],
     "giver": "iri",
-    "briefing": "Divide the Relay terminal's master access between district, roadside, accessibility, and maintenance delegates. The charter must also bar loans secured against the fen or steppe.",
+    "briefing": "Divide the Relay terminal's master access between district, roadside, accessibility, and maintenance delegates. The rules must also bar loans secured against the fen or steppe.",
     "completion": "Iri keeps a mechanic's key. The rejected collateral deal leaves three bridges without repair funding; she posts their names.",
     "objective": {
       "type": "interact",
@@ -638,7 +638,7 @@
     },
     "reward": {
       "xp": 4270,
-      "credits": 678
+      "gold": 678
     }
   },
   {
@@ -652,7 +652,7 @@
     ],
     "giver": "iri",
     "briefing": "The outer toll wardens are still executing their final order. Disable them while the stewards broadcast the expiry record.",
-    "completion": "The last barrier drops. A route crew checks the surface before letting the waiting carts through.",
+    "completion": "The last barrier drops. A route crew checks the surface before letting the waiting carts through. Iri files the disabled toll chain with its expired authority. “Keep the machines’ orders. The next collector will claim this barrier was always lawful.”",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -660,7 +660,7 @@
     },
     "reward": {
       "xp": 4420,
-      "credits": 702
+      "gold": 702
     }
   },
   {
@@ -682,7 +682,7 @@
     },
     "reward": {
       "xp": 4570,
-      "credits": 726
+      "gold": 726
     }
   },
   {
@@ -695,8 +695,8 @@
       "relay-29"
     ],
     "giver": "iri",
-    "briefing": "Walk the reopened route to the Fen drawdown gauge. Iri needs a fresh reading before the stewards set next month's crossings and water deliveries.",
-    "completion": "The gauge is lower. Iri posts rationed crossings and turns down an offer to buy priority access. The repair fund has enough for another month.",
+    "briefing": "Walk the reopened route to the Fen water gauge. Iri needs a fresh reading before the stewards set next month's crossings and water deliveries. This is Iri’s last report for your account in the Living Record. Include what the open routes cannot supply.",
+    "completion": "The gauge is lower. Iri posts rationed crossings and turns down an offer to buy priority access. The repair fund has enough for another month. Iri sends the final route sheet to Oru’s Living Record at the kitchen. “Put the dry stop on the first page. No one should set out on a promise we can’t keep.”",
     "objective": {
       "type": "explore",
       "target": "fen-gauge",
@@ -704,7 +704,7 @@
     },
     "reward": {
       "xp": 4720,
-      "credits": 750
+      "gold": 750
     }
   },
   {
@@ -715,8 +715,8 @@
     "level": 0,
     "requires": [],
     "giver": "sera",
-    "briefing": "The kitchen’s water donors have been billed again. Collect Oru’s welcome record, read the notice at the Commons exchange, then help restore the feed. Keep the original notice at the Memory vault.",
-    "completion": "The feed is running, and the notice is saved as evidence. Return to Oru, then ask Nella about the diners missing from her tally.",
+    "briefing": "The kitchen’s water donors have been billed again. Collect Oru’s welcome record, read the notice at the Commons exchange, then help restore the water supply. Keep the original notice at the Memory vault.",
+    "completion": "The water is running, and the notice is saved as evidence. Return to Oru, then ask Nella about the diners missing from her tally. Sera labels the notice with the date and witness. “An empty bowl needs to survive the next corrected total.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -724,29 +724,29 @@
     },
     "reward": {
       "xp": 220,
-      "credits": 30
+      "gold": 30
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
-        "text": "Register the witnesses who kept the kitchen open. Press E, then return to Sera.",
-        "voice": "Register the witnesses who kept the kitchen open. Press E, then return to Sera."
+        "text": "Register the witnesses who kept the kitchen open. Select the marked terminal and press E, then return to Sera.",
+        "voice": "Register the witnesses who kept the kitchen open. Select the marked terminal and press E, then return to Sera."
       }
     ],
     "story": {
@@ -765,7 +765,7 @@
       "covenant-00"
     ],
     "giver": "sera",
-    "briefing": "A commercial catalog is using a resident's lullaby recording without permission. Check the release at the Memory vault. The melody can stay public; the singer's voice cannot.",
+    "briefing": "A commercial catalog is using a resident's lullaby recording without permission. Check the release at the Memory vault. The melody can stay public; the singer's voice cannot. Sera opens the next page of the Living Record: a permitted use that nobody permitted.",
     "completion": "The recording is withdrawn. The neighborhood keeps the tune and credits its singer.",
     "objective": {
       "type": "interact",
@@ -774,7 +774,7 @@
     },
     "reward": {
       "xp": 370,
-      "credits": 54
+      "gold": 54
     }
   },
   {
@@ -787,7 +787,7 @@
       "covenant-01"
     ],
     "giver": "sera",
-    "briefing": "A diary's permission seal expired after one winter. Retrieve the dated instruction from the Public memory archive and close the open copy.",
+    "briefing": "A diary's permission record expired after one winter. Retrieve the dated instruction from the Public memory archive and close the open copy.",
     "completion": "The diary returns to its intended readers. Its expiry date is visible on the access panel.",
     "objective": {
       "type": "interact",
@@ -796,7 +796,7 @@
     },
     "reward": {
       "xp": 520,
-      "credits": 78
+      "gold": 78
     }
   },
   {
@@ -818,7 +818,7 @@
     },
     "reward": {
       "xp": 670,
-      "credits": 102
+      "gold": 102
     }
   },
   {
@@ -831,7 +831,7 @@
       "covenant-03"
     ],
     "giver": "sera",
-    "briefing": "The vault sells a recording of birds returning to Mourning Fen. Compare the field record at the drawdown gauge with its source file.",
+    "briefing": "The vault sells a recording of birds returning to Mourning Fen. Compare the survey record at the water gauge with its source file.",
     "completion": "The calls came from a sales library. Sera marks the species absent and files the unedited survey beside the advertisement.",
     "objective": {
       "type": "interact",
@@ -840,7 +840,7 @@
     },
     "reward": {
       "xp": 820,
-      "credits": 126
+      "gold": 126
     }
   },
   {
@@ -862,7 +862,7 @@
     },
     "reward": {
       "xp": 970,
-      "credits": 150
+      "gold": 150
     }
   },
   {
@@ -884,7 +884,7 @@
     },
     "reward": {
       "xp": 1120,
-      "credits": 174
+      "gold": 174
     }
   },
   {
@@ -906,7 +906,7 @@
     },
     "reward": {
       "xp": 1270,
-      "credits": 198
+      "gold": 198
     }
   },
   {
@@ -928,7 +928,7 @@
     },
     "reward": {
       "xp": 1420,
-      "credits": 222
+      "gold": 222
     }
   },
   {
@@ -941,7 +941,7 @@
       "covenant-08"
     ],
     "giver": "sera",
-    "briefing": "A witness to Cinderwood's false restoration accounts will meet only at the Canopy refuge. Check the approach for company recorders.",
+    "briefing": "A witness to Cinderwood's false restoration accounts will meet only at the Last canopy refuge. Check the approach for company recorders.",
     "completion": "The approach is clear. The witness signs a limited release, then asks what happens to the pension fund holding those certificates.",
     "objective": {
       "type": "explore",
@@ -950,7 +950,7 @@
     },
     "reward": {
       "xp": 1570,
-      "credits": 246
+      "gold": 246
     }
   },
   {
@@ -972,7 +972,7 @@
     },
     "reward": {
       "xp": 1720,
-      "credits": 270
+      "gold": 270
     }
   },
   {
@@ -994,7 +994,7 @@
     },
     "reward": {
       "xp": 1870,
-      "credits": 294
+      "gold": 294
     }
   },
   {
@@ -1016,7 +1016,7 @@
     },
     "reward": {
       "xp": 2020,
-      "credits": 318
+      "gold": 318
     }
   },
   {
@@ -1038,12 +1038,12 @@
     },
     "reward": {
       "xp": 2170,
-      "credits": 342
+      "gold": 342
     }
   },
   {
     "id": "covenant-14",
-    "title": "Publish the Care Charter",
+    "title": "Publish the Care Rules",
     "faction": "covenant",
     "race": null,
     "level": 28,
@@ -1051,8 +1051,8 @@
       "covenant-13"
     ],
     "giver": "sera",
-    "briefing": "Post the Covenant charter's missing section at the Commons exchange: residents can receive care without keeping an archive or surrendering personal records.",
-    "completion": "Residents add corrections beneath the notice. Sera schedules a review before filing the signed copy.",
+    "briefing": "Post the Covenant rules's missing section at the Commons exchange: residents can receive care without keeping an archive or surrendering personal records.",
+    "completion": "Residents add corrections beneath the notice. Sera schedules a review before filing the signed copy. Sera places a copy in the Living Record. The permissions include a way to challenge her own decisions.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -1060,12 +1060,12 @@
     },
     "reward": {
       "xp": 2320,
-      "credits": 366
+      "gold": 366
     }
   },
   {
     "id": "covenant-15",
-    "title": "Find the Missing Caskets",
+    "title": "Find the Missing Capsules",
     "faction": "covenant",
     "race": null,
     "level": 30,
@@ -1073,7 +1073,7 @@
       "covenant-14"
     ],
     "giver": "sera",
-    "briefing": "Inspect the shipping route at the South floodgate. A manifest lists memory caskets left outside Vesper during the evacuation.",
+    "briefing": "Inspect the shipping route at the South floodgate. A manifest lists memory storage capsules left outside Vesper during the evacuation.",
     "completion": "Their destination was temporary storage. Sera starts tracing the delivery orders before arranging retrieval.",
     "objective": {
       "type": "explore",
@@ -1082,12 +1082,12 @@
     },
     "reward": {
       "xp": 2470,
-      "credits": 390
+      "gold": 390
     }
   },
   {
     "id": "covenant-16",
-    "title": "Copy the Casket Instructions",
+    "title": "Copy the Capsule Instructions",
     "faction": "covenant",
     "race": null,
     "level": 32,
@@ -1095,8 +1095,8 @@
       "covenant-15"
     ],
     "giver": "sera",
-    "briefing": "Copy the recovered caskets' consent seals into the Last salt beacon's protected register. The original labels will not survive the heat.",
-    "completion": "The seals have a durable copy and a custody record. The caskets stay closed during transport.",
+    "briefing": "Copy the recovered capsules' permission records into the Last salt beacon's protected register. The original labels will not survive the heat.",
+    "completion": "The seals have a durable copy and a safekeeping record. The capsules stay closed during transport.",
     "objective": {
       "type": "interact",
       "target": "salt-beacon",
@@ -1104,7 +1104,7 @@
     },
     "reward": {
       "xp": 2620,
-      "credits": 414
+      "gold": 414
     }
   },
   {
@@ -1117,8 +1117,8 @@
       "covenant-16"
     ],
     "giver": "sera",
-    "briefing": "Survey the caskets near the Last freshwater seep whose occupants declined revival. Find a retrieval path that avoids the proposed blanket sterilization.",
-    "completion": "A narrow route is marked. Some caskets cannot be reached in time; their refusal records are copied before the crew withdraws.",
+    "briefing": "Survey the capsules near the Last freshwater seep whose occupants declined revival. Find a retrieval path that avoids the proposed blanket sterilization.",
+    "completion": "A narrow route is marked. Some capsules cannot be reached in time; their refusal records are copied before the crew withdraws.",
     "objective": {
       "type": "explore",
       "target": "bloom-seep",
@@ -1126,12 +1126,12 @@
     },
     "reward": {
       "xp": 2770,
-      "credits": 438
+      "gold": 438
     }
   },
   {
     "id": "covenant-18",
-    "title": "Stop the Casket Scanners",
+    "title": "Stop the Capsule Scanners",
     "faction": "covenant",
     "race": null,
     "level": 36,
@@ -1139,7 +1139,7 @@
       "covenant-17"
     ],
     "giver": "sera",
-    "briefing": "Index drones are scanning the recovered caskets for voices. Disable them before the recordings reach the public catalog.",
+    "briefing": "Index drones are scanning the recovered capsules for voices. Disable them before the recordings reach the public catalog.",
     "completion": "The upload queue is stopped. Sera preserves the request list, with the voices sealed.",
     "objective": {
       "type": "kill",
@@ -1148,7 +1148,7 @@
     },
     "reward": {
       "xp": 2920,
-      "credits": 462
+      "gold": 462
     }
   },
   {
@@ -1170,12 +1170,12 @@
     },
     "reward": {
       "xp": 3070,
-      "credits": 486
+      "gold": 486
     }
   },
   {
     "id": "covenant-20",
-    "title": "Protect the Casket Cooling",
+    "title": "Protect the Capsule Cooling",
     "faction": "covenant",
     "race": null,
     "level": 40,
@@ -1183,8 +1183,8 @@
       "covenant-19"
     ],
     "giver": "sera",
-    "briefing": "Wirejacks are cutting cooling jackets off the casket transport. Clear the collectors before the temperature rises past the safe limit.",
-    "completion": "The cooling circuit holds. The keepers continue checking one consent seal at a time.",
+    "briefing": "Wirejacks are cutting cooling jackets off the capsule transport. Clear the collectors before the temperature rises past the safe limit.",
+    "completion": "The cooling circuit holds. The keepers continue checking one permission record at a time.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -1192,7 +1192,7 @@
     },
     "reward": {
       "xp": 3220,
-      "credits": 510
+      "gold": 510
     }
   },
   {
@@ -1214,7 +1214,7 @@
     },
     "reward": {
       "xp": 3370,
-      "credits": 534
+      "gold": 534
     }
   },
   {
@@ -1228,7 +1228,7 @@
     ],
     "giver": "sera",
     "briefing": "Post the reduced storage plan at the Commons exchange. It funds clinic cooling by closing advertising and some immersive archives, instead of selling patient memories.",
-    "completion": "Patients keep their records private. The virtual forest closes, leaving a transcript. Its donor cancels the next payment.",
+    "completion": "Patients keep their records private. The virtual forest closes, leaving a transcript. Its donor cancels the next payment. Sera files the lost donation beside the saved cooling allowance in the Living Record. Neither cost is hidden.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -1236,7 +1236,7 @@
     },
     "reward": {
       "xp": 3520,
-      "credits": 558
+      "gold": 558
     }
   },
   {
@@ -1258,7 +1258,7 @@
     },
     "reward": {
       "xp": 3670,
-      "credits": 582
+      "gold": 582
     }
   },
   {
@@ -1271,8 +1271,8 @@
       "covenant-23"
     ],
     "giver": "sera",
-    "briefing": "Find the Inference Annex's mandate at the Public memory archive. It rebuilds withdrawn histories from public traces, then sells household profiles to water suppliers.",
-    "completion": "Sera's deletion order covers the derived profiles as well as their source copies. The suppliers contest the order before the ink dries.",
+    "briefing": "Find the Inference Annex's official order at the Public memory archive. It rebuilds withdrawn histories from public traces, then sells household profiles to water suppliers.",
+    "completion": "Sera's deletion order covers the derived profiles as well as their source copies. The suppliers contest the order before the ink dries. The Annex calls each new profile a separate product, so withdrawal of the source never reached it. Sera records the link the suppliers left out.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -1280,7 +1280,7 @@
     },
     "reward": {
       "xp": 3820,
-      "credits": 606
+      "gold": 606
     }
   },
   {
@@ -1302,7 +1302,7 @@
     },
     "reward": {
       "xp": 3970,
-      "credits": 630
+      "gold": 630
     }
   },
   {
@@ -1324,7 +1324,7 @@
     },
     "reward": {
       "xp": 4120,
-      "credits": 654
+      "gold": 654
     }
   },
   {
@@ -1346,7 +1346,7 @@
     },
     "reward": {
       "xp": 4270,
-      "credits": 678
+      "gold": 678
     }
   },
   {
@@ -1359,8 +1359,8 @@
       "covenant-27"
     ],
     "giver": "sera",
-    "briefing": "Annex wardens are enforcing an order to preserve everything forever. Disable their extraction chassis while the keepers revoke that order.",
-    "completion": "The Annex shuts down. Protected public records remain available through the ordinary vault controls.",
+    "briefing": "Annex wardens are enforcing an order to preserve everything forever. Disable their extraction machine while the keepers revoke that order.",
+    "completion": "The Annex shuts down. Protected public records remain available through the ordinary vault controls. The Living Record retains the Annex’s extraction trail. Closing the service does not erase what the witnesses need to contest it.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -1368,7 +1368,7 @@
     },
     "reward": {
       "xp": 4420,
-      "credits": 702
+      "gold": 702
     }
   },
   {
@@ -1390,7 +1390,7 @@
     },
     "reward": {
       "xp": 4570,
-      "credits": 726
+      "gold": 726
     }
   },
   {
@@ -1403,8 +1403,8 @@
       "covenant-29"
     ],
     "giver": "sera",
-    "briefing": "File the consent charter and the archive's actual water budget at Cinderwood's Stump ledger. Include the records being lost to low-power storage.",
-    "completion": "The Annex is closed. Several immersive records survive only as text. Sera labels the empty shelf with the loss date and the cooling budget that forced it.",
+    "briefing": "File the consent rules and the archive's actual water budget at Cinderwood's Tree records. Include the records being lost to low-power storage. This is Sera’s last report for your account in the Living Record. Preserve the cost of closing the case.",
+    "completion": "The Annex is closed. Several immersive records survive only as text. Sera labels the empty shelf with the loss date and the cooling budget that forced it. Sera sends that loss record to Oru’s copy at the kitchen. “Keep the empty shelf in the account. Someone chose it under a limit; it was not nothing.”",
     "objective": {
       "type": "interact",
       "target": "wood-ledger",
@@ -1412,7 +1412,7 @@
     },
     "reward": {
       "xp": 4720,
-      "credits": 750
+      "gold": 750
     }
   },
   {
@@ -1423,8 +1423,8 @@
     "level": 0,
     "requires": [],
     "giver": "bram",
-    "briefing": "The pump works, but an account lock has stopped the kitchen water. Get Oru’s welcome record and read the job notice at the Commons exchange. Restore the feed, then register the repair at the Public forge.",
-    "completion": "The pump is steady and the repair is logged. Return to Oru, then ask Nella why the kitchen keeps receiving these bills.",
+    "briefing": "The pump works, but an account lock has stopped the kitchen water. Get Oru’s welcome record and read the job notice at the Commons exchange. Restore the water supply, then register the repair at the Public forge.",
+    "completion": "The pump is steady and the repair is logged. Return to Oru, then ask Nella why the kitchen keeps receiving these bills. Bram leaves space for a relief worker’s name. “A working pump won’t give Nella a night’s sleep.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -1432,29 +1432,29 @@
     },
     "reward": {
       "xp": 220,
-      "credits": 30
+      "gold": 30
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "forge",
         "count": 1,
-        "text": "Record the bypass repair at the public forge. Press E, then return to Bram.",
-        "voice": "Record the bypass repair at the public forge. Press E, then return to Bram."
+        "text": "Record the bypass repair at the public forge. Select the marked terminal and press E, then return to Bram.",
+        "voice": "Record the bypass repair at the public forge. Select the marked terminal and press E, then return to Bram."
       }
     ],
     "story": {
@@ -1473,7 +1473,7 @@
       "foundry-00"
     ],
     "giver": "bram",
-    "briefing": "Three departments have stamped the cracked bracket. None has replaced it. Register a replacement pattern at the Public forge so Bram's crew can finish the job.",
+    "briefing": "Three departments have stamped the cracked bracket. None has replaced it. Register a replacement pattern at the Public forge so Bram's crew can finish the job. Bram wants the Living Record to follow a repair past the signed inspection and into the building that depends on it.",
     "completion": "The new bracket holds. Bram leaves the cracked one on the desk with all three stamps attached.",
     "objective": {
       "type": "interact",
@@ -1482,7 +1482,7 @@
     },
     "reward": {
       "xp": 370,
-      "credits": 54
+      "gold": 54
     }
   },
   {
@@ -1495,7 +1495,7 @@
       "foundry-01"
     ],
     "giver": "bram",
-    "briefing": "The pump crew's emergency rota has repeated for six months. Post relief shifts and protected breaks at the Commons exchange.",
+    "briefing": "The pump crew's emergency work schedule has repeated for six months. Post relief shifts and protected breaks at the Commons exchange.",
     "completion": "The night crew clocks out. Their replacements get written handover notes and a working kettle.",
     "objective": {
       "type": "interact",
@@ -1504,7 +1504,7 @@
     },
     "reward": {
       "xp": 520,
-      "credits": 78
+      "gold": 78
     }
   },
   {
@@ -1526,7 +1526,7 @@
     },
     "reward": {
       "xp": 670,
-      "credits": 102
+      "gold": 102
     }
   },
   {
@@ -1548,7 +1548,7 @@
     },
     "reward": {
       "xp": 820,
-      "credits": 126
+      "gold": 126
     }
   },
   {
@@ -1570,7 +1570,7 @@
     },
     "reward": {
       "xp": 970,
-      "credits": 150
+      "gold": 150
     }
   },
   {
@@ -1592,7 +1592,7 @@
     },
     "reward": {
       "xp": 1120,
-      "credits": 174
+      "gold": 174
     }
   },
   {
@@ -1614,7 +1614,7 @@
     },
     "reward": {
       "xp": 1270,
-      "credits": 198
+      "gold": 198
     }
   },
   {
@@ -1636,7 +1636,7 @@
     },
     "reward": {
       "xp": 1420,
-      "credits": 222
+      "gold": 222
     }
   },
   {
@@ -1649,7 +1649,7 @@
       "foundry-08"
     ],
     "giver": "bram",
-    "briefing": "Check Cinderwood's Stump ledger. Bram's fuel estimate leaves out lost shade, drying soil, and the cutters' treatment debts.",
+    "briefing": "Check Cinderwood's Tree records. Bram's fuel estimate leaves out lost shade, drying soil, and the cutters' treatment debts.",
     "completion": "With those costs included, the current bids fail. Bram cuts output. The cutters lose overtime first.",
     "objective": {
       "type": "interact",
@@ -1658,7 +1658,7 @@
     },
     "reward": {
       "xp": 1570,
-      "credits": 246
+      "gold": 246
     }
   },
   {
@@ -1671,7 +1671,7 @@
       "foundry-09"
     ],
     "giver": "bram",
-    "briefing": "Read the Fen drawdown gauge before Bram approves another foundation patch. The supports are settling as the intake drains the bank.",
+    "briefing": "Read the Fen water gauge before Bram approves another foundation patch. The supports are settling as the intake drains the bank.",
     "completion": "The dates match. Reinforcing the towers would leave the intake drawing at the same rate; Bram holds the purchase order.",
     "objective": {
       "type": "explore",
@@ -1680,7 +1680,7 @@
     },
     "reward": {
       "xp": 1720,
-      "credits": 270
+      "gold": 270
     }
   },
   {
@@ -1702,7 +1702,7 @@
     },
     "reward": {
       "xp": 1870,
-      "credits": 294
+      "gold": 294
     }
   },
   {
@@ -1724,7 +1724,7 @@
     },
     "reward": {
       "xp": 2020,
-      "credits": 318
+      "gold": 318
     }
   },
   {
@@ -1737,7 +1737,7 @@
       "foundry-12"
     ],
     "giver": "bram",
-    "briefing": "Find the original maintenance bond at the Public memory archive. Continuance is billing contractors' descendants for repairs they never agreed to perform.",
+    "briefing": "Find the original repair debt agreement at the Public memory archive. Continuance is billing contractors' descendants for repairs they never agreed to perform.",
     "completion": "The bond names no consenting successor. Bram prepares releases for the workers and their families.",
     "objective": {
       "type": "interact",
@@ -1746,12 +1746,12 @@
     },
     "reward": {
       "xp": 2170,
-      "credits": 342
+      "gold": 342
     }
   },
   {
     "id": "foundry-14",
-    "title": "Publish the Maintenance Charter",
+    "title": "Publish the Maintenance Rules",
     "faction": "foundry",
     "race": null,
     "level": 28,
@@ -1759,8 +1759,8 @@
       "foundry-13"
     ],
     "giver": "bram",
-    "briefing": "Publish the Common Load charter at the Commons exchange: rotating shifts, paid recovery, open budgets, and the right to stop unsafe work.",
-    "completion": "Bram signs the same form as the crew. The removal procedure applies to his post too.",
+    "briefing": "Publish the Common Load rules at the Commons exchange: rotating shifts, paid recovery, open budgets, and the right to stop unsafe work.",
+    "completion": "Bram signs the same form as the crew. The removal procedure applies to his post too. The rules join the kitchen work schedule in the Living Record. Bram writes the relief crew beside his own name.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -1768,7 +1768,7 @@
     },
     "reward": {
       "xp": 2320,
-      "credits": 366
+      "gold": 366
     }
   },
   {
@@ -1781,7 +1781,7 @@
       "foundry-14"
     ],
     "giver": "bram",
-    "briefing": "Read the Concession sluice. Separate clinic cooling from the extraction scheduled to pay private dividends.",
+    "briefing": "Read the Company water gate. Separate clinic cooling from the extraction scheduled to pay investor payments.",
     "completion": "The dividend schedule keeps pumping after the tanks fill. Canceling it helps, but clinic demand alone still exceeds summer recharge.",
     "objective": {
       "type": "explore",
@@ -1790,7 +1790,7 @@
     },
     "reward": {
       "xp": 2470,
-      "credits": 390
+      "gold": 390
     }
   },
   {
@@ -1803,7 +1803,7 @@
       "foundry-15"
     ],
     "giver": "bram",
-    "briefing": "Recalibrate the Fen drawdown gauge to include recharge and the pump families' own water reserve.",
+    "briefing": "Recalibrate the Fen water gauge to include recharge and the pump families' own water reserve.",
     "completion": "The revised report shows a deficit on ordinary days. Bram takes it to the assembly without changing the baseline.",
     "objective": {
       "type": "interact",
@@ -1812,7 +1812,7 @@
     },
     "reward": {
       "xp": 2620,
-      "credits": 414
+      "gold": 414
     }
   },
   {
@@ -1834,7 +1834,7 @@
     },
     "reward": {
       "xp": 2770,
-      "credits": 438
+      "gold": 438
     }
   },
   {
@@ -1856,7 +1856,7 @@
     },
     "reward": {
       "xp": 2920,
-      "credits": 462
+      "gold": 462
     }
   },
   {
@@ -1878,7 +1878,7 @@
     },
     "reward": {
       "xp": 3070,
-      "credits": 486
+      "gold": 486
     }
   },
   {
@@ -1891,7 +1891,7 @@
       "foundry-19"
     ],
     "giver": "bram",
-    "briefing": "Connect the intake shutdown alarm to the Quiet array's light and vibration channels. Workers need to recognize it through masks, noise, or hearing loss.",
+    "briefing": "Connect the intake shutdown alarm to the Warning control panel's light and vibration channels. Workers need to recognize it through masks, noise, or hearing loss.",
     "completion": "The crew identifies every signal in the test. The instructions go up beside each station.",
     "objective": {
       "type": "interact",
@@ -1900,7 +1900,7 @@
     },
     "reward": {
       "xp": 3220,
-      "credits": 510
+      "gold": 510
     }
   },
   {
@@ -1922,7 +1922,7 @@
     },
     "reward": {
       "xp": 3370,
-      "credits": 534
+      "gold": 534
     }
   },
   {
@@ -1936,7 +1936,7 @@
     ],
     "giver": "bram",
     "briefing": "Audit drones keep restarting the turbine during conversion tests. Disable their restart network.",
-    "completion": "The turbine remains idle. The replacement holds its rated load for the full test hour.",
+    "completion": "The turbine remains idle. The replacement holds its rated load for the full test hour. Bram enters the smaller output in the Living Record. The successful test does not erase the waiting households.",
     "objective": {
       "type": "kill",
       "target": "drone",
@@ -1944,7 +1944,7 @@
     },
     "reward": {
       "xp": 3520,
-      "credits": 558
+      "gold": 558
     }
   },
   {
@@ -1966,7 +1966,7 @@
     },
     "reward": {
       "xp": 3670,
-      "credits": 582
+      "gold": 582
     }
   },
   {
@@ -1988,12 +1988,12 @@
     },
     "reward": {
       "xp": 3820,
-      "credits": 606
+      "gold": 606
     }
   },
   {
     "id": "foundry-25",
-    "title": "Free the Compulsory Shift",
+    "title": "Free the Forced Shift",
     "faction": "foundry",
     "race": null,
     "level": 50,
@@ -2001,8 +2001,8 @@
       "foundry-24"
     ],
     "giver": "bram",
-    "briefing": "Turbine wardens are seizing workers for a compulsory final shift. Disable their restraints while delegates register the bond's termination.",
-    "completion": "The workers are released. Enough sign up for the paid conversion shifts to cover the rota.",
+    "briefing": "Turbine wardens are seizing workers for a forced final shift. Disable their restraints while delegates register the bond's termination.",
+    "completion": "The workers are released. Enough sign up for the paid conversion shifts to cover the work schedule. Bram finds the work order still renewing against the old bond. The Living Record names the paid crew and a shift that ends.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -2010,7 +2010,7 @@
     },
     "reward": {
       "xp": 3970,
-      "credits": 630
+      "gold": 630
     }
   },
   {
@@ -2032,7 +2032,7 @@
     },
     "reward": {
       "xp": 4120,
-      "credits": 654
+      "gold": 654
     }
   },
   {
@@ -2054,7 +2054,7 @@
     },
     "reward": {
       "xp": 4270,
-      "credits": 678
+      "gold": 678
     }
   },
   {
@@ -2068,7 +2068,7 @@
     ],
     "giver": "bram",
     "briefing": "The last wardens insist on a worker inside the shutdown chamber. Disable them so the crew can use its remote release.",
-    "completion": "The turbine stops with everyone outside. Bram counts the crew twice before signing off.",
+    "completion": "The turbine stops with everyone outside. Bram counts the crew twice before signing off. Bram adds the shutdown sheet to the Living Record. For once, the machinery stops before the crew has to.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -2076,7 +2076,7 @@
     },
     "reward": {
       "xp": 4420,
-      "credits": 702
+      "gold": 702
     }
   },
   {
@@ -2089,7 +2089,7 @@
       "foundry-28"
     ],
     "giver": "bram",
-    "briefing": "Read the Fen drawdown gauge after the conversion. Report recharge, ground settlement, and the cooling demand the new system cannot meet.",
+    "briefing": "Read the Fen water gauge after the conversion. Report recharge, ground settlement, and the cooling demand the new system cannot meet.",
     "completion": "Local drawdown has slowed. The deeper bore is still falling. Bram postpones a workshop roof to fund another reading.",
     "objective": {
       "type": "interact",
@@ -2098,7 +2098,7 @@
     },
     "reward": {
       "xp": 4570,
-      "credits": 726
+      "gold": 726
     }
   },
   {
@@ -2111,8 +2111,8 @@
       "foundry-29"
     ],
     "giver": "bram",
-    "briefing": "Visit Cinderwood's Canopy refuge after the shutdown. Bram needs a fuel survey before deciding how the smaller furnace will handle the next heatwave.",
-    "completion": "The canopy survives another season. Bram takes his first scheduled day off. An extraction lender's offer is waiting on his desk when he returns.",
+    "briefing": "Visit Cinderwood's Last canopy refuge after the shutdown. Bram needs a fuel survey before deciding how the smaller furnace will handle the next heatwave. This is Bram’s last report for your account in the Living Record. A shutdown is a beginning for the relief crew.",
+    "completion": "The canopy survives another season. Bram takes his first scheduled day off. An extraction lender's offer is waiting on his desk when he returns. Bram files the smaller furnace schedule in Oru’s Living Record at the kitchen. His own next shift and relief are listed with everyone else’s.",
     "objective": {
       "type": "explore",
       "target": "wood-refuge",
@@ -2120,7 +2120,7 @@
     },
     "reward": {
       "xp": 4720,
-      "credits": 750
+      "gold": 750
     }
   },
   {
@@ -2131,8 +2131,8 @@
     "level": 0,
     "requires": [],
     "giver": "ves",
-    "briefing": "Nella’s kitchen lost its water without a usable warning. Get Oru’s welcome record, read the notice at the Commons exchange, and help restore the feed. Then register the warning at the Quiet array.",
-    "completion": "The water is running and the warning is registered. Return to Oru, then speak to Nella west of the exchange about the missed meals.",
+    "briefing": "Nella’s kitchen lost its water without a usable warning. Get Oru’s welcome record, read the notice at the Commons exchange, and help restore the water supply. Then register the warning at the Warning control panel.",
+    "completion": "The water is running and the warning is registered. Return to Oru, then speak to Nella west of the exchange about the missed meals. Ves copies the delivery confirmation with its blank receipt field. “It said sent. Nobody checked received.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -2140,29 +2140,29 @@
     },
     "reward": {
       "xp": 220,
-      "credits": 30
+      "gold": 30
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "choir-array",
         "count": 1,
-        "text": "Connect the kitchen to the independent warning circuit. Press E, then return to Ves.",
-        "voice": "Connect the kitchen to the independent warning circuit. Press E, then return to Ves."
+        "text": "Connect the kitchen to the independent warning circuit. Select the marked terminal and press E, then return to Ves.",
+        "voice": "Connect the kitchen to the independent warning circuit. Select the marked terminal and press E, then return to Ves."
       }
     ],
     "story": {
@@ -2181,7 +2181,7 @@
       "choir-00"
     ],
     "giver": "ves",
-    "briefing": "The Quiet array starts its morning bulletin without warning. Add a visible countdown and a published schedule.",
+    "briefing": "The Warning control panel starts its morning bulletin without warning. Add a visible countdown and a published schedule. After the kitchen warning, Ves is checking the difference between a broadcast sent and a warning received.",
     "completion": "The warning lamp comes on before the speakers. Residents have time to leave or switch channels.",
     "objective": {
       "type": "interact",
@@ -2190,7 +2190,7 @@
     },
     "reward": {
       "xp": 370,
-      "credits": 54
+      "gold": 54
     }
   },
   {
@@ -2212,7 +2212,7 @@
     },
     "reward": {
       "xp": 520,
-      "credits": 78
+      "gold": 78
     }
   },
   {
@@ -2234,7 +2234,7 @@
     },
     "reward": {
       "xp": 670,
-      "credits": 102
+      "gold": 102
     }
   },
   {
@@ -2256,7 +2256,7 @@
     },
     "reward": {
       "xp": 820,
-      "credits": 126
+      "gold": 126
     }
   },
   {
@@ -2269,7 +2269,7 @@
       "choir-04"
     ],
     "giver": "ves",
-    "briefing": "Configure the Quiet array to offer a channel without opening nearby receivers. List the bulletin and let residents connect themselves.",
+    "briefing": "Configure the Warning control panel to offer a channel without opening nearby receivers. List the bulletin and let residents connect themselves.",
     "completion": "Receivers show the new channel. Those who select it hear the bulletin at the stated time.",
     "objective": {
       "type": "interact",
@@ -2278,7 +2278,7 @@
     },
     "reward": {
       "xp": 970,
-      "credits": 150
+      "gold": 150
     }
   },
   {
@@ -2300,7 +2300,7 @@
     },
     "reward": {
       "xp": 1120,
-      "credits": 174
+      "gold": 174
     }
   },
   {
@@ -2322,7 +2322,7 @@
     },
     "reward": {
       "xp": 1270,
-      "credits": 198
+      "gold": 198
     }
   },
   {
@@ -2344,7 +2344,7 @@
     },
     "reward": {
       "xp": 1420,
-      "credits": 222
+      "gold": 222
     }
   },
   {
@@ -2366,7 +2366,7 @@
     },
     "reward": {
       "xp": 1570,
-      "credits": 246
+      "gold": 246
     }
   },
   {
@@ -2379,7 +2379,7 @@
       "choir-09"
     ],
     "giver": "ves",
-    "briefing": "Survey a public path at Cinderwood's Canopy refuge. Amplified tours are disturbing the remaining nests, and the cutters rely on visitor income.",
+    "briefing": "Survey a public path at Cinderwood's Last canopy refuge. Amplified tours are disturbing the remaining nests, and the cutters rely on visitor income.",
     "completion": "The path opens without speakers, with a crowd limit. A tour company starts selling reservations for its own approach.",
     "objective": {
       "type": "explore",
@@ -2388,7 +2388,7 @@
     },
     "reward": {
       "xp": 1720,
-      "credits": 270
+      "gold": 270
     }
   },
   {
@@ -2401,7 +2401,7 @@
       "choir-10"
     ],
     "giver": "ves",
-    "briefing": "Set local listening zones at the Quiet array. Keep space for the market's musicians and a usable route to the quiet table.",
+    "briefing": "Set local listening zones at the Warning control panel. Keep space for the market's musicians and a usable route to the quiet table.",
     "completion": "The crew tests both areas during a performance. Ves leaves the master mute control disabled.",
     "objective": {
       "type": "interact",
@@ -2410,7 +2410,7 @@
     },
     "reward": {
       "xp": 1870,
-      "credits": 294
+      "gold": 294
     }
   },
   {
@@ -2432,7 +2432,7 @@
     },
     "reward": {
       "xp": 2020,
-      "credits": 318
+      "gold": 318
     }
   },
   {
@@ -2454,12 +2454,12 @@
     },
     "reward": {
       "xp": 2170,
-      "credits": 342
+      "gold": 342
     }
   },
   {
     "id": "choir-14",
-    "title": "Publish the Listening Charter",
+    "title": "Publish the Listening Rules",
     "faction": "choir",
     "race": null,
     "level": 28,
@@ -2467,8 +2467,8 @@
       "choir-13"
     ],
     "giver": "ves",
-    "briefing": "Post the Listening Charter at the Commons exchange. Require accessible alternatives, named authors, emergency expiry dates, and an opt-out that preserves essential services.",
-    "completion": "Ves signs it without an exemption for the Choir. The first review date is posted below.",
+    "briefing": "Post the Listening Rules at the Commons exchange. Require accessible alternatives, named authors, emergency expiry dates, and an opt-out that preserves essential services.",
+    "completion": "Ves signs it without an exemption for the Choir. The first review date is posted below. Ves files the rules in the Living Record. A refusal will remain an answer, even when it comes from someone who refuses the Choir.",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -2476,7 +2476,7 @@
     },
     "reward": {
       "xp": 2320,
-      "credits": 366
+      "gold": 366
     }
   },
   {
@@ -2498,7 +2498,7 @@
     },
     "reward": {
       "xp": 2470,
-      "credits": 390
+      "gold": 390
     }
   },
   {
@@ -2511,7 +2511,7 @@
       "choir-15"
     ],
     "giver": "ves",
-    "briefing": "Separate weather and rescue traffic from the Last salt beacon's compulsory announcements. Give warnings a location, an action, and an expiry.",
+    "briefing": "Separate weather and rescue traffic from the Last salt beacon's forced announcements. Give warnings a location, an action, and an expiry.",
     "completion": "The test bulletin ends on time. The beacon returns control to the receiver.",
     "objective": {
       "type": "interact",
@@ -2520,7 +2520,7 @@
     },
     "reward": {
       "xp": 2620,
-      "credits": 414
+      "gold": 414
     }
   },
   {
@@ -2542,7 +2542,7 @@
     },
     "reward": {
       "xp": 2770,
-      "credits": 438
+      "gold": 438
     }
   },
   {
@@ -2564,7 +2564,7 @@
     },
     "reward": {
       "xp": 2920,
-      "credits": 462
+      "gold": 462
     }
   },
   {
@@ -2586,7 +2586,7 @@
     },
     "reward": {
       "xp": 3070,
-      "credits": 486
+      "gold": 486
     }
   },
   {
@@ -2608,7 +2608,7 @@
     },
     "reward": {
       "xp": 3220,
-      "credits": 510
+      "gold": 510
     }
   },
   {
@@ -2621,7 +2621,7 @@
       "choir-20"
     ],
     "giver": "ves",
-    "briefing": "The Quiet array treats every opt-out as a fault and raises its power. Add a signed refusal signal, and reserve the nesting refuge's quiet interval.",
+    "briefing": "The Warning control panel treats every opt-out as a fault and raises its power. Add a signed refusal signal, and reserve the nesting refuge's quiet interval.",
     "completion": "The array accepts the refusal without boosting output. Ves tests it again after a receiver restart.",
     "objective": {
       "type": "interact",
@@ -2630,7 +2630,7 @@
     },
     "reward": {
       "xp": 3370,
-      "credits": 534
+      "gold": 534
     }
   },
   {
@@ -2644,7 +2644,7 @@
     ],
     "giver": "ves",
     "briefing": "The Public memory archive records when emergencies begin but never when they end. Require an expiry and a named reviewer for priority broadcasts.",
-    "completion": "The next permanent-emergency request is rejected. Its author must supply a review date.",
+    "completion": "The next permanent-emergency request is rejected. Its author must supply a review date. Ves adds the expiry and appeal address to the Living Record. “An emergency needs a way to end, and someone to answer while it lasts.”",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -2652,7 +2652,7 @@
     },
     "reward": {
       "xp": 3520,
-      "credits": 558
+      "gold": 558
     }
   },
   {
@@ -2674,7 +2674,7 @@
     },
     "reward": {
       "xp": 3670,
-      "credits": 582
+      "gold": 582
     }
   },
   {
@@ -2688,7 +2688,7 @@
     ],
     "giver": "ves",
     "briefing": "Retrieve the universal-attendance template from the Public memory archive. Find the clause that treats receipt of a message as acceptance of a contract.",
-    "completion": "There is no signature field. Ves drafts a revocation covering every faction's broadcasts.",
+    "completion": "There is no signature field. Ves drafts a revocation covering every faction's broadcasts. Universal attendance treated silence as agreement. Ves adds the absent signature field to the Living Record: there was nowhere to refuse.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -2696,7 +2696,7 @@
     },
     "reward": {
       "xp": 3820,
-      "credits": 606
+      "gold": 606
     }
   },
   {
@@ -2718,7 +2718,7 @@
     },
     "reward": {
       "xp": 3970,
-      "credits": 630
+      "gold": 630
     }
   },
   {
@@ -2732,7 +2732,7 @@
     ],
     "giver": "ves",
     "briefing": "Repeater drones are flooding the channel with demands to acknowledge universal attendance. Disable them before they bury the approaching storm notice.",
-    "completion": "The weather bulletin gets through. Ves keeps one copy of the compulsory demand for the case file.",
+    "completion": "The weather bulletin gets through. Ves keeps one copy of the forced demand for the case file.",
     "objective": {
       "type": "kill",
       "target": "drone",
@@ -2740,7 +2740,7 @@
     },
     "reward": {
       "xp": 4120,
-      "credits": 654
+      "gold": 654
     }
   },
   {
@@ -2753,7 +2753,7 @@
       "choir-26"
     ],
     "giver": "ves",
-    "briefing": "The Quiet array restores compulsory listening after a power loss. Save the districts' choices in local records and test recovery.",
+    "briefing": "The Warning control panel restores forced listening after a power loss. Save the districts' choices in local records and test recovery.",
     "completion": "The array restarts with the settings intact. Ves posts the recovery instructions beside the switch.",
     "objective": {
       "type": "interact",
@@ -2762,12 +2762,12 @@
     },
     "reward": {
       "xp": 4270,
-      "credits": 678
+      "gold": 678
     }
   },
   {
     "id": "choir-28",
-    "title": "End Compulsory Broadcasts",
+    "title": "End Forced Broadcasts",
     "faction": "choir",
     "race": null,
     "level": 56,
@@ -2776,7 +2776,7 @@
     ],
     "giver": "ves",
     "briefing": "The root wardens still enforce universal attendance after its authority has expired. Disable them while the keepers revoke the order across the network.",
-    "completion": "The root channel closes with an end notice. No acknowledgment is requested.",
+    "completion": "The root channel closes with an end notice. No acknowledgment is requested. Ves keeps the root order in the Living Record, alongside its revocation. “Nobody has to listen to us celebrate.”",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -2784,7 +2784,7 @@
     },
     "reward": {
       "xp": 4420,
-      "credits": 702
+      "gold": 702
     }
   },
   {
@@ -2806,7 +2806,7 @@
     },
     "reward": {
       "xp": 4570,
-      "credits": 726
+      "gold": 726
     }
   },
   {
@@ -2819,8 +2819,8 @@
       "choir-29"
     ],
     "giver": "ves",
-    "briefing": "Return to the Last freshwater seep after the beacon test. Check the withdrawal boundary and record which warning stations are still reachable.",
-    "completion": "Ves stands beside the abandoned houses. Wind moves through a broken window; fungal fans have reached the next marker. The crew moves the warning board back.",
+    "briefing": "Return to the Last freshwater seep after the beacon test. Check the withdrawal boundary and record which warning stations are still reachable. This is Ves’s last report for your account in the Living Record. Check the boundary before anyone relies on it.",
+    "completion": "Ves stands beside the abandoned houses. Wind moves through a broken window; fungal fans have reached the next marker. The crew moves the warning board back. Ves sends the new boundary to Oru’s Living Record at the kitchen. “Leave room to correct it. There are still people beyond the last place we checked.”",
     "objective": {
       "type": "explore",
       "target": "bloom-seep",
@@ -2828,7 +2828,7 @@
     },
     "reward": {
       "xp": 4720,
-      "credits": 750
+      "gold": 750
     }
   },
   {
@@ -2839,8 +2839,8 @@
     "level": 0,
     "requires": [],
     "giver": "archivist",
-    "briefing": "Nella’s kitchen has lost its water. Read the shutoff notice at the Commons exchange, help your contact restore the feed, then use the Lantern kitchen tally to reserve a meal for the next arrival. Bring the record back to me.",
-    "completion": "Your meal is reserved, and there’s a portion set aside for the next arrival. Ask Nella why fourteen regular diners missed yesterday’s meal.",
+    "briefing": "Nella’s kitchen has lost its water. Read the shutoff notice at the Commons exchange, help your contact restore the water supply, then use the Lantern kitchen records to reserve a meal for the next arrival. Bring the record back to me.",
+    "completion": "Your meal is reserved, and there’s a portion set aside for the next arrival. Ask Nella why fourteen regular diners missed yesterday’s meal. Oru writes your chosen name beside the bowl. “That is how the old shelter census began. We can check it this time.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -2848,29 +2848,29 @@
     },
     "reward": {
       "xp": 110,
-      "credits": 25
+      "gold": 25
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Return to the kitchen and reserve a bowl for the next arrival. Press E, then return to Oru.",
-        "voice": "Return to the kitchen and reserve a bowl for the next arrival. Press E, then return to Oru."
+        "text": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and press E, then return to Oru.",
+        "voice": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and press E, then return to Oru."
       }
     ],
     "story": {
@@ -2898,7 +2898,7 @@
     },
     "reward": {
       "xp": 310,
-      "credits": 75
+      "gold": 75
     }
   },
   {
@@ -2911,7 +2911,7 @@
       "human-01"
     ],
     "giver": "archivist",
-    "briefing": "A pamphlet claims Afterborn survival came from ancestry. Compare the Fen drawdown gauge’s water records with shelter survival figures.",
+    "briefing": "A pamphlet claims Afterborn survival came from ancestry. Compare the Fen water gauge’s water records with shelter survival figures.",
     "completion": "Survival improved when the filters worked. Oru corrects the pamphlet and adds the current readings: the wetland is now supplying more water than it replaces.",
     "objective": {
       "type": "interact",
@@ -2920,7 +2920,7 @@
     },
     "reward": {
       "xp": 510,
-      "credits": 125
+      "gold": 125
     }
   },
   {
@@ -2942,7 +2942,7 @@
     },
     "reward": {
       "xp": 710,
-      "credits": 175
+      "gold": 175
     }
   },
   {
@@ -2964,7 +2964,7 @@
     },
     "reward": {
       "xp": 910,
-      "credits": 225
+      "gold": 225
     }
   },
   {
@@ -2978,7 +2978,7 @@
     ],
     "giver": "archivist",
     "briefing": "Survey airflow at the Transit observatory. Lower clinics report more coughing when hot exhaust settles beneath the freight deck.",
-    "completion": "The readings support a new vent and a shaded recovery route. Oru submits both repairs for funding.",
+    "completion": "The readings support a new vent and a shaded recovery route. Oru submits both repairs for funding. Oru files the request in the Living Record as unmet care. “I used to leave a repair out until it was funded. That made the patient disappear.”",
     "objective": {
       "type": "explore",
       "target": "skybridge",
@@ -2986,7 +2986,7 @@
     },
     "reward": {
       "xp": 1110,
-      "credits": 275
+      "gold": 275
     }
   },
   {
@@ -2999,7 +2999,7 @@
       "human-05"
     ],
     "giver": "archivist",
-    "briefing": "Check Cinderwood’s Canopy refuge against the old mobile-kitchen route. Some marked rest stops have lost their shade.",
+    "briefing": "Check Cinderwood’s Last canopy refuge against the old mobile-kitchen route. Some marked rest stops have lost their shade.",
     "completion": "Several rest stops are bare. Oru marks them unsafe and moves the care route beneath the remaining canopy.",
     "objective": {
       "type": "explore",
@@ -3008,7 +3008,7 @@
     },
     "reward": {
       "xp": 1310,
-      "credits": 325
+      "gold": 325
     }
   },
   {
@@ -3030,7 +3030,7 @@
     },
     "reward": {
       "xp": 1510,
-      "credits": 375
+      "gold": 375
     }
   },
   {
@@ -3044,7 +3044,7 @@
     ],
     "giver": "archivist",
     "briefing": "Disable four salvage machines before they strip the medicine carrier’s cooling packs.",
-    "completion": "The medicine arrives within its safe temperature range. Oru schedules a relief crew for the next delivery.",
+    "completion": "The medicine arrives within its safe temperature range. Oru schedules a relief crew for the next delivery. The Living Record keeps the delivery, its water allowance, and the relief shift together. None can replace the other two.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -3052,7 +3052,7 @@
     },
     "reward": {
       "xp": 1710,
-      "credits": 425
+      "gold": 425
     }
   },
   {
@@ -3074,7 +3074,7 @@
     },
     "reward": {
       "xp": 1910,
-      "credits": 475
+      "gold": 475
     }
   },
   {
@@ -3088,7 +3088,7 @@
     ],
     "giver": "archivist",
     "briefing": "Disable two wardens enforcing the old labor forecast at clinic admissions. Staff are ready to replace it with a medical priority list that patients can appeal.",
-    "completion": "The wardens stop collecting patients. The clinic posts its admission rules and an appeal contact by the door.",
+    "completion": "The wardens stop collecting patients. The clinic posts its admission rules and an appeal contact by the door. The Living Record preserves the excluded patients and the rule that kept them outside. Reopening the door must not erase the delay.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -3096,7 +3096,7 @@
     },
     "reward": {
       "xp": 2110,
-      "credits": 525
+      "gold": 525
     }
   },
   {
@@ -3118,7 +3118,7 @@
     },
     "reward": {
       "xp": 2310,
-      "credits": 575
+      "gold": 575
     }
   },
   {
@@ -3131,8 +3131,8 @@
       "human-11"
     ],
     "giver": "archivist",
-    "briefing": "Return to the Fen drawdown gauge and measure the supply before the next meal. The kitchen now accepts everyone, but still has a fixed water ration.",
-    "completion": "The kitchen serves the first queue, then waits for another rationed delivery. Oru adds the reading and the number of people still waiting to the meal record.",
+    "briefing": "Return to the Fen water gauge and measure the supply before the next meal. The kitchen now accepts everyone, but still has a fixed water ration.",
+    "completion": "The kitchen serves the first queue, then waits for another rationed delivery. Oru adds the reading and the number of people still waiting to the meal record. Oru files the waiting names beside your first welcome meal in the Living Record. “The account ends here for now. The queue does not.”",
     "objective": {
       "type": "explore",
       "target": "fen-gauge",
@@ -3140,7 +3140,7 @@
     },
     "reward": {
       "xp": 2510,
-      "credits": 625
+      "gold": 625
     }
   },
   {
@@ -3152,7 +3152,7 @@
     "requires": [],
     "giver": "archivist",
     "briefing": "The welcome form asks for a factory serial before your name. First read the Commons exchange notice and help restore the kitchen water. Then use the Memory vault to record your chosen name and return to me.",
-    "completion": "Your name appears first. The serial remains in a repair record you control. Nella is west of the exchange if you want to help with the missing meals.",
+    "completion": "Your name appears first. The serial remains in a repair record you control. Nella is west of the exchange if you want to help with the missing meals. Oru opens a fresh page in the Living Record. “A repairable body is still somebody’s body.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -3160,29 +3160,29 @@
     },
     "reward": {
       "xp": 110,
-      "credits": 25
+      "gold": 25
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
-        "text": "Record your chosen name beside the response log. Press E, then return to Oru.",
-        "voice": "Record your chosen name beside the response log. Press E, then return to Oru."
+        "text": "Record your chosen name beside the repair record. Select the marked terminal and press E, then return to Oru.",
+        "voice": "Record your chosen name beside the repair record. Select the marked terminal and press E, then return to Oru."
       }
     ],
     "story": {
@@ -3210,7 +3210,7 @@
     },
     "reward": {
       "xp": 310,
-      "credits": 75
+      "gold": 75
     }
   },
   {
@@ -3232,7 +3232,7 @@
     },
     "reward": {
       "xp": 510,
-      "credits": 125
+      "gold": 125
     }
   },
   {
@@ -3254,7 +3254,7 @@
     },
     "reward": {
       "xp": 710,
-      "credits": 175
+      "gold": 175
     }
   },
   {
@@ -3276,7 +3276,7 @@
     },
     "reward": {
       "xp": 910,
-      "credits": 225
+      "gold": 225
     }
   },
   {
@@ -3290,7 +3290,7 @@
     ],
     "giver": "archivist",
     "briefing": "Survey the Transit observatory repeater. It flags two forked citizens as duplicates whenever they cross the bridge.",
-    "completion": "The repeater accepts their separate current keys. Both can cross without an identity warning.",
+    "completion": "The repeater accepts their separate current keys. Both can cross without an identity warning. Oru files both crossings in the Living Record. “The old total looked tidy because it left one of them out.”",
     "objective": {
       "type": "explore",
       "target": "skybridge",
@@ -3298,7 +3298,7 @@
     },
     "reward": {
       "xp": 1110,
-      "credits": 275
+      "gold": 275
     }
   },
   {
@@ -3320,7 +3320,7 @@
     },
     "reward": {
       "xp": 1310,
-      "credits": 325
+      "gold": 325
     }
   },
   {
@@ -3333,7 +3333,7 @@
       "lattice-06"
     ],
     "giver": "archivist",
-    "briefing": "Retrieve Tam’s housing request from the Vacant land register. Compare its date with the mineral concession that displaced local families.",
+    "briefing": "Retrieve Tam’s housing request from the Land ownership records. Compare its date with the mineral company that displaced local families.",
     "completion": "Tam received a private room. The clay for that body came from land taken from another settlement. Oru keeps both records together.",
     "objective": {
       "type": "interact",
@@ -3342,7 +3342,7 @@
     },
     "reward": {
       "xp": 1510,
-      "credits": 375
+      "gold": 375
     }
   },
   {
@@ -3356,7 +3356,7 @@
     ],
     "giver": "archivist",
     "briefing": "Disable four salvage machines collecting occupied mesh plates. Return recovered fragments to the repair crews.",
-    "completion": "Identified plates return to their owners. Unidentified fragments stay in protected storage until someone can check them.",
+    "completion": "Identified plates return to their owners. Unidentified fragments stay in protected storage until someone can check them. Oru records the recovered plates without treating the people inside them as salvage. The mineral demand remains on the next page.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -3364,7 +3364,7 @@
     },
     "reward": {
       "xp": 1710,
-      "credits": 425
+      "gold": 425
     }
   },
   {
@@ -3386,7 +3386,7 @@
     },
     "reward": {
       "xp": 1910,
-      "credits": 475
+      "gold": 475
     }
   },
   {
@@ -3400,7 +3400,7 @@
     ],
     "giver": "archivist",
     "briefing": "Disable two wardens attempting to merge independently living Lattice forks. Archivists will register their separate declarations.",
-    "completion": "The forced-merger equipment stops. Each resident receives a separate record for housing, care, and repairs.",
+    "completion": "The forced-merger equipment stops. Each resident receives a separate record for housing, care, and repairs. Oru records each person separately in the Living Record. Their repair requests remain separate too, even when the total grows.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -3408,7 +3408,7 @@
     },
     "reward": {
       "xp": 2110,
-      "credits": 525
+      "gold": 525
     }
   },
   {
@@ -3421,8 +3421,8 @@
       "lattice-10"
     ],
     "giver": "archivist",
-    "briefing": "Register the new Lattice charter at the Public memory archive. Protect separate identities and voluntary repairs, then publish the limited repair budget and appeal process.",
-    "completion": "The charter is filed. The repair queue remains longer than the kiln’s current reserve can cover.",
+    "briefing": "Register the new Lattice rules at the Public memory archive. Protect separate identities and voluntary repairs, then publish the limited repair budget and appeal process.",
+    "completion": "The rules are saved. The repair queue remains longer than the kiln’s current reserve can cover.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3430,7 +3430,7 @@
     },
     "reward": {
       "xp": 2310,
-      "credits": 575
+      "gold": 575
     }
   },
   {
@@ -3443,8 +3443,8 @@
       "lattice-11"
     ],
     "giver": "archivist",
-    "briefing": "Register the charter at the Vacant land register and close the deeper extraction claim. Future urgent repairs will use recovered ceramic.",
-    "completion": "Ada patches another shell with recovered pieces. The deeper seam stays closed, and several repairs remain on the waiting list.",
+    "briefing": "Register the rules at the Land ownership records and close the deeper extraction claim. Future urgent repairs will use recovered ceramic.",
+    "completion": "Ada patches another shell with recovered pieces. The deeper seam stays closed, and several repairs remain on the waiting list. Oru files the repair queue beside your chosen name in the Living Record. Nella keeps a place at the table for Ada’s next visit.",
     "objective": {
       "type": "interact",
       "target": "steppe-deed",
@@ -3452,7 +3452,7 @@
     },
     "reward": {
       "xp": 2510,
-      "credits": 625
+      "gold": 625
     }
   },
   {
@@ -3464,7 +3464,7 @@
     "requires": [],
     "giver": "archivist",
     "briefing": "Use the name you want recorded now. Read the Commons exchange notice, help your contact restore the kitchen water, then leave your introduction at the Relay terminal. Bring the record back to me.",
-    "completion": "The channel uses your current name. Your earlier name stays private unless you choose to share it. Nella needs help west of the exchange.",
+    "completion": "The channel uses your current name. Your earlier name stays private unless you choose to share it. Nella needs help west of the exchange. Oru opens a fresh page in the Living Record. “You can amend this introduction. Coming back does not make the old one binding.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -3472,29 +3472,29 @@
     },
     "reward": {
       "xp": 110,
-      "credits": 25
+      "gold": 25
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "relay-node",
         "count": 1,
-        "text": "Leave your new introduction on the neighborhood channel. Press E, then return to Oru.",
-        "voice": "Leave your new introduction on the neighborhood channel. Press E, then return to Oru."
+        "text": "Leave your new introduction on the neighborhood channel. Select the marked terminal and press E, then return to Oru.",
+        "voice": "Leave your new introduction on the neighborhood channel. Select the marked terminal and press E, then return to Oru."
       }
     ],
     "story": {
@@ -3522,7 +3522,7 @@
     },
     "reward": {
       "xp": 310,
-      "credits": 75
+      "gold": 75
     }
   },
   {
@@ -3535,8 +3535,8 @@
       "revenant-01"
     ],
     "giver": "archivist",
-    "briefing": "Find the early revival forms at the Public memory archive. A service bond was hidden beneath the consent page.",
-    "completion": "The signature authorized both restoration and compulsory work. Oru lists the living people still being charged under it.",
+    "briefing": "Find the old revival forms at the Public memory archive. A work debt agreement was hidden beneath the consent page.",
+    "completion": "The signature authorized both restoration and forced work. Oru lists the living people still being charged under it.",
     "objective": {
       "type": "interact",
       "target": "archive",
@@ -3544,12 +3544,12 @@
     },
     "reward": {
       "xp": 510,
-      "credits": 125
+      "gold": 125
     }
   },
   {
     "id": "revenant-03",
-    "title": "Stop Body Repossession",
+    "title": "Stop Bodies Being Taken for Debt",
     "faction": null,
     "race": "revenant",
     "level": 15,
@@ -3557,7 +3557,7 @@
       "revenant-02"
     ],
     "giver": "archivist",
-    "briefing": "Disable two audit drones issuing repossession orders from old contractor marks. The clinic can then remove those marks at each patient’s request.",
+    "briefing": "Disable two audit drones issuing seizure for unpaid debts orders from old contractor marks. The clinic can then remove those marks at each patient’s request.",
     "completion": "Patients reach the clinic without machine escorts. Removing an old mark no longer requires a contractor’s approval.",
     "objective": {
       "type": "kill",
@@ -3566,7 +3566,7 @@
     },
     "reward": {
       "xp": 710,
-      "credits": 175
+      "gold": 175
     }
   },
   {
@@ -3588,7 +3588,7 @@
     },
     "reward": {
       "xp": 910,
-      "credits": 225
+      "gold": 225
     }
   },
   {
@@ -3602,7 +3602,7 @@
     ],
     "giver": "archivist",
     "briefing": "Correct the revival guide at the Memory vault. Explain incomplete memories, possible body changes, and available follow-up care.",
-    "completion": "The guide no longer guarantees an unchanged return. Patients can read the limits before signing.",
+    "completion": "The guide no longer guarantees an unchanged return. Patients can read the limits before signing. Oru places the amended guide in the Living Record. “I copied the old promise without its limits. The next patient gets both.”",
     "objective": {
       "type": "interact",
       "target": "memory-vault",
@@ -3610,7 +3610,7 @@
     },
     "reward": {
       "xp": 1110,
-      "credits": 275
+      "gold": 275
     }
   },
   {
@@ -3623,7 +3623,7 @@
       "revenant-05"
     ],
     "giver": "archivist",
-    "briefing": "Inspect the Fen drawdown gauge’s barrier-era records. Rescue supplies were diverted from the workers to paying cooling customers.",
+    "briefing": "Inspect the Fen water gauge’s barrier-era records. Rescue supplies were diverted from the workers to paying cooling customers.",
     "completion": "The original schedule could have reached the barrier crew. The diversion delayed it; Oru adds the delivery orders to the incident record.",
     "objective": {
       "type": "explore",
@@ -3632,7 +3632,7 @@
     },
     "reward": {
       "xp": 1310,
-      "credits": 325
+      "gold": 325
     }
   },
   {
@@ -3654,12 +3654,12 @@
     },
     "reward": {
       "xp": 1510,
-      "credits": 375
+      "gold": 375
     }
   },
   {
     "id": "revenant-08",
-    "title": "Protect the Restoration Caskets",
+    "title": "Protect the Restoration Capsules",
     "faction": null,
     "race": "revenant",
     "level": 40,
@@ -3667,8 +3667,8 @@
       "revenant-07"
     ],
     "giver": "archivist",
-    "briefing": "Disable four salvage machines cutting open dormant restoration caskets. Keep each casket sealed until its recorded instructions are checked.",
-    "completion": "The caskets arrive intact. Staff check each person’s revival instructions before starting treatment.",
+    "briefing": "Disable four salvage machines cutting open dormant revival capsules. Keep each capsule sealed until its recorded instructions are checked.",
+    "completion": "The capsules arrive intact. Staff check each person’s revival instructions before starting treatment. Oru puts the verified wishes beside the capsules’ delivery records. Arrival alone cannot authorize a revival.",
     "objective": {
       "type": "kill",
       "target": "scavenger",
@@ -3676,7 +3676,7 @@
     },
     "reward": {
       "xp": 1710,
-      "credits": 425
+      "gold": 425
     }
   },
   {
@@ -3689,7 +3689,7 @@
       "revenant-08"
     ],
     "giver": "archivist",
-    "briefing": "Publish the full service bond history at the Public memory archive. Cancel the inherited work debt without replacing it with a claim on the new body.",
+    "briefing": "Publish the full work debt agreement history at the Public memory archive. Cancel the inherited work debt without replacing it with a claim on the new body.",
     "completion": "The work debt is canceled. Restoration still requires funding, so the clinic opens a separate review of its water and materials budget.",
     "objective": {
       "type": "interact",
@@ -3698,7 +3698,7 @@
     },
     "reward": {
       "xp": 1910,
-      "credits": 475
+      "gold": 475
     }
   },
   {
@@ -3711,8 +3711,8 @@
       "revenant-09"
     ],
     "giver": "archivist",
-    "briefing": "Disable two repossession wardens still collecting Revenants under the canceled bond.",
-    "completion": "The collectors shut down. Clinics hand out release records without charging the affected patients.",
+    "briefing": "Disable two seizure for unpaid debts wardens still collecting Revenants under the canceled bond.",
+    "completion": "The collectors shut down. Clinics hand out release records without charging the affected patients. The Living Record keeps the release records beside the old work debt agreement. Restoration costs remain; ownership of the restored does not.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -3720,7 +3720,7 @@
     },
     "reward": {
       "xp": 2110,
-      "credits": 525
+      "gold": 525
     }
   },
   {
@@ -3742,7 +3742,7 @@
     },
     "reward": {
       "xp": 2310,
-      "credits": 575
+      "gold": 575
     }
   },
   {
@@ -3756,7 +3756,7 @@
     ],
     "giver": "archivist",
     "briefing": "Register the corrected barrier history and new consent rules at the Sealed culture bank. Publish the actual nutrient reserve beside them.",
-    "completion": "The service bond is retired. Restored patients owe no compulsory labor, but others remain in storage while water and cultures run short.",
+    "completion": "The work debt agreement is retired. Restored patients owe no forced labor, but others remain in storage while water and cultures run short. Oru files the reserve and current revival wishes in the Living Record. Nella leaves a bowl ready for the next person who returns.",
     "objective": {
       "type": "interact",
       "target": "bloom-bank",
@@ -3764,7 +3764,7 @@
     },
     "reward": {
       "xp": 2510,
-      "credits": 625
+      "gold": 625
     }
   },
   {
@@ -3775,8 +3775,8 @@
     "level": 0,
     "requires": [],
     "giver": "archivist",
-    "briefing": "The welcome notice treats every symbiont as a hazard. First read the Commons exchange notice and help restore the kitchen water. Then use the Lantern kitchen tally to record individual care needs and return to me.",
-    "completion": "The notice now asks what each person needs. Nella has enough water for tonight; ask her about the meals missed yesterday.",
+    "briefing": "The welcome notice treats every symbiont as a hazard. First read the Commons exchange notice and help restore the kitchen water. Then use the Lantern kitchen records to record individual care needs and return to me.",
+    "completion": "The notice now asks what each person needs. Nella has enough water for tonight; ask her about the meals missed yesterday. Oru opens a fresh page in the Living Record. “We’ll record the water you need, not just the culture someone sold you.”",
     "objective": {
       "type": "interact",
       "target": "market",
@@ -3784,29 +3784,29 @@
     },
     "reward": {
       "xp": 110,
-      "credits": 25
+      "gold": 25
     },
     "steps": [
       {
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter.",
-        "voice": "Restore the kitchen water feed: repair both controls, clear enforcement, and hold the meter."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Check the restored water feed with the kitchen growers. Press E, then return to Oru.",
-        "voice": "Check the restored water feed with the kitchen growers. Press E, then return to Oru."
+        "text": "Check the restored water supply with the kitchen growers. Select the marked terminal and press E, then return to Oru.",
+        "voice": "Check the restored water supply with the kitchen growers. Select the marked terminal and press E, then return to Oru."
       }
     ],
     "story": {
@@ -3834,7 +3834,7 @@
     },
     "reward": {
       "xp": 310,
-      "credits": 75
+      "gold": 75
     }
   },
   {
@@ -3856,7 +3856,7 @@
     },
     "reward": {
       "xp": 510,
-      "credits": 125
+      "gold": 125
     }
   },
   {
@@ -3878,7 +3878,7 @@
     },
     "reward": {
       "xp": 710,
-      "credits": 175
+      "gold": 175
     }
   },
   {
@@ -3900,7 +3900,7 @@
     },
     "reward": {
       "xp": 910,
-      "credits": 225
+      "gold": 225
     }
   },
   {
@@ -3914,7 +3914,7 @@
     ],
     "giver": "archivist",
     "briefing": "Survey the Transit observatory’s airflow before the clinic opens a new culture-room vent. Keep experimental spores off the public walkway.",
-    "completion": "The crew chooses a filtered outlet. Ordinary Sporebound residents keep access to the walkway.",
+    "completion": "The crew chooses a filtered outlet. Ordinary Sporebound residents keep access to the walkway. Oru places the ventilation plan in the Living Record. “A supplier’s category was never enough to tell us who needed care.”",
     "objective": {
       "type": "explore",
       "target": "skybridge",
@@ -3922,7 +3922,7 @@
     },
     "reward": {
       "xp": 1110,
-      "credits": 275
+      "gold": 275
     }
   },
   {
@@ -3944,7 +3944,7 @@
     },
     "reward": {
       "xp": 1310,
-      "credits": 325
+      "gold": 325
     }
   },
   {
@@ -3966,7 +3966,7 @@
     },
     "reward": {
       "xp": 1510,
-      "credits": 375
+      "gold": 375
     }
   },
   {
@@ -3980,7 +3980,7 @@
     ],
     "giver": "archivist",
     "briefing": "Disable four treatment drones spraying sterilant across the refuges. Their spray kills protected cultures as well as the escaped strain.",
-    "completion": "The spray stops. The clinic begins targeted removal and sealed trials instead.",
+    "completion": "The spray stops. The clinic begins targeted removal and sealed trials instead. The Living Record keeps the stopped seizure and the containment work on separate lines. Protecting patients does not make the escaped strain harmless.",
     "objective": {
       "type": "kill",
       "target": "drone",
@@ -3988,7 +3988,7 @@
     },
     "reward": {
       "xp": 1710,
-      "credits": 425
+      "gold": 425
     }
   },
   {
@@ -4010,7 +4010,7 @@
     },
     "reward": {
       "xp": 1910,
-      "credits": 475
+      "gold": 475
     }
   },
   {
@@ -4024,7 +4024,7 @@
     ],
     "giver": "archivist",
     "briefing": "Disable two wardens blocking Sporebound travelers while admitting unsealed company samples. Inspectors are ready to check exposure and packaging instead of ancestry.",
-    "completion": "Travelers regain access. The unsealed sample crates are held for inspection.",
+    "completion": "Travelers regain access. The unsealed sample crates are held for inspection. Oru records access by person and inspection by sample. The Living Record no longer lets one stand in for the other.",
     "objective": {
       "type": "kill",
       "target": "warden",
@@ -4032,7 +4032,7 @@
     },
     "reward": {
       "xp": 2110,
-      "credits": 525
+      "gold": 525
     }
   },
   {
@@ -4054,7 +4054,7 @@
     },
     "reward": {
       "xp": 2310,
-      "credits": 575
+      "gold": 575
     }
   },
   {
@@ -4068,7 +4068,7 @@
     ],
     "giver": "archivist",
     "briefing": "Return to the Last freshwater seep after the trials. Check the refuge markers and record any growth beyond them.",
-    "completion": "The culture lease has ended and the refuge jars remain sealed. Wild fungus continues across the evacuated houses, so the keepers move the outer markers back.",
+    "completion": "The culture lease has ended and the refuge jars remain sealed. Wild fungus continues across the evacuated houses, so the keepers move the outer markers back. Oru files the moving boundary in the Living Record. The jars are counted; so are the households that can no longer stay.",
     "objective": {
       "type": "explore",
       "target": "bloom-seep",
@@ -4076,7 +4076,7 @@
     },
     "reward": {
       "xp": 2510,
-      "credits": 625
+      "gold": 625
     }
   },
   {
@@ -4088,7 +4088,7 @@
     "level": 8,
     "requires": [],
     "giver": "mara",
-    "briefing": "Mara's overtime pays for water from the company draining her father's well. Read the Fen drawdown gauge so she can compare extraction with her shift records.",
+    "briefing": "Mara's overtime pays for water from the company draining her father's well. Read the Fen water gauge so she can compare extraction with her shift records.",
     "completion": "The steepest drops match the best-paid shifts. Mara lays the overtime slips beside the readings.",
     "objective": {
       "type": "explore",
@@ -4097,7 +4097,7 @@
     },
     "reward": {
       "xp": 560,
-      "credits": 72
+      "gold": 72
     }
   },
   {
@@ -4111,7 +4111,7 @@
       "mourning-fen-00"
     ],
     "giver": "mara",
-    "briefing": "The concession is offering shares instead of back pay. Retrieve the contract at the Concession sluice before Mara's crew signs.",
+    "briefing": "The company is offering shares instead of back pay. Retrieve the contract at the Company water gate before Mara's crew signs.",
     "completion": "The shares carry no vote. Their dividend rises when pumping exceeds the wetland limit. Mara takes the contract back to the crew.",
     "objective": {
       "type": "interact",
@@ -4120,7 +4120,7 @@
     },
     "reward": {
       "xp": 560,
-      "credits": 72
+      "gold": 72
     }
   },
   {
@@ -4134,8 +4134,8 @@
       "mourning-fen-01"
     ],
     "giver": "mara",
-    "briefing": "Record Mara's settlement at the Concession sluice: lower extraction and a winter wage floor, paid for by canceling the dividend. The lease can resume after the guarantee expires.",
-    "completion": "The pump slows. Mara can buy water through winter. The gauge remains well below its old high-water stain.",
+    "briefing": "Record Mara's settlement at the Company water gate: lower extraction and a winter wage floor, paid for by canceling the dividend. The lease can resume after the guarantee expires.",
+    "completion": "The pump slows. Mara can buy water through winter. The gauge remains well below its old high-water stain. Mara sends Nella the smaller delivery allowance. The Living Record keeps the kitchen’s need beside the pump crew’s winter limit.",
     "objective": {
       "type": "interact",
       "target": "fen-sluice",
@@ -4143,7 +4143,7 @@
     },
     "reward": {
       "xp": 560,
-      "credits": 72
+      "gold": 72
     }
   },
   {
@@ -4155,7 +4155,7 @@
     "level": 18,
     "requires": [],
     "giver": "tovin",
-    "briefing": "Check the Stump ledger west of Vesper. Tovin's restoration crew is being paid to cut living trees, with replacement seedlings already sold as mature timber.",
+    "briefing": "Check the Tree records west of Vesper. Tovin's restoration crew is being paid to cut living trees, with replacement seedlings already sold as mature timber.",
     "completion": "Most seedlings died in their first dry season. The nursery photograph on every certificate is eleven years old.",
     "objective": {
       "type": "interact",
@@ -4164,7 +4164,7 @@
     },
     "reward": {
       "xp": 910,
-      "credits": 112
+      "gold": 112
     }
   },
   {
@@ -4178,7 +4178,7 @@
       "cinderwood-00"
     ],
     "giver": "tovin",
-    "briefing": "Survey the soil at the Canopy refuge. Cutting the last shade trees would clear Tovin's treatment debt and expose the surviving seedlings to the heat.",
+    "briefing": "Survey the soil at the Last canopy refuge. Cutting the last shade trees would clear Tovin's treatment debt and expose the surviving seedlings to the heat.",
     "completion": "The shaded soil still holds water. Outside the canopy, roots crumble. Tovin's daughter's next treatment bill arrives that afternoon.",
     "objective": {
       "type": "explore",
@@ -4187,7 +4187,7 @@
     },
     "reward": {
       "xp": 910,
-      "credits": 112
+      "gold": 112
     }
   },
   {
@@ -4201,8 +4201,8 @@
       "cinderwood-01"
     ],
     "giver": "tovin",
-    "briefing": "Enter the cutters' actual yield and treatment debts at the Stump ledger. They will share the surviving wood and sell fallen timber, canceling the false restoration credits.",
-    "completion": "The certificates collapse, taking the crew's pension reserve with them. Tovin sells his tools to keep his daughter's appointment. The living trees remain standing.",
+    "briefing": "Enter the cutters' actual yield and treatment debts at the Tree records. They will share the surviving wood and sell fallen timber, canceling the false restoration credits.",
+    "completion": "The certificates collapse, taking the crew's pension reserve with them. Tovin sells his tools to keep his daughter's appointment. The living trees remain standing. Tovin asks Oru to keep his daughter’s treatment bill beside the canceled certificates. Saving the canopy did not pay it.",
     "objective": {
       "type": "interact",
       "target": "wood-ledger",
@@ -4210,7 +4210,7 @@
     },
     "reward": {
       "xp": 910,
-      "credits": 112
+      "gold": 112
     }
   },
   {
@@ -4231,7 +4231,7 @@
     },
     "reward": {
       "xp": 1400,
-      "credits": 168
+      "gold": 168
     }
   },
   {
@@ -4245,7 +4245,7 @@
       "glassroot-steppe-00"
     ],
     "giver": "ada",
-    "briefing": "Retrieve the mine survey from the Vacant land register. It lists the settlement as vacant, although Ada's neighbors are still living there.",
+    "briefing": "Retrieve the mine survey from the Land ownership records. It lists the settlement as vacant, although Ada's neighbors are still living there.",
     "completion": "The surveyor recorded every house, then removed them from the valuation. The company offers the residents relocation loans.",
     "objective": {
       "type": "interact",
@@ -4254,7 +4254,7 @@
     },
     "reward": {
       "xp": 1400,
-      "credits": 168
+      "gold": 168
     }
   },
   {
@@ -4268,8 +4268,8 @@
       "glassroot-steppe-01"
     ],
     "giver": "ada",
-    "briefing": "Register the settlement's departure at the Vacant land register and close the deeper extraction claim. The relocation grant carries no debt; salvaged ceramic will cover urgent repairs only.",
-    "completion": "Ada loads her partner's patched shell onto a handcart. The families leave with a right to return and no date when they can use it.",
+    "briefing": "Register the settlement's departure at the Land ownership records and close the deeper extraction claim. The relocation grant carries no debt; salvaged ceramic will cover urgent repairs only.",
+    "completion": "Ada loads her partner's patched shell onto a handcart. The families leave with a right to return and no date when they can use it. Ada sends the Living Record their former addresses. Relocation does not make the survey’s claim of vacant land true.",
     "objective": {
       "type": "interact",
       "target": "steppe-deed",
@@ -4277,7 +4277,7 @@
     },
     "reward": {
       "xp": 1400,
-      "credits": 168
+      "gold": 168
     }
   },
   {
@@ -4298,7 +4298,7 @@
     },
     "reward": {
       "xp": 1890,
-      "credits": 224
+      "gold": 224
     }
   },
   {
@@ -4321,7 +4321,7 @@
     },
     "reward": {
       "xp": 1890,
-      "credits": 224
+      "gold": 224
     }
   },
   {
@@ -4336,7 +4336,7 @@
     ],
     "giver": "ilex",
     "briefing": "Register Ilex's containment plan at the Sealed culture bank. Cancel the propagation lease, seal the culture library, and withdraw the outer settlement with its remaining supplies.",
-    "completion": "The bank closes its sales desk. Growth covers the evacuated houses. Ilex leaves one lamp burning for the next inspection.",
+    "completion": "The bank closes its sales desk. Growth covers the evacuated houses. Ilex leaves one lamp burning for the next inspection. Ilex sends Oru both boundaries: the sealed cultures that still support care and the homes the wild growth has taken.",
     "objective": {
       "type": "interact",
       "target": "bloom-bank",
@@ -4344,7 +4344,7 @@
     },
     "reward": {
       "xp": 1890,
-      "credits": 224
+      "gold": 224
     }
   },
   {
@@ -4356,8 +4356,8 @@
     "level": 0,
     "requires": [],
     "giver": "nella",
-    "briefing": "Fourteen bowls stayed empty yesterday. Your repair brought the water back, but it did not bring those people home. Start at the Lantern kitchen tally. Compare it with the Commons water meter, then return to the tally and save the names. I need the people, runner, not a better-looking total.",
-    "completion": "Fourteen names. Thank you. We keep their bowls here. Now we need to find out why a donated jug costs its donor another payment. I have the next job ready for you.",
+    "briefing": "Fourteen regular diners missed their meals. Visit the Lantern kitchen records, compare them with the Commons water meter, then return to save the missing names. I need to know who went hungry, even though the official count says everyone ate.",
+    "completion": "Fourteen names. Thank you. We keep their bowls here. Now we need to find out why a donated jug costs its donor another payment. I have the next job ready for you. Nella sets the list beside the claim that everyone ate. “This stays where the queue can read it.”",
     "objective": {
       "type": "explore",
       "target": "lantern-kitchen",
@@ -4365,29 +4365,29 @@
     },
     "reward": {
       "xp": 95,
-      "credits": 28
+      "gold": 28
     },
     "steps": [
       {
         "type": "explore",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Reach the first neighborhood record.",
-        "voice": "Reach the first neighborhood record."
+        "text": "Walk to Lantern kitchen records. You do not need to press a button.",
+        "voice": "Walk to Lantern kitchen records. You do not need to press a button."
       },
       {
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Compare the service record with the first account.",
-        "voice": "Compare the service record with the first account."
+        "text": "Select Commons water meter and press E to compare the records.",
+        "voice": "Select Commons water meter and press E to compare the records."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Return to the first record and preserve the discrepancy.",
-        "voice": "Return to the first record and preserve the discrepancy."
+        "text": "Select Lantern kitchen records and press E to save the differences between the records.",
+        "voice": "Select Lantern kitchen records and press E to save the differences between the records."
       }
     ],
     "story": {
@@ -4407,8 +4407,8 @@
       "neighborhood-market-00"
     ],
     "giver": "nella",
-    "briefing": "There: the same jug, billed twice. Read the Commons water meter with E. When the concession locks the feed again, help restore both controls, clear its machines, and hold the meter’s ring. Read the meter once more afterward. We need the before and after on the same page.",
-    "completion": "Same serial, two charges. There is our proof. The kitchen is running again, but I cannot stand at that meter all night. One more job: help us share the work.",
+    "briefing": "The same jug of water was billed twice. Read the Commons water meter. Help repair both controls during the next water shutoff, defeat the machines, and stay inside the marked ring for 12 seconds. Read the meter again to save the proof.",
+    "completion": "Same serial, two charges. There is our proof. The kitchen is running again, but I cannot stand at that meter all night. One more job: help us share the work. The meter still lists every debt. Its meal count has no space for a person who went hungry. Oru copies both columns.",
     "objective": {
       "type": "interact",
       "target": "commons-water",
@@ -4416,29 +4416,29 @@
     },
     "reward": {
       "xp": 95,
-      "credits": 28
+      "gold": 28
     },
     "steps": [
       {
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Read the service record before intervening.",
-        "voice": "Read the service record before intervening."
+        "text": "Select Commons water meter and press E to read the record before the emergency.",
+        "voice": "Select Commons water meter and press E to read the record before the emergency."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Restore both incident controls, clear enforcement, and hold the marked site.",
-        "voice": "Restore both incident controls, clear enforcement, and hold the marked site."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
+        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Record the restored service and who was left waiting.",
-        "voice": "Record the restored service and who was left waiting."
+        "text": "Select Commons water meter and press E to save the repair results.",
+        "voice": "Select Commons water meter and press E to save the repair results."
       }
     ],
     "story": {
@@ -4449,7 +4449,7 @@
   },
   {
     "id": "neighborhood-market-02",
-    "title": "Set the Kitchen Rota",
+    "title": "Set the Kitchen Work Schedule",
     "faction": null,
     "race": null,
     "neighborhood": "market",
@@ -4458,8 +4458,8 @@
       "neighborhood-market-01"
     ],
     "giver": "nella",
-    "briefing": "Soup does not wash its own bowls. Post our rota at the Open pantry ledger with E. Spend ten seconds beside the Commons water meter to check the feed, then return to the ledger and confirm the handover. Everyone gets a turn, including me getting a turn to sit down.",
-    "completion": "There. Someone else has the ladle. The portions are still small, but no one gets billed twice for sharing. You know this block now, runner. Your faction contact has more work when you are ready.",
+    "briefing": "Help us share the kitchen work so everyone gets a break. Post the work schedule at the Kitchen schedule board. Stay near the Commons water meter for ten seconds to check the water, then return to the board to confirm the next shift.",
+    "completion": "There. Someone else has the ladle. The portions are still small, but no one gets billed twice for sharing. You know this block now, runner. Your faction contact has more work when you are ready. Oru titles the shared copy the Living Record. Nella leaves fourteen names on its first page. “Take it to the other desks. Bring back the people their totals missed.”",
     "objective": {
       "type": "interact",
       "target": "pantry-ledger",
@@ -4467,35 +4467,35 @@
     },
     "reward": {
       "xp": 95,
-      "credits": 28
+      "gold": 28
     },
     "steps": [
       {
         "type": "interact",
         "target": "pantry-ledger",
         "count": 1,
-        "text": "Publish the neighborhood rota.",
-        "voice": "Publish the neighborhood rota."
+        "text": "Select Kitchen schedule board and press E to post the work schedule.",
+        "voice": "Select Kitchen schedule board and press E to post the work schedule."
       },
       {
         "type": "hold",
         "target": "commons-water",
         "count": 10,
-        "text": "Monitor the service in person",
-        "voice": "Monitor the service in person"
+        "text": "Stay near Commons water meter for 10 seconds.",
+        "voice": "Stay near Commons water meter for 10 seconds."
       },
       {
         "type": "interact",
         "target": "pantry-ledger",
         "count": 1,
-        "text": "Confirm the handover on the duty board.",
-        "voice": "Confirm the handover on the duty board."
+        "text": "Select Kitchen schedule board and press E to confirm who takes the next shift.",
+        "voice": "Select Kitchen schedule board and press E to confirm who takes the next shift."
       }
     ],
     "story": {
       "chapter": "The people behind the bill",
       "speaker": "nella",
-      "invitation": "One more thing, runner. A shared meal needs a shared shift. Come back and help me put the rota into practice."
+      "invitation": "One more thing, runner. A shared meal needs a shared shift. Come back and help me put the work schedule into practice."
     }
   },
   {
@@ -4507,7 +4507,7 @@
     "level": 10,
     "requires": [],
     "giver": "elin",
-    "briefing": "Visit the Unsorted witness shelf. Elin needs to know whether the discarded record was unwanted, or merely unprofitable. Compare both marked records, then return to the first to preserve what disagrees.",
+    "briefing": "Visit the Unsorted witness shelf. Elin needs to know whether the discarded record was unwanted, or merely unprofitable. Follow the markers to compare both records, then return to the first to save the differences.",
     "completion": "The witness wanted that morning kept. A clerk places the request beside its disposable label and waits for an explanation.",
     "objective": {
       "type": "explore",
@@ -4516,26 +4516,26 @@
     },
     "reward": {
       "xp": 375,
-      "credits": 58
+      "gold": 58
     },
     "steps": [
       {
         "type": "explore",
         "target": "glass-witness",
         "count": 1,
-        "text": "Reach the first neighborhood record."
+        "text": "Walk to Unsorted witness shelf. You do not need to press a button."
       },
       {
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Compare the service record with the first account."
+        "text": "Select Cooling priority console and press E to compare the records."
       },
       {
         "type": "interact",
         "target": "glass-witness",
         "count": 1,
-        "text": "Return to the first record and preserve the discrepancy."
+        "text": "Select Unsorted witness shelf and press E to save the differences between the records."
       }
     ]
   },
@@ -4550,7 +4550,7 @@
       "neighborhood-archive-00"
     ],
     "giver": "elin",
-    "briefing": "Read the Cooling priority console and find what decides which memories remain cold. The block is facing another emergency: memories running warm. Read the service record, help resolve the live incident, then record the outcome.",
+    "briefing": "Read the Cooling priority console and find what decides which memories remain cold. The block is facing another emergency: memory cooling failure. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
     "completion": "Elin isolates the payment sort. Technicians begin marking redundant cabinets instead of asking families to outbid each other.",
     "objective": {
       "type": "interact",
@@ -4559,26 +4559,26 @@
     },
     "reward": {
       "xp": 375,
-      "credits": 58
+      "gold": 58
     },
     "steps": [
       {
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Read the service record before intervening."
+        "text": "Select Cooling priority console and press E to read the record before the emergency."
       },
       {
         "type": "event",
         "target": "cooling-failure",
         "count": 1,
-        "text": "Restore both incident controls and hold the marked site while avoiding the warning circles."
+        "text": "Repair both marked controls. Stay inside the marked ring for 12 seconds. Move out of striped danger areas before they strike."
       },
       {
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Record the restored service and who was left waiting."
+        "text": "Select Cooling priority console and press E to save the repair results."
       }
     ]
   },
@@ -4593,8 +4593,8 @@
       "neighborhood-archive-01"
     ],
     "giver": "elin",
-    "briefing": "File the consent-led cooling rota at the Glass Steps consent desk. Release duplicate space only where its witnesses have agreed. Put the rota into practice: publish it, spend ten seconds monitoring the service, then confirm the handover on the board.",
-    "completion": "Families share the available cold space. Some copies are lost by permission. Elin keeps the refusals in the same ledger as the savings.",
+    "briefing": "File the permission-based cooling work schedule at the Glass Steps permission desk. Release duplicate space only where its witnesses have agreed. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "completion": "Families share the available cold space. Some copies are lost by permission. Elin keeps the refusals in the same ledger as the savings. A witness keeps a written account of the coat she repaired with her sister. Elin sends its consent terms to the Living Record without copying the memory.",
     "objective": {
       "type": "interact",
       "target": "consent-desk",
@@ -4602,26 +4602,26 @@
     },
     "reward": {
       "xp": 375,
-      "credits": 58
+      "gold": 58
     },
     "steps": [
       {
         "type": "interact",
         "target": "consent-desk",
         "count": 1,
-        "text": "Publish the neighborhood rota."
+        "text": "Select Glass Steps permission desk and press E to post the work schedule."
       },
       {
         "type": "hold",
         "target": "cooling-priority",
         "count": 10,
-        "text": "Monitor the service in person"
+        "text": "Stay near Cooling priority console for 10 seconds."
       },
       {
         "type": "interact",
         "target": "consent-desk",
         "count": 1,
-        "text": "Confirm the handover on the duty board."
+        "text": "Select Glass Steps permission desk and press E to confirm who takes the next shift."
       }
     ]
   },
@@ -4634,7 +4634,7 @@
     "level": 20,
     "requires": [],
     "giver": "merek",
-    "briefing": "Visit the Occupied flats register. Merek will not redirect the line using a housing count that erases half the people who need it. Compare both marked records, then return to the first to preserve what disagrees.",
+    "briefing": "Visit the Occupied flats register. Merek will not redirect the line using a housing count that erases half the people who need it. Follow the markers to compare both records, then return to the first to save the differences.",
     "completion": "The crew adds twenty-three households to its work sheet. The official vacancy count stays pinned underneath, where everyone can see the difference.",
     "objective": {
       "type": "explore",
@@ -4643,26 +4643,26 @@
     },
     "reward": {
       "xp": 655,
-      "credits": 88
+      "gold": 88
     },
     "steps": [
       {
         "type": "explore",
         "target": "cold-flats",
         "count": 1,
-        "text": "Reach the first neighborhood record."
+        "text": "Walk to Occupied flats register. You do not need to press a button."
       },
       {
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Compare the service record with the first account."
+        "text": "Select Copper heating valve and press E to compare the records."
       },
       {
         "type": "interact",
         "target": "cold-flats",
         "count": 1,
-        "text": "Return to the first record and preserve the discrepancy."
+        "text": "Select Occupied flats register and press E to save the differences between the records."
       }
     ]
   },
@@ -4677,8 +4677,8 @@
       "neighborhood-furnace-00"
     ],
     "giver": "merek",
-    "briefing": "Inspect the Copper heat diverter. Find both the bypass setting and the liability attached to touching it. The block is facing another emergency: the heat collectors. Read the service record, help resolve the live incident, then record the outcome.",
-    "completion": "The crew marks the bypass and crosses out the space reserved for one apprentice to inherit the entire repair bond.",
+    "briefing": "Inspect the Copper heating valve. Find both the bypass setting and the responsibility for payment attached to touching it. The block is facing another emergency: heating shutdown. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
+    "completion": "The crew marks the bypass and crosses out the space reserved for one apprentice to inherit the entire repair debt agreement.",
     "objective": {
       "type": "interact",
       "target": "heat-diverter",
@@ -4686,26 +4686,26 @@
     },
     "reward": {
       "xp": 655,
-      "credits": 88
+      "gold": 88
     },
     "steps": [
       {
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Read the service record before intervening."
+        "text": "Select Copper heating valve and press E to read the record before the emergency."
       },
       {
         "type": "event",
         "target": "heat-seizure",
         "count": 1,
-        "text": "Restore both incident controls, clear enforcement, and hold the marked site."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Record the restored service and who was left waiting."
+        "text": "Select Copper heating valve and press E to save the repair results."
       }
     ]
   },
@@ -4720,8 +4720,8 @@
       "neighborhood-furnace-01"
     ],
     "giver": "merek",
-    "briefing": "Post the shared heat and repair rota at the Copper Walk shift charter. Record who checks the bypass and who takes over at the shift limit. Put the rota into practice: publish it, spend ten seconds monitoring the service, then confirm the handover on the board.",
-    "completion": "The empty office cools. Occupied risers take turns warming, and the repair crew takes its first protected meal break beside the open work sheet.",
+    "briefing": "Post the shared heat and repair work schedule at the Copper Walk shift rules. Record who checks the bypass and who takes over at the shift limit. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "completion": "The empty office cools. Occupied homes take turns warming, and the repair crew takes its first protected meal break beside the open work sheet. Merek sends the Living Record a sheet with twenty-three occupied addresses. The old vacancy report stays attached as evidence.",
     "objective": {
       "type": "interact",
       "target": "shift-charter",
@@ -4729,26 +4729,26 @@
     },
     "reward": {
       "xp": 655,
-      "credits": 88
+      "gold": 88
     },
     "steps": [
       {
         "type": "interact",
         "target": "shift-charter",
         "count": 1,
-        "text": "Publish the neighborhood rota."
+        "text": "Select Copper Walk shift rules and press E to post the work schedule."
       },
       {
         "type": "hold",
         "target": "heat-diverter",
         "count": 10,
-        "text": "Monitor the service in person"
+        "text": "Stay near Copper heating valve for 10 seconds."
       },
       {
         "type": "interact",
         "target": "shift-charter",
         "count": 1,
-        "text": "Confirm the handover on the duty board."
+        "text": "Select Copper Walk shift rules and press E to confirm who takes the next shift."
       }
     ]
   },
@@ -4761,7 +4761,7 @@
     "level": 30,
     "requires": [],
     "giver": "sable",
-    "briefing": "Visit the Court warning log. Sable wants the failed flood advisory recorded before anyone calls the quiet court a finished success. Compare both marked records, then return to the first to preserve what disagrees.",
+    "briefing": "Visit the Court warning log. Sable wants the failed flood advisory recorded before anyone calls the quiet court a finished success. Follow the markers to compare both records, then return to the first to save the differences.",
     "completion": "The assembly reads the missed advisory in silence. Sable adds accessible warning endpoints to the unfinished work.",
     "objective": {
       "type": "explore",
@@ -4770,26 +4770,26 @@
     },
     "reward": {
       "xp": 935,
-      "credits": 118
+      "gold": 118
     },
     "steps": [
       {
         "type": "explore",
         "target": "silent-warning",
         "count": 1,
-        "text": "Reach the first neighborhood record."
+        "text": "Walk to Court warning log. You do not need to press a button."
       },
       {
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Compare the service record with the first account."
+        "text": "Select Handrail warning control and press E to compare the records."
       },
       {
         "type": "interact",
         "target": "silent-warning",
         "count": 1,
-        "text": "Return to the first record and preserve the discrepancy."
+        "text": "Select Court warning log and press E to save the differences between the records."
       }
     ]
   },
@@ -4804,7 +4804,7 @@
       "neighborhood-quiet-00"
     ],
     "giver": "sable",
-    "briefing": "Test the Tactile warning relay and inspect its failure indicator. A warning needs a way to tell people when it cannot warn them. The block is facing another emergency: a warning without sound. Read the service record, help resolve the live incident, then record the outcome.",
+    "briefing": "Test the Handrail warning control and inspect its failure indicator. A warning needs a way to tell people when it cannot warn them. The block is facing another emergency: flood alarm failure. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
     "completion": "Neighbors check the pulses against the lamps. The failure light is added to the inspection sheet, not hidden beneath a successful demonstration.",
     "objective": {
       "type": "interact",
@@ -4813,26 +4813,26 @@
     },
     "reward": {
       "xp": 935,
-      "credits": 118
+      "gold": 118
     },
     "steps": [
       {
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Read the service record before intervening."
+        "text": "Select Handrail warning control and press E to read the record before the emergency."
       },
       {
         "type": "event",
         "target": "flood-surge",
         "count": 1,
-        "text": "Restore both incident controls and hold the marked site while avoiding the warning circles."
+        "text": "Repair both marked controls. Stay inside the marked ring for 12 seconds. Move out of striped danger areas before they strike."
       },
       {
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Record the restored service and who was left waiting."
+        "text": "Select Handrail warning control and press E to save the repair results."
       }
     ]
   },
@@ -4847,8 +4847,8 @@
       "neighborhood-quiet-01"
     ],
     "giver": "sable",
-    "briefing": "Register the inspection rota at the Listening Courts noticeboard. Keep the accessible warning public and the court voluntarily quiet. Put the rota into practice: publish it, spend ten seconds monitoring the service, then confirm the handover on the board.",
-    "completion": "The lamps begin their inspection cycle. Caretakers return to the planters; two names remain on the board for the next battery check.",
+    "briefing": "Register the inspection work schedule at the Listening Courts noticeboard. Keep the accessible warning public and the court voluntarily quiet. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "completion": "The lamps begin their inspection cycle. Caretakers return to the planters; two names remain on the board for the next battery check. Sable adds a receipt test to the Living Record: a warning counts when people can see or feel it, not when the sender declares it sent.",
     "objective": {
       "type": "interact",
       "target": "court-assembly",
@@ -4856,26 +4856,26 @@
     },
     "reward": {
       "xp": 935,
-      "credits": 118
+      "gold": 118
     },
     "steps": [
       {
         "type": "interact",
         "target": "court-assembly",
         "count": 1,
-        "text": "Publish the neighborhood rota."
+        "text": "Select Listening Courts noticeboard and press E to post the work schedule."
       },
       {
         "type": "hold",
         "target": "tactile-relay",
         "count": 10,
-        "text": "Monitor the service in person"
+        "text": "Stay near Handrail warning control for 10 seconds."
       },
       {
         "type": "interact",
         "target": "court-assembly",
         "count": 1,
-        "text": "Confirm the handover on the duty board."
+        "text": "Select Listening Courts noticeboard and press E to confirm who takes the next shift."
       }
     ]
   },
@@ -4888,7 +4888,7 @@
     "level": 40,
     "requires": [],
     "giver": "ivo",
-    "briefing": "Visit the Night platform register. Ivo needs the names of the people who used the supposedly empty service. Compare both marked records, then return to the first to preserve what disagrees.",
+    "briefing": "Visit the Night platform register. Ivo needs the names of the people who used the supposedly empty service. Follow the markers to compare both records, then return to the first to save the differences.",
     "completion": "Forty names fill the departure sheet. Commuters compare the list with the zero on the closure notice.",
     "objective": {
       "type": "explore",
@@ -4897,26 +4897,26 @@
     },
     "reward": {
       "xp": 1215,
-      "credits": 148
+      "gold": 148
     },
     "steps": [
       {
         "type": "explore",
         "target": "night-platform",
         "count": 1,
-        "text": "Reach the first neighborhood record."
+        "text": "Walk to Night platform register. You do not need to press a button."
       },
       {
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Compare the service record with the first account."
+        "text": "Select Service-pass counter and press E to compare the records."
       },
       {
         "type": "interact",
         "target": "night-platform",
         "count": 1,
-        "text": "Return to the first record and preserve the discrepancy."
+        "text": "Select Night platform register and press E to save the differences between the records."
       }
     ]
   },
@@ -4931,7 +4931,7 @@
       "neighborhood-skybridge-00"
     ],
     "giver": "ivo",
-    "briefing": "Read the Service-pass counter. Trace where the cleaners and carers disappear from the passenger total. The block is facing another emergency: the last lift is closing. Read the service record, help resolve the live incident, then record the outcome.",
+    "briefing": "Read the Service-pass counter. Trace where the cleaners and carers disappear from the passenger total. The block is facing another emergency: night lift shutdown. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
     "completion": "Ivo posts the exclusion rule beside the board. The mechanic starts checking the late lift while the workers negotiate its hours.",
     "objective": {
       "type": "interact",
@@ -4940,26 +4940,26 @@
     },
     "reward": {
       "xp": 1215,
-      "credits": 148
+      "gold": 148
     },
     "steps": [
       {
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Read the service record before intervening."
+        "text": "Select Service-pass counter and press E to read the record before the emergency."
       },
       {
         "type": "event",
         "target": "transit-lockdown",
         "count": 1,
-        "text": "Restore both incident controls, clear enforcement, and hold the marked site."
+        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
       },
       {
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Record the restored service and who was left waiting."
+        "text": "Select Service-pass counter and press E to save the repair results."
       }
     ]
   },
@@ -4974,8 +4974,8 @@
       "neighborhood-skybridge-01"
     ],
     "giver": "ivo",
-    "briefing": "Publish the staffed late-lift rota at the Last Connection duty board. Count service passengers and name the relief crew. Put the rota into practice: publish it, spend ten seconds monitoring the service, then confirm the handover on the board.",
-    "completion": "The late lift keeps its crew. There are fewer connections than the workers wanted, but the final one has a published time and someone responsible for keeping it.",
+    "briefing": "Publish the staffed late-lift work schedule at the Last Connection duty board. Count service passengers and name the relief crew. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "completion": "The late lift keeps its crew. There are fewer connections than the workers wanted, but the final one has a published time and someone responsible for keeping it. Ivo sends the forty names to the Living Record. One passenger adds the time she can now tell her daughter she will be home.",
     "objective": {
       "type": "interact",
       "target": "last-connection",
@@ -4983,26 +4983,26 @@
     },
     "reward": {
       "xp": 1215,
-      "credits": 148
+      "gold": 148
     },
     "steps": [
       {
         "type": "interact",
         "target": "last-connection",
         "count": 1,
-        "text": "Publish the neighborhood rota."
+        "text": "Select Last Connection duty board and press E to post the work schedule."
       },
       {
         "type": "hold",
         "target": "service-counter",
         "count": 10,
-        "text": "Monitor the service in person"
+        "text": "Stay near Service-pass counter for 10 seconds."
       },
       {
         "type": "interact",
         "target": "last-connection",
         "count": 1,
-        "text": "Confirm the handover on the duty board."
+        "text": "Select Last Connection duty board and press E to confirm who takes the next shift."
       }
     ]
   }

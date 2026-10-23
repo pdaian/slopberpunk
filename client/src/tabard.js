@@ -17,5 +17,5 @@ export function tabardParts(value) {
   return parts;
 }
 export function tabardPreview(value) {
-  return `<svg class="tabard-preview" viewBox="-40 -48 80 96" role="img" aria-label="Guild tabard preview">${tabardParts(value).map(p => `<rect x="${(p.x-p.w/2)*100}" y="${(-p.y-p.h/2)*100}" width="${p.w*100}" height="${p.h*100}" fill="${esc(p.color)}"/>`).join('')}</svg>`;
+  return `<svg class="tabard-preview" viewBox="-40 -48 80 96" role="img" aria-label="Guild outfit preview">${tabardParts(value).map(p => `<rect x="${(p.x-p.w/2)*100}" y="${(-p.y-p.h/2)*100}" width="${p.w*100}" height="${p.h*100}" fill="${esc(p.color)}"/>`).join('')}</svg>`;
 }

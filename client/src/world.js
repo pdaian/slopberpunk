@@ -102,6 +102,10 @@ export class World {
     }
   }
   routesAt(x,z) { const s=this.data.buildingGrid.spacing;return this.routeCells.get(`${Math.floor(x/s)},${Math.floor(z/s)}`)||[]; }
+  inTutorial(position) {
+    const area=this.data.tutorial;
+    return Boolean(area&&Math.hypot(position[0]-area.center[0],position[2]-area.center[2])<=area.radius&&Math.abs(position[1]-area.center[1])<6);
+  }
   collides(x, y, z, radius = .65, height = 2.1) {
     const s = this.data.buildingGrid.spacing, cx = Math.floor(x / s), cz = Math.floor(z / s);
     for (let i = cx - 1; i <= cx + 1; i++) for (let j = cz - 1; j <= cz + 1; j++) {

@@ -194,7 +194,7 @@ fn spawn(
             event: Some(e.id.clone()),
             instance: None,
             kind: text(&template["id"]).into(),
-            name: format!("{} · enforcement", e.name),
+            name: format!("{} · enemy machine", e.name),
             model: text(&template["model"]).into(),
             color: text(&template["color"]).into(),
             position,
@@ -207,6 +207,7 @@ fn spawn(
             speed: num(&template["speed"]),
             attack_at: time + 2.0,
             stun_until: 0.0,
+            exposed_until: 0.0,
             respawn_at: f64::MAX,
             aggro: None,
         });
@@ -264,7 +265,7 @@ impl Shard {
         if dist(p.c.position, site.position) >= self.content.r("interactionRadius")
             || !self.world.visible(p.c.position, site.position)
         {
-            notice(p, "Move within reach of the incident control.");
+            notice(p, "Move closer to the marked repair control.");
             return;
         }
         p.last_interact = self.time;
@@ -275,14 +276,14 @@ impl Shard {
             notice(
                 p,
                 &format!(
-                    "{} restored. Check the street incident tracker for the next step.",
+                    "{} repaired. Check the emergency tracker for your next step.",
                     site.name
                 ),
             );
         } else {
             notice(
                 p,
-                "This control is restored. Hold the marked site and clear any enforcement machines.",
+                "This control is repaired. Defeat any enemy machines and stay inside the marked ring.",
             );
         }
     }
@@ -324,7 +325,7 @@ impl Shard {
                         &self.players,
                         anchor,
                         &format!(
-                            "{} · restore both marked controls, then hold the site.",
+                            "{} · repair both marked controls, then stay inside the marked ring.",
                             entry.name
                         ),
                     );
@@ -345,7 +346,7 @@ impl Shard {
                             announce(
                                 &self.players,
                                 anchor,
-                                "Enforcement inbound. Clear the machines before the service can restart.",
+                                "Enemy machines are coming. Defeat them to finish the repair.",
                             );
                         }
                         if !state.escalated && self.time - state.started >= r.active_seconds / 2.0 {
@@ -354,7 +355,7 @@ impl Shard {
                             announce(
                                 &self.players,
                                 anchor,
-                                "The response is escalating. Another enforcement machine has arrived.",
+                                "Another enemy machine has arrived. Defeat it to finish the repair.",
                             );
                         }
                     } else {
@@ -373,6 +374,7 @@ impl Shard {
                                 let damage = (Stats::new(&p.c, &data).health
                                     * r.hazard_damage_fraction)
                                     .round();
+                                let damage = damage * (1.0 - Stats::new(&p.c, &data).armor);
                                 let absorbed = p.shield.min(damage);
                                 p.shield -= absorbed;
                                 p.c.health = (p.c.health - damage + absorbed).max(0.0);
@@ -482,11 +484,12 @@ mod tests {
         s
     }
     fn add(s: &mut Shard, id: &str, position: Vec3) {
-        let c: Character = serde_json::from_value(json!({"version":2,"id":id,"name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"credits":45,"position":position,"yaw":0,"health":120,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
+        let c: Character = serde_json::from_value(json!({"version":2,"id":id,"name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"gold":45,"position":position,"yaw":0,"health":120,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
         let (output, _) = mpsc::channel(64);
         s.players.insert(
             id.into(),
             Player {
+                live_social: live_social::Session::default(),
                 instance: None,
                 owner: "account".into(),
                 c,
@@ -566,9 +569,9 @@ mod tests {
         assert_eq!(p.c.quest_stages["relay-00"].index, 1);
         s.action(
             "runner",
-            &json!({"type":"quest","id":"relay-00","operation":"complete"}),
+            &json!({"type":"quest","id":"relay-00","operation":"complete","choice":"uphold"}),
         );
-        assert_eq!(s.players["runner"].c.credits, 45);
+        assert_eq!(s.players["runner"].c.gold, 45);
         let p = s.players.get_mut("runner").unwrap();
         progress(p, &s.content, "event", "water-lockout");
         let saved: StoredCharacter =
@@ -578,18 +581,56 @@ mod tests {
         p.c = saved.character;
         progress(p, &s.content, "interact", "relay-node");
         assert_eq!(p.c.active_quests["relay-00"], 1);
+        // Neither a missing choice nor a forged one can consume a ready contract.
+        for choice in ["", "forged", "restitution"] {
+            s.action(
+                "runner",
+                &json!({"type":"quest","id":"relay-00","operation":"complete","choice":choice}),
+            );
+            assert_eq!(s.players["runner"].c.gold, 45);
+            assert_eq!(s.players["runner"].c.active_quests["relay-00"], 1);
+            assert!(s.players["runner"].c.morality.records.is_empty());
+        }
+        s.players.get_mut("runner").unwrap().c.position = [1000.0, 0.0, 1000.0];
         s.action(
             "runner",
-            &json!({"type":"quest","id":"relay-00","operation":"complete"}),
+            &json!({"type":"quest","id":"relay-00","operation":"complete","choice":"uphold"}),
         );
-        let credits = s.players["runner"].c.credits;
-        assert_eq!(credits, 75);
+        assert!(s.players["runner"].c.morality.records.is_empty());
+        s.players.get_mut("runner").unwrap().c.position = giver;
+        for (health, instance) in [(0.0, None), (100.0, Some(7))] {
+            let p = s.players.get_mut("runner").unwrap();
+            p.c.health = health;
+            p.instance = instance;
+            s.action(
+                "runner",
+                &json!({"type":"quest","id":"relay-00","operation":"complete","choice":"uphold"}),
+            );
+            assert!(s.players["runner"].c.morality.records.is_empty());
+            assert_eq!(s.players["runner"].c.gold, 45);
+        }
+        s.players.get_mut("runner").unwrap().instance = None;
+        s.action(
+            "runner",
+            &json!({"type":"quest","id":"relay-00","operation":"complete","choice":"uphold"}),
+        );
+        let gold = s.players["runner"].c.gold;
+        assert_eq!(gold, 67); // 45 carried + floor(30 * 75%); XP is unchanged.
+        assert_eq!(
+            s.players["runner"].c.morality.records["relay-00"].choice,
+            "uphold"
+        );
+        assert_eq!(s.players["runner"].c.morality.imprints["shelter"], 1);
         assert!(s.players["runner"].c.quest_stages.is_empty());
         s.action(
             "runner",
-            &json!({"type":"quest","id":"relay-00","operation":"complete"}),
+            &json!({"type":"quest","id":"relay-00","operation":"complete","choice":"redirect"}),
         );
-        assert_eq!(s.players["runner"].c.credits, credits);
+        assert_eq!(s.players["runner"].c.gold, gold);
+        assert_eq!(
+            s.players["runner"].c.morality.records["relay-00"].choice,
+            "uphold"
+        );
     }
 
     #[test]
@@ -702,7 +743,7 @@ mod tests {
         assert!(s.enemies.is_empty());
         for id in ["a", "b"] {
             assert_eq!(s.players[id].c.quest_stages["relay-00"].index, 2);
-            assert_eq!(s.players[id].c.credits, 45);
+            assert_eq!(s.players[id].c.gold, 45);
         }
         assert_eq!(s.players["spectator"].c.quest_stages["relay-00"].index, 1);
         advance(&mut s, 2.0);
@@ -788,7 +829,7 @@ mod tests {
         }
         assert_eq!(s.enemies[0].health, 0.0);
         assert_eq!(p.c.xp, 0);
-        assert_eq!(p.c.credits, 45);
+        assert_eq!(p.c.gold, 45);
         assert_eq!(p.c.active_quests["relay-03"], 0);
         s.enemies[0].respawn_at = 0.0;
         s.tick();

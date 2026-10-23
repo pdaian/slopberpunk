@@ -2,14 +2,20 @@
 // GPL-3.0-or-later. See LICENSE.
 import { clamp } from './math.js';
 import { isSpirit } from './death.js';
+import { economyBonuses } from './economy.js';
+import { statCaps, statNames } from './item-catalog.js';
+import { moralBonuses } from './morality.js';
+export { experienceFor } from './progression.js';
 
-export function experienceFor(level, rules) { return rules.xp.base + level * rules.xp.perLevel; }
 export function stats(character, data) {
   const r=data.rules.player;
-  const s={health:r.health+character.level*r.healthPerLevel,energy:r.energy,speed:1,crit:data.rules.combat.crit,damage:1,shield:0,healing:0,regen:0};
+  const s={...Object.fromEntries(Object.keys(statNames).map(k=>[k,0])),health:r.health+character.level*r.healthPerLevel,energy:r.energy,speed:1,crit:data.rules.combat.crit,damage:1};
   const race=data.races.find(r=>r.id===character.race);
   if(race?.passive) s[race.passive.stat]+=race.passive.value;
-  for(const talent of data.talents) s[talent.stat]+=(character.talents[talent.id]||0)*talent.amount;
+  for(const talent of data.talents) s[talent.stat]+=Math.min(character.talents?.[talent.id]||0,talent.maxRank)*talent.amount;
+  for(const bonuses of economyBonuses(character,data))for(const [stat,value] of Object.entries(bonuses))s[stat]+=value;
+  for(const [stat,value] of Object.entries(moralBonuses(character,data)))s[stat]+=value;
+  for(const [stat,cap] of Object.entries(statCaps))s[stat]=Math.min(s[stat],cap);
   if(character.resurrectionSickness>0){s.damage*=data.rules.death.sicknessDamageMultiplier;s.speed*=data.rules.death.sicknessSpeedMultiplier;}
   return s;
 }

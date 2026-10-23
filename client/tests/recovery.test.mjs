@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { World } from '../src/world.js';
-import { Prediction, stats } from '../src/prediction.js';
+import { Prediction, stats, availableQuest } from '../src/prediction.js';
 import { isSpirit, recoveryView, bearing } from '../src/death.js';
 import { Renderer } from '../src/renderer.js';
 import { CharacterMeshes } from '../src/character.js';
@@ -11,12 +11,15 @@ import { runInNewContext } from 'node:vm';
 import { distance, mix3, clamp } from '../src/math.js';
 import { escapeHtml } from '../src/icons.js';
 import { openingGuide, questView, questDestination, objectiveText } from '../src/quests.js';
-import { worldEventViews, incidentTargets } from '../src/events.js';
+import { worldEventViews } from '../src/events.js';
+import { dungeonPosition } from '../src/dungeons.js';
+import { collectTargets, targetProblem, targetBounds, visibleTargets, pickTarget, cycleTarget } from '../src/targeting.js';
+import { storyDialogue, questThread, campaignLead, campaignPanel } from '../src/story.js';
 
 const read = name => JSON.parse(readFileSync(new URL(`../data/${name}.json`, import.meta.url)));
-const data = Object.fromEntries(['world', 'rules', 'races', 'talents', 'dungeons', 'quests', 'npcs', 'events'].map(n => [n, read(n)]));
+const data = Object.fromEntries(['world', 'rules', 'races', 'factions', 'talents', 'dungeons', 'quests', 'npcs', 'events', 'abilities', 'lore', 'citylife'].map(n => [n, read(n)]));
 const world = new World(data.world);
-const character = () => ({ position: [0, 0, 64], yaw: 0, health: 0, energy: 0, credits: 95, level: 0, race: 'human', talents: {}, death: { corpse: [0, 0, 32], graveyard: 'commons-rest', released: false, releaseAt: 15, creditsLost: 5 } });
+const character = () => ({ id: 'runner', position: [0, 0, 64], yaw: 0, health: 0, energy: 0, gold: 95, level: 0, race: 'human', talents: {}, death: { corpse: [0, 0, 32], graveyard: 'commons-rest', released: false, releaseAt: 15, goldLost: 5 } });
 
 test('every graveyard is reachable, uniquely identified, and outside enemy aggro range', () => {
   assert.equal(new Set(data.world.graveyards.map(g => g.id)).size, data.world.graveyards.length);
@@ -40,9 +43,9 @@ test('release countdown and recovery state survive JSON round trips without gran
   assert.equal(view.atHealer, true);
   assert.equal(view.distance, 32);
   assert.equal(view.healerCost, 10);
-  c.credits = 10000;
+  c.gold = 10000;
   assert.equal(recoveryView(c, data, world, 18000).healerCost, 100);
-  c.credits = 0;
+  c.gold = 0;
   assert.equal(recoveryView(c, data, world, 18000).healerCost, 0);
   c.health = 1;
   assert.equal(recoveryView(c, data, world, 18000), null);
@@ -105,7 +108,8 @@ test('fallen-body geometry remains finite at both quality levels', () => {
 
 // Exercise application wiring in memory; this is not a browser/WebGL acceptance test.
 function application(c) {
-  const nodes = new Map(), sent = [];
+  const nodes = new Map(), sent = [], spoken = [];
+  let sectionReads = [];
   const node = selector => {
     if (!nodes.has(selector)) {
       const classes = new Set();
@@ -117,17 +121,98 @@ function application(c) {
     return nodes.get(selector);
   };
   const simulation = new Prediction(data, world, c);
-  const context = { fixtureData: data, fixtureWorld: world, fixtureSimulation: simulation, sent,
-    document: { querySelector: node, querySelectorAll: () => [], exitPointerLock() {} },
+  const context = { fixtureData: data, fixtureWorld: world, fixtureSimulation: simulation, sent, spoken,
+    document: { querySelector: node, querySelectorAll: selector => selector === '[data-story-section]' ? sectionReads.shift() || [] : [] },
+    setTimeout() {}, clearTimeout() {},
     matchMedia: () => ({ matches: true }), WorldClock: class { now() { return 18000; } sync() {} },
     distance, mix3, clamp, isSpirit, recoveryView, bearing, openingGuide, questView, questDestination, objectiveText,
-    worldEventViews, incidentTargets, esc: escapeHtml,
+    storyDialogue, questThread, campaignLead, campaignPanel,
+    worldEventViews, collectTargets, targetProblem, targetBounds, visibleTargets, pickTarget, cycleTarget, availableQuest, esc: escapeHtml,
   };
   let source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8').replace(/^import .*;$/gm, '');
   source = source.slice(0, source.lastIndexOf('boot().catch'));
-  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;audio={stopVoice(){},speak(){}};input={clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map()};state='playing';globalThis.harness={perform,findNearest,updateRecoveryUI,onSnapshot,panel,closePanel};`, context);
-  return { ...context.harness, node, sent, simulation };
+  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;audio={stopVoice(){},speak(...args){spoken.push(args);}};input={clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map()};state='playing';globalThis.harness={inputBlocked,setChat(value){liveChat=value;},setScreen(value){state=value;},menu(){return input.menu;},perform,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
+  return { ...context.harness, node, sent, spoken, simulation, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
 }
+
+test('chat focus and death independently keep gameplay input blocked across panel closing', () => {
+  const c = { ...character(), health: 100, death: undefined }, app = application(c);
+  assert.equal(app.inputBlocked(), false);
+  const chat = { expanded: true }; app.setChat(chat);
+  assert.equal(app.inputBlocked(), true); app.closePanel(); assert.equal(app.menu(), true);
+  chat.expanded = false; assert.equal(app.inputBlocked(), false);
+  c.health = 0; assert.equal(app.inputBlocked(), true); app.closePanel(); assert.equal(app.menu(), true);
+  c.death = { ...character().death, released: true }; assert.equal(app.inputBlocked(), false);
+});
+
+test('story controls open the current account and guidance continues after the kitchen', () => {
+  const c = { ...character(), health: 100, death: undefined, faction: 'relay', activeQuests: {}, completed: [] }, app = application(c);
+  app.perform('story');
+  assert.equal(app.node('#dialog-title').textContent, 'The Living Record');
+  assert.ok(app.node('#dialog-content').innerHTML.includes(data.lore.campaign.premise));
+  app.closePanel(); app.updateStoryGuide();
+  assert.equal(app.node('#story-guide').hidden, false);
+  assert.equal(app.node('#campaign-lead').hidden, true);
+  c.completed.push('relay-00', 'human-00', 'neighborhood-market-00', 'neighborhood-market-01', 'neighborhood-market-02');
+  app.updateStoryGuide();
+  assert.equal(app.node('#story-guide').hidden, true);
+  assert.equal(app.node('#campaign-lead').hidden, false);
+  assert.match(app.node('#campaign-chapter').textContent, /2\/5/);
+  assert.match(app.node('#campaign-lead').textContent, /level 2/);
+  assert.equal(app.sent.length, 0, 'opening the story never sends a reward or progression action');
+});
+
+test('a new chapter preserves expanded evidence and summary focus by identity', () => {
+  const c = { ...character(), health: 100, death: undefined, faction: 'relay', activeQuests: {}, completed: ['relay-00', 'human-00'] }, app = application(c);
+  app.perform('story');
+  const before = { dataset: { storySection: 'place:archive' }, open: true };
+  let focused = false;
+  const after = { dataset: { storySection: 'place:archive' }, open: false, querySelector: () => ({ focus() { focused = true; } }) };
+  const chapter = { dataset: { storySection: 'chapter:absent' }, open: true };
+  app.sections([before], [chapter, after], { tagName: 'SUMMARY', parentElement: before });
+  app.node('#panel-dialog').scrollTop = 300;
+  const saved = structuredClone(c);
+  saved.completed.push('neighborhood-market-00', 'neighborhood-market-01', 'neighborhood-market-02');
+  app.onSnapshot({ character: saved, serverTime: 18000 });
+  assert.equal(after.open, true, 'inserting a chapter must not shift another record’s state');
+  assert.equal(chapter.open, true, 'the newly reached chapter keeps its default expansion');
+  assert.equal(focused, true);
+  assert.equal(app.node('#panel-dialog').scrollTop, 300);
+});
+
+test('tutorial HUD, journal, selection, and snapshots hand off to the existing story', () => {
+  const area=data.world.tutorial;
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:[],tutorialStage:'combat',position:[...area.spawn]};
+  const app=application(c);
+  app.updateStoryGuide();
+  assert.equal(app.node('#campaign-chapter').textContent,'TUTORIAL · 3/4');
+  assert.match(app.node('#story-instruction').textContent,/practice target/);
+  assert.equal(app.node('#story-social').hidden,true);
+  app.perform('story');
+  assert.match(app.node('#dialog-content').innerHTML,/First Steps Courtyard/);
+  app.closePanel();app.select(`practice:${area.target}`);app.perform('ability:arc');
+  assert.equal(app.sent.at(-1).target,area.target);
+  app.perform('interact');assert.equal(app.sent.at(-1).id,'arc');
+  c.position=[...data.world.landmarks.find(l=>l.id===area.exit).position];
+  app.select(`terminal:${area.exit}`);app.perform('interact');
+  assert.equal(app.sent.at(-1).id,area.exit);
+  assert.equal(c.tutorialStage,'combat','the client waits for server confirmation before leaving');
+  const saved={...c,position:[...data.world.spawn]};delete saved.tutorialStage;
+  app.onSnapshot({character:saved,time:10,worldEvents:[]});app.updateStoryGuide();
+  assert.equal(app.node('#campaign-chapter').textContent,'MAIN STORY · 1/5');
+  assert.match(app.node('#story-instruction').textContent,/Iri/);
+  assert.equal(app.selectedTarget(),null);
+});
+
+test('the first tutorial instruction is narrated after the cinematic finishes', () => {
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:[],tutorialStage:'move'};
+  const app=application(c);
+  app.setScreen('cinematic');app.updateStoryGuide();
+  assert.equal(app.spoken.length,0);
+  app.setScreen('playing');app.updateStoryGuide();app.updateStoryGuide();
+  assert.equal(app.spoken.length,1);
+  assert.match(app.spoken[0][0],/movement marker/);
+});
 
 test('application enables spirit recovery, body interaction, and a controller-accessible recovery menu', () => {
   const c = { ...character(), faction: 'relay', activeQuests: {}, completed: [] }, app = application(c);
@@ -138,15 +223,18 @@ test('application enables spirit recovery, body interaction, and a controller-ac
   app.updateRecoveryUI();
   assert.equal(app.node('#death-screen').hidden, true);
   assert.equal(app.node('#recovery-panel').hidden, false);
+  app.select('healer:commons-rest');
   app.perform('interact');
   assert.equal(app.node('#panel-dialog').open, true);
-  assert.match(app.node('#dialog-content').innerHTML, /Resurrection sickness/);
-  assert.match(app.node('#dialog-content').innerHTML, /10 ¤/);
+  assert.match(app.node('#dialog-content').innerHTML, /Weakened for 60 seconds/);
+  assert.match(app.node('#dialog-content').innerHTML, /Damage is reduced by 50% and movement by 25%/);
+  assert.match(app.node('#dialog-content').innerHTML, /10 gold/);
   app.closePanel();
   c.position = [...c.death.corpse];
+  app.select('corpse:runner');
   app.perform('interact');
   assert.equal(app.sent.at(-1).type, 'reclaimCorpse');
-  app.perform('escape');
+  app.perform('settings');
   assert.match(app.node('#dialog-content').innerHTML, /data-do="return-graveyard"/);
 });
 
@@ -154,19 +242,107 @@ test('guided evidence remains readable when a live incident shares its terminal'
   const c = { ...character(), health: 100, death: undefined, faction: 'relay', position: [36, 0, 40], activeQuests: { 'neighborhood-market-01': 0 }, questStages: { 'neighborhood-market-01': { index: 0, progress: 0 } }, completed: ['relay-00', 'human-00', 'neighborhood-market-00'] };
   const app = application(c);
   app.simulation.worldEvents = worldEventViews(data, [{ id: 'water-lockout', state: { phase: 'active', cycle: 1, repaired: [], hold: 0, deadline: 150 } }]);
-  assert.equal(app.findNearest().kind, 'terminal');
-  assert.equal(app.findNearest().object.id, 'commons-water');
+  app.select('terminal:commons-water');
+  assert.equal(app.selectedTarget().kind, 'terminal');
+  assert.equal(app.selectedTarget().object.id, 'commons-water');
+  app.perform('interact');
+  assert.equal(app.sent.at(-1).type, 'interact');
+  app.closePanel();
   c.questStages['neighborhood-market-01'].index = 1;
-  assert.equal(app.findNearest().kind, 'incident');
+  assert.equal(app.selectedTarget().kind, 'incident');
+  app.perform('interact');
+  assert.equal(app.sent.at(-1).type, 'worldEvent');
+  assert.equal(app.sent.at(-1).cycle, 1);
+});
+
+test('clicks select enemies and contacts through the same state; right click and E activate that selection', () => {
+  const npc = data.npcs.find(n => n.id !== 'merchant');
+  const c = { ...character(), health: 100, death: undefined, faction: 'relay', position: [...npc.position], activeQuests: {}, completed: data.quests.map(q => q.id) };
+  const app = application(c), enemy = { id: 'machine', name: 'Machine', position: npc.position.map((v, i) => v + (i === 0 ? 2 : 0)), health: 50 };
+  app.simulation.enemies = [enemy];
+  const objects = [npc, enemy];
+  app.setRenderer({ canvas: { clientWidth: 800, clientHeight: 600, getBoundingClientRect: () => ({ left: 20, top: 30 }) }, project: p => {
+    const i = objects.findIndex(o => o.position[0] === p[0] && o.position[2] === p[2]);
+    return i < 0 ? null : [100 + i * 100, 300 - (p[1] - npc.position[1]) * 15, .5];
+  } });
+  app.perform('pick', { clientX: 220, clientY: 310 });
+  assert.equal(app.selectedTarget().object.id, enemy.id);
+  assert.equal(app.sent.length, 0, 'selection alone never attacks');
+  app.perform('ability:arc');
+  assert.equal(app.sent.at(-1).target, enemy.id);
+  app.perform('interact');
+  assert.equal(app.sent.at(-1).id, 'arc', 'default activation attacks the selected enemy');
+  app.perform('pick', { clientX: 120, clientY: 310 });
+  assert.equal(app.selectedTarget().object.id, npc.id);
+  assert.equal(app.node('#panel-dialog').open, false, 'left click only selects a contact');
+  app.perform('ability:arc');
+  assert.equal(app.sent.at(-1).target, null, 'friendly selection cannot reuse the previous enemy');
+  app.perform('interact');
+  assert.equal(app.node('#dialog-title').textContent, npc.name);
+  app.closePanel();
+  app.perform('pick-activate', { clientX: 220, clientY: 310 });
+  assert.equal(app.sent.at(-1).target, enemy.id);
+  app.perform('pick', { clientX: 750, clientY: 550 });
+  assert.equal(app.selectedTarget(), null);
+  const count = app.sent.length;
+  app.perform('interact');
+  assert.equal(app.sent.length, count, 'no selection must not activate the nearby contact');
+  assert.match(app.node('#toast').textContent, /Select a target/);
+  app.perform('target');
+  assert.equal(app.selectedTarget().object.id, npc.id);
+  app.perform('target');
+  assert.equal(app.selectedTarget().object.id, enemy.id);
+  app.perform('escape');
+  assert.equal(app.selectedTarget(), null);
+  assert.equal(app.node('#panel-dialog').open, false);
+});
+
+test('selected services retain their identity out of range and stale enemies cannot be attacked', () => {
+  const c = { ...character(), health: 100, death: undefined, faction: 'relay', position: [36, 0, 40], activeQuests: {}, completed: data.quests.map(q => q.id) };
+  const app = application(c), terminal = data.world.landmarks.find(l => l.id === 'commons-water');
+  c.position = [terminal.position[0], terminal.position[1] + 20, terminal.position[2]];
+  app.select('terminal:commons-water');app.perform('interact');
+  assert.equal(app.sent.length, 0);assert.match(app.node('#toast').textContent, /Move within/);
+  assert.equal(app.selectedTarget().object.id, 'commons-water');
+  c.position = [...terminal.position];app.perform('interact');
+  assert.equal(app.sent.at(-1).id, 'commons-water');app.closePanel();
+  app.simulation.enemies = [{ id: 'machine', position: [...c.position], health: 100 }];
+  app.select('enemy:machine');app.simulation.enemies[0].health = 0;
+  app.perform('ability:arc');assert.equal(app.sent.at(-1).target, null);assert.equal(app.selectedTarget(), null);
+  app.simulation.enemies[0].health = 100;app.select('enemy:machine');app.simulation.enemies = [];
+  assert.equal(app.selectedTarget(), null);
+  app.select('terminal:commons-water');app.panel('Menu', '', '', 'settings');
+  const count = app.sent.length;app.perform('interact');app.perform('pick-activate', {});
+  assert.equal(app.sent.length, count, 'open menus block world actions');
+});
+
+test('dungeon evidence, recovery, and ally revival send the selected action with current run metadata', () => {
+  const c = { ...character(), health: 100, death: undefined, faction: 'relay', position: [...data.dungeons.rules.arena], activeQuests: {}, completed: [] };
+  const app = application(c), dungeon = data.dungeons.entries[0], evidence = dungeon.chapters[0].evidence[0];
+  const run = { id: 7, dungeon: dungeon.id, chapter: 0, attempt: 2, phase: 'active', members: [{ id: 'ally' }], recoveryReady: 0, revivesLeft: 2 };
+  app.simulation.dungeonState = { run };
+  c.position = dungeonPosition(data.dungeons.rules, evidence.position);
+  app.select(`evidence:${evidence.id}`);app.perform('interact');
+  assert.deepEqual(JSON.parse(JSON.stringify(app.sent.at(-1))), { type: 'dungeon', operation: 'interact', run: 7, chapter: 0, attempt: 2, target: evidence.id });
+  c.position = [...data.dungeons.rules.recoveryPosition];app.select('recover:aid');app.perform('interact');
+  assert.equal(app.sent.at(-1).operation, 'recover');
+  app.setPlayers([{ id: 'ally', name: 'Ally', position: [...c.position], health: 0 }]);
+  app.select('player:ally');app.perform('interact');
+  assert.equal(app.sent.at(-1).operation, 'revive');assert.equal(app.sent.at(-1).target, 'ally');
+  app.setPlayers([{ id: 'ally', name: 'Ally', position: [...c.position], health: 100 }]);
+  const count = app.sent.length;app.perform('interact');assert.equal(app.sent.length, count);
+  app.select(`evidence:${evidence.id}`);run.phase = 'briefing';assert.equal(app.selectedTarget(), null);
 });
 
 test('death snapshots close stale quest panels and recovery teleports reset predicted motion', () => {
   const c = { ...character(), health: 100, death: undefined, faction: 'relay', activeQuests: {}, completed: [], position: [0, 0, 32] };
   const app = application(c);
+  app.select('terminal:commons-water');
   app.panel('Journal', '', '', 'journal');
   app.simulation.velocity = [2, 0, 3];
   const dead = { ...c, health: 0, death: character().death, activeQuests: { 'relay-00': 0 } };
   app.onSnapshot({ character: dead, time: 1, worldEvents: [] });
+  assert.equal(app.selectedTarget(), null);
   assert.equal(app.node('#panel-dialog').open, false, 'a changed quest cursor must not reopen the dialog after death');
   assert.equal(app.simulation.velocity.join(','), '0,0,0');
   const spirit = { ...dead, death: { ...dead.death, released: true }, position: [0, 0, 33] };

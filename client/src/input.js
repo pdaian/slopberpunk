@@ -14,7 +14,8 @@ export class Input {
       if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&this.active)e.preventDefault();
       if(!this.keys.has(e.code))this.edges.add(e.code);this.keys.add(e.code);
       if(e.repeat)return;
-      const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',KeyR:'ability:ghostline',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyU:'guild',KeyG:'dungeons',KeyH:'medkit',KeyV:'camera'};
+      const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',Digit7:'ability:breach',Digit8:'ability:siphon',Digit9:'ability:execute',Digit0:'ability:nova',KeyR:'ability:ghostline',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyU:'guild',KeyG:'dungeons',KeyH:'medkit',KeyV:'camera',Enter:'chat',KeyB:'gestures'};
+      if(e.code==='Enter')e.preventDefault();
       if(bindings[e.code]&&this.active)this.onAction(bindings[e.code]);
     });
     window.addEventListener('keyup',e=>this.keys.delete(e.code));
@@ -23,22 +24,36 @@ export class Input {
     canvas.addEventListener('contextmenu',e=>e.preventDefault());
     canvas.addEventListener('pointerdown',e=>{
       if(!this.active||this.menu)return;
-      if(e.pointerType==='touch'){this.drag=[e.clientX,e.clientY,e.pointerId];canvas.setPointerCapture(e.pointerId);return;}
-      if(document.pointerLockElement===canvas&&e.button===0)this.onAction('ability:arc');
-      else if(e.button===0)this.onAction('pick',e);
-      if(e.button===2){this.drag=[e.clientX,e.clientY,e.pointerId];canvas.setPointerCapture(e.pointerId);}
+      if(this.drag)return;
+      if(e.pointerType==='touch'||e.button===0||e.button===2){
+        this.drag={id:e.pointerId,type:e.pointerType,button:e.button,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false};
+        if(e.pointerType==='touch')canvas.setPointerCapture(e.pointerId);
+      }
     });
-    canvas.addEventListener('dblclick',()=>{if(this.active&&!this.menu)canvas.requestPointerLock?.()?.catch?.(()=>{});});
-    canvas.addEventListener('pointerup',()=>this.drag=null);
-    canvas.addEventListener('pointercancel',()=>this.drag=null);
+    window.addEventListener('pointerup',e=>{
+      const drag=this.drag;if(!drag||drag.id!==e.pointerId||e.button!==drag.button)return;
+      this.clearPointer();
+      if(!this.active||this.menu||drag.moved||Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)>5)return;
+      if(drag.type!=='touch'&&e.target!==canvas)return;
+      const r=canvas.getBoundingClientRect();
+      if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;
+      this.onAction(drag.button===2?'pick-activate':'pick',e);
+    });
+    const cancel=e=>{if(this.drag?.id===e.pointerId)this.clearPointer();};
+    window.addEventListener('pointercancel',cancel);
+    canvas.addEventListener('lostpointercapture',cancel);
     window.addEventListener('pointermove',e=>{
       if(!this.active||this.menu)return;
-      if(document.pointerLockElement===canvas)this.onLook(e.movementX*this.sensitivity,e.movementY*this.sensitivity);
-      else if(this.drag&&this.drag[2]===e.pointerId){this.onLook((e.clientX-this.drag[0])*this.sensitivity,(e.clientY-this.drag[1])*this.sensitivity);this.drag=[e.clientX,e.clientY,e.pointerId];}
+      const drag=this.drag;if(!drag||drag.id!==e.pointerId)return;
+      if(drag.type!=='touch'&&!(e.buttons&(drag.button===2?2:1))){this.clearPointer();return;}
+      if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)>5)drag.moved=true;
+      if(drag.moved&&(drag.type==='touch'||drag.button===2))this.onLook((e.clientX-drag.x)*this.sensitivity,(e.clientY-drag.y)*this.sensitivity);
+      drag.x=e.clientX;drag.y=e.clientY;
     });
     this.setupTouch();
   }
-  clear(){this.keys.clear();this.edges.clear();this.touchMove=[0,0];this.drag=null;}
+  clearPointer(){const drag=this.drag;this.drag=null;if(drag&&this.canvas.hasPointerCapture?.(drag.id))this.canvas.releasePointerCapture(drag.id);}
+  clear(){this.keys.clear();this.edges.clear();this.touchMove=[0,0];this.clearPointer();}
   setupTouch(){
     const stick=document.querySelector('#touch-stick');if(!stick)return;
     let touchId=null;
@@ -70,7 +85,7 @@ export class Input {
       if(this.menu){
         this.padTime-=dt;
         const direction=edge(13)||edge(15)||axis(pad.axes[1])>.6?1:edge(12)||edge(14)||axis(pad.axes[1])<-.6?-1:0;
-        const container=document.querySelector('.ui-select')||document.querySelector('dialog[open]')||document.querySelector('#death-screen:not([hidden])')||document.querySelector('#creation:not([hidden])')||document.querySelector('#landing:not([hidden])');
+        const container=document.querySelector('.ui-select')||document.querySelector('dialog[open]')||document.querySelector('#live-chat[data-expanded="true"]')||document.querySelector('#death-screen:not([hidden])')||document.querySelector('#creation:not([hidden])')||document.querySelector('#landing:not([hidden])');
         const focusables=container?Array.from(container.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled):not([type="hidden"]),textarea:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(e=>e.getClientRects().length):[];
         if(direction&&this.padTime<=0&&focusables.length){const current=focusables.indexOf(document.activeElement);this.menuIndex=(current+direction+focusables.length)%focusables.length;focusables[this.menuIndex].focus();this.padTime=.22;}
         if(edge(0))document.activeElement?.click();
@@ -81,8 +96,9 @@ export class Input {
       }else{
         forward-=axis(pad.axes[1]);strafe+=axis(pad.axes[0]);this.onLook(axis(pad.axes[2])*dt*2.3,axis(pad.axes[3])*dt*1.8);
         jump ||=edge(0);dash ||=edge(1);sprint ||=pressed[10];
-        const actions={2:'interact',3:'target',4:'ability:surge',5:'ability:mend',6:'ability:aegis',7:'ability:arc',8:'journal',9:'escape',11:'ability:ghostline',12:'medkit',13:'map',14:'ability:lance',15:'ability:echo'};
-        for(const [i,action]of Object.entries(actions))if(edge(Number(i)))this.onAction(action);
+        const actions={2:'interact',3:'target',4:'ability:surge',5:'ability:mend',6:'ability:aegis',7:'ability:arc',8:'journal',9:'settings',11:'ability:ghostline',12:'medkit',13:'map',14:'ability:lance',15:'ability:echo'};
+        const alternate={12:'ability:breach',15:'ability:siphon',13:'ability:execute',14:'ability:nova'};
+        for(const [i,action]of Object.entries(actions))if(edge(Number(i)))this.onAction(pressed[10]&&alternate[i]?alternate[i]:action);
       }
       this.buttons=pressed;
     }else this.buttons=[];

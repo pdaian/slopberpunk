@@ -17,7 +17,7 @@
   "entries": [
     {
       "id": "water-lockout",
-      "name": "Water under lock",
+      "name": "Water shutoff",
       "neighborhood": "market",
       "anchor": "commons-water",
       "controls": ["lantern-kitchen", "commons-water"],
@@ -25,14 +25,14 @@
       "enemy": "drone",
       "spawns": [[36, 0, 54], [50, 0, 40]],
       "color": "#efb778",
-      "warning": "Lantern Market · the concession is closing the kitchen's water feed. A shutoff crew is on its way.",
-      "success": "The kitchen taps run again. Neighbors carry bowls back to the counter; the ration is still small, but the water is shared.",
-      "failure": "The water feed locks. The kitchen stops serving while Nella prepares another bypass. The controls reset shortly.",
+      "warning": "Lantern Market · the city’s debt-collection system is shutting off the kitchen water. Repair both marked controls and defeat its machines.",
+      "success": "The kitchen has running water again. Neighbors can return for a meal.",
+      "failure": "The kitchen water is off. Wait nearby for the controls to reset, then try again.",
       "activity": "serve"
     },
     {
       "id": "cooling-failure",
-      "name": "Memories running warm",
+      "name": "Memory cooling failure",
       "neighborhood": "archive",
       "anchor": "cooling-priority",
       "controls": ["glass-witness", "cooling-priority"],
@@ -40,14 +40,14 @@
       "enemy": null,
       "spawns": [],
       "color": "#c9a2ec",
-      "warning": "Glass Steps · a cooling line has ruptured. Amber circles mark pressure vents; step out before they discharge.",
-      "success": "Coolant reaches the witness shelves. Residents return the rescued records to cold storage; the duplicate cabinets must wait.",
-      "failure": "The cooling circuit trips. Residents move the remaining records by hand while the safety valves reset.",
+      "warning": "Glass Steps · the cooling pipes have burst. Repair both marked controls. Move out of striped danger areas before the countdown ends.",
+      "success": "Cooling works again. Residents can put the rescued memory records back into safe storage.",
+      "failure": "Cooling has stopped. Residents move the memory records to safety. Wait for the controls to reset, then try again.",
       "activity": "work"
     },
     {
       "id": "heat-seizure",
-      "name": "The heat collectors",
+      "name": "Heating shutdown",
       "neighborhood": "furnace",
       "anchor": "heat-diverter",
       "controls": ["cold-flats", "heat-diverter"],
@@ -55,14 +55,14 @@
       "enemy": "warden",
       "spawns": [[-320, 0, -290], [-320, 0, -324]],
       "color": "#e99b6f",
-      "warning": "Copper Walk · debt wardens are reclaiming the heat bypass. Break their locks before the occupied risers go cold.",
-      "success": "Warmth returns to the occupied risers. The repair crew sits down to eat while the shared feed holds.",
-      "failure": "The collectors seal the diverter. The flats go cold; Merek's crew starts cutting a new access seal.",
+      "warning": "Copper Walk · debt collectors are shutting off heating in occupied homes. Repair both marked controls and defeat their machines.",
+      "success": "The homes have heating again. The repair crew can take a break and eat.",
+      "failure": "The collectors have shut off the heating. Wait for the controls to reset, then try again.",
       "activity": "eat"
     },
     {
       "id": "flood-surge",
-      "name": "A warning without sound",
+      "name": "Flood alarm failure",
       "neighborhood": "quiet",
       "anchor": "tactile-relay",
       "controls": ["silent-warning", "tactile-relay"],
@@ -70,14 +70,14 @@
       "enemy": null,
       "spawns": [],
       "color": "#b5d78d",
-      "warning": "Listening Courts · floodwater is grounding the warning circuit. Restore both relays and avoid the marked electrical surges.",
-      "success": "The lamps and handrails agree again. Neighbors return to the planters, with someone watching the waterline.",
-      "failure": "The warning circuit goes dark. Neighbors carry the alarm door to door while the battery resets.",
+      "warning": "Listening Courts · floodwater has damaged the warning system. Repair both marked controls. Move out of striped danger areas before the countdown ends.",
+      "success": "The warning lights and vibrating handrails work again. Neighbors can tend their plants while watching the water level.",
+      "failure": "The warning system has stopped. Neighbors warn each other door to door. Wait for the controls to reset, then try again.",
       "activity": "tend"
     },
     {
       "id": "transit-lockdown",
-      "name": "The last lift is closing",
+      "name": "Night lift shutdown",
       "neighborhood": "skybridge",
       "anchor": "service-counter",
       "controls": ["night-platform", "service-counter"],
@@ -85,9 +85,9 @@
       "enemy": "drone",
       "spawns": [[320, 24, 295], [320, 24, 327]],
       "color": "#81dce5",
-      "warning": "Last Connection · enforcement is invalidating service passes. Reopen the counters and hold the skyway for the late shift.",
-      "success": "Service passes register again. The stranded shift starts moving, and the platform has a departure to announce.",
-      "failure": "The counter rejects the late shift. Ivo holds the passengers together while the local override resets.",
+      "warning": "Last Connection · the lift system is rejecting night workers’ passes. Repair both marked controls and defeat the machines blocking access.",
+      "success": "The lift accepts passes again. The stranded workers can get home.",
+      "failure": "The lift still rejects the workers’ passes. Wait for the controls to reset, then try again.",
       "activity": "carry"
     }
   ]

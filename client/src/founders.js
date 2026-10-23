@@ -1,4 +1,5 @@
 // First Signal Halo: account entitlement, early XP, and original mesh. GPL-3.0-or-later.
+import { experienceFor } from './progression.js';
 export const FOUNDER_LIMIT = 1000;
 export function hasFounderHalo(character) {
   return Number.isInteger(character?.founderHalo) && character.founderHalo >= 1 && character.founderHalo <= FOUNDER_LIMIT;
@@ -8,7 +9,7 @@ export function founderBoostActive(character) {
 }
 export function founderXpReward(character, amount, rules) {
   if (!hasFounderHalo(character) || character.level >= 10) return { xp: amount, remainder: 0 };
-  const cost = level => rules.xp.base + level * rules.xp.perLevel;
+  const cost = level => experienceFor(level,rules);
   // Level zero is the prologue. Only the part of a reward earned after it qualifies.
   const prologue = character.level === 0 ? Math.min(amount, Math.max(0, cost(0) - character.xp)) : 0;
   let toTen = character.level >= 1 ? -character.xp : 0;
@@ -23,10 +24,10 @@ export function founderXpReward(character, amount, rules) {
 export function founderOfferView(offer, account) {
   if (hasFounderHalo(account)) return { status: `YOURS · EDITION ${String(account.founderHalo).padStart(4, '0')} / 1,000`, action: 'VIEW YOUR CHARACTERS ↗' };
   if (!offer || offer.limit !== FOUNDER_LIMIT || !Number.isInteger(offer.remaining) || offer.remaining < 0 || offer.remaining > FOUNDER_LIMIT) {
-    return { status: 'Availability unconfirmed · connect to the account server.', action: account ? 'VIEW YOUR CHARACTERS ↗' : 'CHECK SIGNUP AVAILABILITY ↗' };
+    return { status: 'Reward availability is unknown. Try again when the server is available.', action: account ? 'VIEW YOUR CHARACTERS ↗' : 'CREATE AN ACCOUNT ↗' };
   }
-  if (offer.remaining === 0) return { status: 'SIGNUP LIMIT REACHED · 1,000 ACCOUNTS', action: account ? 'VIEW YOUR CHARACTERS ↗' : 'CREATE AN ACCOUNT ↗' };
-  return { status: `${offer.remaining.toLocaleString('en-US')} / 1,000 editions available · awarded on account creation.`, action: account ? 'VIEW YOUR CHARACTERS ↗' : 'SIGN UP FOR THE HALO ↗' };
+  if (offer.remaining === 0) return { status: 'HALO REWARDS ALL CLAIMED · YOU CAN STILL PLAY', action: account ? 'VIEW YOUR CHARACTERS ↗' : 'CREATE AN ACCOUNT ↗' };
+  return { status: `${offer.remaining.toLocaleString('en-US')} / 1,000 halos left · create an account to get one.`, action: account ? 'VIEW YOUR CHARACTERS ↗' : 'SIGN UP FOR THE HALO ↗' };
 }
 export function founderHaloParts(time = 0) {
   const parts = [];

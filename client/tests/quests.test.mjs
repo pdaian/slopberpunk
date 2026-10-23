@@ -67,7 +67,7 @@ test('only active, unrepaired controls offer an incident interaction with the cu
   assert.equal(targets[0].object.event, 'water-lockout');
   assert.match(incidentStatus(events[0], data.events.rules, 30), /1\/2.*120s/);
   events[0].repaired.push('lantern-kitchen'); events[0].hold = 4.4;
-  assert.match(incidentStatus(events[0], data.events.rules, 30), /clear enforcement.*4\/12s/);
+  assert.match(incidentStatus(events[0], data.events.rules, 30), /defeat enemy machines.*4\/12s/);
   assert.equal(incidentTargets(events).length, 0);
 });
 
@@ -108,7 +108,7 @@ test('hold objectives display their saved seconds and authored instruction', () 
   const c = { activeQuests: { [q.id]: 0 }, questStages: { [q.id]: { index: 1, progress: 4 } } };
   const view = questView(q, c);
   assert.equal(view.progress, 4); assert.equal(view.step.count, 10); assert.equal(view.ready, false);
-  assert.equal(objectiveText(view.step, data), 'Monitor the service in person');
+  assert.equal(objectiveText(view.step, data), 'Stay near Commons water meter for 10 seconds.');
 });
 
 test('all sixteen faction and lineage combinations get a complete, saved opening route', () => {
@@ -135,11 +135,11 @@ test('all sixteen faction and lineage combinations get a complete, saved opening
     }
     const events = worldEventViews(data, [snapshot('water-lockout')]);
     guide = openingGuide(c, data, events);
-    assert.match(guide.instruction, /Restore/);
+    assert.match(guide.instruction, /Repair/);
     events[0].repaired = events[0].controls.map(s => s.id);
-    assert.match(openingGuide(c, data, events).instruction, /Clear enforcement/);
+    assert.match(openingGuide(c, data, events).instruction, /Defeat the enemy machines/);
     events[0].phase = 'failed';
-    assert.match(openingGuide(c, data, events).hint, /does not erase/);
+    assert.match(openingGuide(c, data, events).hint, /Completed steps stay saved/);
     for (const id of [`${faction}-00`, `${race}-00`]) c.questStages[id] = { index: 2, progress: 0 };
     c = JSON.parse(JSON.stringify(c));
     assert.equal(openingGuide(c, data).quest.id, `${faction}-00`);

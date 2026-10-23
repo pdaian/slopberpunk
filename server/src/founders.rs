@@ -42,9 +42,7 @@ pub(super) fn xp_reward(c: &Character, data: &Content, amount: u64) -> (u64, u8)
     {
         return (amount, 0);
     }
-    let cost = |level: u32| {
-        (data.rule("xp", "base") + f64::from(level) * data.rule("xp", "perLevel")) as u64
-    };
+    let cost = |level: u32| progression::xp_cost(level, data);
     let prologue = if c.level == 0 {
         amount.min(cost(0).saturating_sub(c.xp))
     } else {
@@ -94,7 +92,7 @@ mod tests {
 
     fn runner(level: u32, xp: u64) -> Character {
         serde_json::from_value(json!({"version":2,"id":"runner","name":"Runner",
-            "race":"human","faction":"relay","level":level,"xp":xp,"credits":45,
+            "race":"human","faction":"relay","level":level,"xp":xp,"gold":45,
             "position":[0,0,0],"yaw":0,"health":140,"energy":100,"medkits":3,
             "weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true,
             "founderHalo":1}))
@@ -163,9 +161,15 @@ mod tests {
     #[test]
     fn prologue_and_level_ten_boundaries_do_not_leak_bonus_xp() {
         let data = content();
-        assert_eq!(xp_reward(&runner(0, 0), &data, 180), (185, 0));
-        assert_eq!(xp_reward(&runner(9, 374), &data, 120), (121, 0));
-        let mut last = runner(9, 394);
+        assert_eq!(
+            xp_reward(&runner(0, 0), &data, progression::xp_cost(0, &data) + 100),
+            (progression::xp_cost(0, &data) + 105, 0)
+        );
+        assert_eq!(
+            xp_reward(&runner(9, progression::xp_cost(9, &data) - 21), &data, 120),
+            (121, 0)
+        );
+        let mut last = runner(9, progression::xp_cost(9, &data) - 1);
         last.founder_xp_remainder = 19;
         assert_eq!(xp_reward(&last, &data, 1), (1, 0));
         last.founder_halo = Some(1001);

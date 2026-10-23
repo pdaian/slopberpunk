@@ -51,6 +51,19 @@ export function activityPose(bones, activity, time) {
   return bones;
 }
 
+export function gesturePose(bones, gesture, time) {
+  const arm = (side, pitch, bend) => {
+    const sign = side === 'left' ? -1 : 1;
+    bones[`${side}Arm`] = joint(bones.body, [sign * .47, .49, 0], pitch);
+    bones[`${side}Forearm`] = joint(bones[`${side}Arm`], [0, -.35, 0], bend);
+  };
+  if (gesture === 'wave') arm('right', -2.6, -.3 + Math.sin(time * 8) * .35);
+  else if (gesture === 'nod') bones.head = joint(bones.body, [0, .77, 0], .18 + Math.sin(time * 5) * .2);
+  else if (gesture === 'cheer') for (const side of ['left', 'right']) arm(side, -2.7 + Math.sin(time * 5) * .1, -.25);
+  else if (gesture === 'point') arm('right', -Math.PI / 2, 0);
+  return bones;
+}
+
 export class CharacterMeshes {
   constructor(models) { this.models=models;this.meshes=new Map();this.motion=new Map(); }
   pose(actor,time) {
@@ -69,7 +82,8 @@ export class CharacterMeshes {
     const heading=actor.velocity&&Math.hypot(actor.velocity[0],actor.velocity[2])>.5&&actor.model!=='drone'?Math.atan2(actor.velocity[0],actor.velocity[2]):actor.yaw||0;
     state.yaw+=Math.atan2(Math.sin(heading-state.yaw),Math.cos(heading-state.yaw))*(1-Math.exp(-dt*14));
     const animationTime=this.reducedMotion?0:time;
-    return {...activityPose(motionPose(state.speed,state.phase,actor.grounded!==false,actor.velocity?.[1]||0,animationTime),actor.activity,animationTime),yaw:state.yaw};
+    const bones=activityPose(motionPose(state.speed,state.phase,actor.grounded!==false,actor.velocity?.[1]||0,animationTime),actor.activity,animationTime);
+    return {...gesturePose(bones,actor.gesture,animationTime),yaw:state.yaw};
   }
   parts(model,race,detail) {
     const key=`${model}:${race}:${detail}`;

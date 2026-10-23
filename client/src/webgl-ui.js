@@ -265,7 +265,7 @@ export class WebGLUI {
     // Modal dimming, toast, and tooltips always composite above the HUD.
     return roots.sort((a,b)=>this.order(a)-this.order(b));
   }
-  order(node) {return node.id==='panel-dialog'?10:node.id==='toast'?20:node.id==='ui-tooltip'?30:0;}
+  order(node) {return node.id==='panel-dialog'?10:node.id==='toast'?20:node.id==='ui-tooltip'?30:node.id==='live-chat'&&node.dataset.expanded==='true'?5:0;}
   render(timestamp=0) {
     if(this.lost)return;
     // HUD updates run immediately before this pass, before observer microtasks fire.

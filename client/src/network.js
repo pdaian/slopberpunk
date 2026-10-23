@@ -9,12 +9,12 @@ export class Connection {
   connect(){return new Promise((resolve,reject)=>{
     const url=new URL('/api/world',location.href);url.protocol=location.protocol==='https:'?'wss:':'ws:';
     const ws=new WebSocket(url);this.socket=ws;let joined=false;
-    const timeout=setTimeout(()=>{ws.close();reject(new Error('The world connection timed out.'));},12000);
+    const timeout=setTimeout(()=>{ws.close();reject(new Error('Connecting took too long. Check your internet connection and try again.'));},12000);
     ws.onopen=()=>{ws.send(JSON.stringify({type:'join',version:2,id:this.characterId}));};
     ws.onmessage=e=>{
       let message;try{message=JSON.parse(e.data);}catch{return;}
       if(message.type==='snapshot'){
-        if(message.version!==2){clearTimeout(timeout);ws.close();if(!joined)reject(new Error('The world protocol changed. Reload the game.'));return;}
+        if(message.version!==2){clearTimeout(timeout);ws.close();if(!joined)reject(new Error('The game was updated. Reload the page to reconnect.'));return;}
         this.onSnapshot(message);if(!joined){joined=true;this.open=true;clearTimeout(timeout);resolve();}
       }else if(message.type==='error'){this.onEvent({type:'notice',text:message.error});if(!joined){clearTimeout(timeout);ws.close();reject(new Error(message.error));}}
       else if(message.type==='event')this.onEvent(message.event);
@@ -27,6 +27,6 @@ export class Connection {
     if(this.accumulator<.05)return;this.accumulator=0;
     this.send({type:'move',...input,jump:this.pendingJump,dash:this.pendingDash,sequence:++this.sequence});this.pendingJump=false;this.pendingDash=false;
   }
-  send(message){if(this.open&&this.socket?.readyState===WebSocket.OPEN&&this.socket.bufferedAmount<32768)this.socket.send(JSON.stringify({...message,version:2}));}
+  send(message){if(this.open&&this.socket?.readyState===WebSocket.OPEN&&this.socket.bufferedAmount<32768){this.socket.send(JSON.stringify({...message,version:2}));return true;}return false;}
   close(){this.intentional=true;this.open=false;this.socket?.close();}
 }

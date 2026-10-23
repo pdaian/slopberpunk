@@ -43,12 +43,12 @@ export function worldEventViews(data, snapshots = []) {
 
 export function incidentStatus(event, rules, time) {
   const seconds = Math.max(0, Math.ceil(event.deadline - time));
-  if (event.phase === 'warning') return `Incoming · ${seconds}s · ${event.enemy ? 'Enforcement approaching' : 'Watch for marked pressure surges'}`;
+  if (event.phase === 'warning') return `Incoming · ${seconds}s · ${event.enemy ? 'Enemy machines approaching' : 'Stay out of marked danger areas'}`;
   if (event.phase === 'recovery') return `Service restored · ${seconds}s until the next incident can begin`;
   if (event.phase === 'failed') return `Service interrupted · retry in ${seconds}s`;
-  if (event.phase === 'idle') return 'Approach the neighborhood to check its service';
-  if (event.repaired.length < event.controls.length) return `Restore controls · ${event.repaired.length}/${event.controls.length} · ${seconds}s left`;
-  return `Hold within ${rules.radius} m of the beacon${event.enemy ? ' · clear enforcement' : ' · avoid marked surges'} · ${Math.floor(event.hold)}/${rules.holdSeconds}s · ${seconds}s left`;
+  if (event.phase === 'idle') return 'Go closer to start this emergency';
+  if (event.repaired.length < event.controls.length) return `Repair both controls · ${event.repaired.length}/${event.controls.length} · ${seconds}s left`;
+  return `Stay inside the marked ring (${rules.radius} m)${event.enemy ? ' · defeat enemy machines' : ' · avoid striped danger areas'} · ${Math.floor(event.hold)}/${rules.holdSeconds}s · ${seconds}s left`;
 }
 
 export function incidentTargets(events) {

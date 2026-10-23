@@ -1,0 +1,4482 @@
+{
+  "format": "sloperberpunk-morality",
+  "version": 1,
+  "ranks": [
+    1,
+    5,
+    12
+  ],
+  "breach": {
+    "trust": 3,
+    "bond": 2
+  },
+  "restitution": "You give up this quest’s entire gold reward to help the people hurt by your broken promise. This makes up for one broken promise and restores some trust. You keep your current promise and the full XP reward. Earlier choices stay in your history.",
+  "pledges": {
+    "neighbors": "Let the affected people decide",
+    "public": "Share the evidence with everyone",
+    "mandate": "Let supervisors control the service",
+    "contract": "Accept the company’s deal"
+  },
+  "factions": {
+    "relay": "RELAY",
+    "covenant": "COVENANT",
+    "foundry": "FOUNDRY",
+    "choir": "CHOIR",
+    "concessions": "Basin companies"
+  },
+  "places": {
+    "market": "Lantern Market",
+    "archive": "Glass Steps",
+    "furnace": "Copper Walk",
+    "quiet": "Listening Courts",
+    "skybridge": "Last Connection",
+    "mourning-fen": "MOURNING FEN",
+    "cinderwood": "CINDERWOOD",
+    "glassroot-steppe": "GLASSROOT STEPPE",
+    "brine-bloom": "BRINE BLOOM"
+  },
+  "routes": {
+    "relay": "The Relay",
+    "covenant": "Glass Covenant",
+    "foundry": "Ash Foundry",
+    "choir": "Null Choir",
+    "human": "Afterborn",
+    "lattice": "Lattice",
+    "revenant": "Revenant",
+    "bloom": "Sporebound",
+    "market": "Lantern Market",
+    "archive": "Glass Steps",
+    "furnace": "Copper Walk",
+    "quiet": "Listening Courts",
+    "skybridge": "Last Connection",
+    "mourning-fen": "MOURNING FEN",
+    "cinderwood": "CINDERWOOD",
+    "glassroot-steppe": "GLASSROOT STEPPE",
+    "brine-bloom": "BRINE BLOOM",
+    "ninth-bell": "The Ninth Bell",
+    "borrowed-ferry": "The Ferry of Borrowed Names",
+    "trial-rain": "A Trial for the Rain",
+    "unlived-orchard": "The Orchard of Unlived Hours",
+    "first-applause": "The Theatre That Applauded First",
+    "tomorrow-harbor": "The Harbor at the End of Tomorrow"
+  },
+  "profiles": {
+    "care": {
+      "tradeoff": "Spend some of your reward helping people now. Neighbors benefit, but there is still no plan to pay for all future needs.",
+      "values": {
+        "care": 3,
+        "autonomy": 1,
+        "candor": -1
+      },
+      "factions": {
+        "relay": 2,
+        "foundry": 2,
+        "concessions": -2
+      },
+      "trust": 3,
+      "bond": 2,
+      "goldPercent": 75,
+      "pledge": "neighbors",
+      "gear": "shelter"
+    },
+    "consent": {
+      "tradeoff": "Let people decide who can use their records or resources. This protects privacy, but decisions take longer and some evidence stays private.",
+      "values": {
+        "autonomy": 3,
+        "care": 1,
+        "candor": -2
+      },
+      "factions": {
+        "covenant": 3,
+        "choir": 2,
+        "foundry": -1,
+        "concessions": -1
+      },
+      "trust": 2,
+      "bond": 2,
+      "goldPercent": 85,
+      "pledge": "neighbors",
+      "gear": "consent"
+    },
+    "truth": {
+      "tradeoff": "Share the evidence now so people can challenge unfair decisions. The people named in it lose privacy and control over when their story is told.",
+      "values": {
+        "candor": 3,
+        "autonomy": -2,
+        "care": -1
+      },
+      "factions": {
+        "relay": 1,
+        "choir": 2,
+        "covenant": -2,
+        "concessions": -2
+      },
+      "trust": -1,
+      "bond": -1,
+      "goldPercent": 100,
+      "pledge": "public",
+      "gear": "witness"
+    },
+    "order": {
+      "tradeoff": "Let supervisors take charge to keep services running. Residents lose some control, and removing those supervisors later may be difficult.",
+      "values": {
+        "care": 1,
+        "candor": 1,
+        "autonomy": -3
+      },
+      "factions": {
+        "foundry": 1,
+        "covenant": 1,
+        "relay": -2,
+        "choir": -2,
+        "concessions": 2
+      },
+      "trust": -2,
+      "bond": -1,
+      "goldPercent": 115,
+      "pledge": "mandate",
+      "gear": "mandate"
+    },
+    "profit": {
+      "tradeoff": "Accept company funding and a larger gold reward. Supplies arrive sooner, but the company gains control and residents face its conditions.",
+      "values": {
+        "care": -3,
+        "autonomy": -2,
+        "candor": -2
+      },
+      "factions": {
+        "concessions": 4,
+        "relay": -2,
+        "foundry": -2,
+        "covenant": -1,
+        "choir": -1
+      },
+      "trust": -4,
+      "bond": -3,
+      "goldPercent": 140,
+      "pledge": "contract",
+      "gear": "salvager"
+    },
+    "repair": {
+      "tradeoff": "Give up all gold from this quest to help repair the harm you caused. This makes up for one broken promise but does not undo the original choice.",
+      "values": {
+        "care": 2,
+        "candor": 2
+      },
+      "factions": {
+        "relay": 1,
+        "foundry": 1,
+        "concessions": -1
+      },
+      "trust": 4,
+      "bond": 3,
+      "goldPercent": 0,
+      "pledge": "",
+      "gear": "mender"
+    },
+    "abstain": {
+      "tradeoff": "Leave the decision to the group. Skipping your vote is saved. It gives no reputation changes, upgrade points, or promise.",
+      "values": {},
+      "factions": {},
+      "trust": 0,
+      "bond": 0,
+      "goldPercent": 100,
+      "pledge": "",
+      "gear": ""
+    }
+  },
+  "gear": [
+    {
+      "id": "shelter",
+      "name": "Streetweave guard",
+      "description": "Adds shield strength and healing power. Requires Care of at least +2; below that, its bonuses stop working.",
+      "requires": {
+        "care": 2
+      },
+      "stats": {
+        "shield": 6,
+        "healing": 3
+      }
+    },
+    {
+      "id": "consent",
+      "name": "Freehand interface",
+      "description": "Adds maximum energy and reduces ability wait times. Requires Freedom of at least +2; below that, its bonuses stop working.",
+      "requires": {
+        "autonomy": 2
+      },
+      "stats": {
+        "haste": 0.01,
+        "energy": 3
+      }
+    },
+    {
+      "id": "witness",
+      "name": "Witness optic",
+      "description": "Improves critical-hit chance and lowers energy costs. Requires Honesty of at least +2; below that, its bonuses stop working.",
+      "requires": {
+        "candor": 2
+      },
+      "stats": {
+        "crit": 1,
+        "efficiency": 0.01
+      }
+    },
+    {
+      "id": "mandate",
+      "name": "Warden brace",
+      "description": "Increases ability damage and reduces damage taken. Works at any value score.",
+      "requires": {},
+      "stats": {
+        "damage": 0.02,
+        "armor": 0.005
+      }
+    },
+    {
+      "id": "salvager",
+      "name": "Company finder",
+      "description": "Increases gold from patrol enemies and movement speed. Works at any value score.",
+      "requires": {},
+      "stats": {
+        "goldFind": 0.025,
+        "speed": 0.01
+      }
+    },
+    {
+      "id": "mender",
+      "name": "Repair circuit",
+      "description": "Adds energy recovery and healing power. Requires Honesty of at least 0; below that, its bonuses stop working.",
+      "requires": {
+        "candor": 0
+      },
+      "stats": {
+        "regen": 0.15,
+        "healing": 3
+      }
+    }
+  ],
+  "decisions": {
+    "relay-00": {
+      "route": "relay",
+      "neighborhood": "market",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Reopen the Kitchen: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Leave the water controls with a paid supervisor",
+          "outcome": "The feed stays open under a supervisor’s key. Nella can serve tonight, but a new shutoff now requires an appeal instead of a neighbor turning the valve."
+        }
+      ]
+    },
+    "relay-01": {
+      "route": "relay",
+      "neighborhood": "market",
+      "contact": "iri",
+      "restitution": true,
+      "question": "False Freight Charges: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish every freight receipt",
+          "outcome": "The fictitious lift becomes public evidence. Traders can challenge the charge, but their delivery patterns become searchable by collectors as well."
+        }
+      ]
+    },
+    "relay-02": {
+      "route": "relay",
+      "neighborhood": "market",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Fix the Crossing Timer: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell priority crossing slots to fund repairs",
+          "outcome": "The pedestrian timer works between paid freight windows. Iri gets replacement parts; people without a booking wait while the toll changes its name."
+        }
+      ]
+    },
+    "relay-03": {
+      "route": "relay",
+      "neighborhood": "market",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Protect the Resting Courier: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the courier’s seizure footage",
+          "outcome": "The machines are disabled and their order is exposed. The courier gets compensation offers alongside unwanted questions about why he was resting."
+        }
+      ]
+    },
+    "relay-04": {
+      "route": "relay",
+      "neighborhood": "market",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Survey the Fen Footpath: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "License heavy access to the surveyed path",
+          "outcome": "Relief carts get a funded route. The company buys the same access and starts widening its approach; Mara marks the first damage to the reed bank."
+        }
+      ]
+    },
+    "relay-05": {
+      "route": "relay",
+      "neighborhood": "market",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Put Copper Walk on the Map: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Let households approve each published address",
+          "outcome": "Copper Walk can correct the map privately before addresses go live. Deliveries improve slowly; residents who fear collection keep their homes unlisted."
+        }
+      ]
+    },
+    "relay-06": {
+      "route": "relay",
+      "neighborhood": "archive",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Recover the Handcarts: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell half the recovered handcarts for spare parts",
+          "outcome": "The remaining carts receive sound wheels. Several carriers leave with no cart at all, and the salvage depot pays you a recovery fee."
+        }
+      ]
+    },
+    "relay-07": {
+      "route": "relay",
+      "neighborhood": "archive",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Reconnect the Lift Button: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Require an attendant to operate the repaired lift",
+          "outcome": "The middle landing opens with paid supervision. Its safety record improves, but a late traveler finds a working button behind a closed attendant window."
+        }
+      ]
+    },
+    "relay-08": {
+      "route": "relay",
+      "neighborhood": "archive",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Restore Accessible Routes: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the uncensored access survey",
+          "outcome": "The blocked wheelchair routes are undeniable. Medical access needs and private entrances are also visible; residents ask Iri who approved releasing them."
+        }
+      ]
+    },
+    "relay-09": {
+      "route": "relay",
+      "neighborhood": "archive",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Remove Delivery Penalties: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Waive penalties only after a documented emergency",
+          "outcome": "Families can appeal delivery fines with evidence. Genuine detours without a witness still incur a charge, and Iri spends evenings reading appeals."
+        }
+      ]
+    },
+    "relay-10": {
+      "route": "relay",
+      "neighborhood": "archive",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Survey the Forest Detour: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Take a forestry loan for the longer route",
+          "outcome": "Food deliveries remain affordable this month. The loan is secured against a timber allocation; Tovin finds a new cutting obligation in the annex."
+        }
+      ]
+    },
+    "relay-11": {
+      "route": "relay",
+      "neighborhood": "archive",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Test Both Lift Stops: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the failed lift test before repairs",
+          "outcome": "Travelers avoid the broken stop and challenge its opening report. Nearby stalls lose a week of business before a replacement route is arranged."
+        }
+      ]
+    },
+    "relay-12": {
+      "route": "relay",
+      "neighborhood": "furnace",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Remove the Toll Warden: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep the barrier as a staffed inspection point",
+          "outcome": "The obsolete warden is gone. Paid stewards check freight for safety, but the open crossing again depends on someone else granting permission."
+        }
+      ]
+    },
+    "relay-13": {
+      "route": "relay",
+      "neighborhood": "furnace",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Protect Travel Records: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Keep named journeys for the toll inquiry",
+          "outcome": "Investigators can trace every collection. Iri’s own journeys remain searchable, and a shelter asks you to remove the route to its door."
+        }
+      ]
+    },
+    "relay-14": {
+      "route": "relay",
+      "neighborhood": "furnace",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Give Stewards Route Access: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Give stewards access under Iri’s final override",
+          "outcome": "District repairs become faster while Iri retains emergency veto power. Copper Walk’s first contested closure is still decided at the Commons desk."
+        }
+      ]
+    },
+    "relay-15": {
+      "route": "relay",
+      "neighborhood": "furnace",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Survey the South Road: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "License the water-stop directory to a carrier",
+          "outcome": "The carrier funds updated signs and your fee. Smaller traders must buy the current list; their customers receive yesterday’s water prices."
+        }
+      ]
+    },
+    "relay-16": {
+      "route": "relay",
+      "neighborhood": "furnace",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Update the Salt Beacon: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Retain one supervised channel at the salt beacon",
+          "outcome": "A staffed desk maintains the dry-basin directions. When its shift ends the painted arrow remains, but unscheduled crews cannot post a correction."
+        }
+      ]
+    },
+    "relay-17": {
+      "route": "relay",
+      "neighborhood": "furnace",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Map the Steppe Settlement: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the full mineral survey with the settlement map",
+          "outcome": "No one can claim the steppe is empty. Prospectors also learn where to drill; Ada asks why proving her home required advertising its foundations."
+        }
+      ]
+    },
+    "relay-18": {
+      "route": "relay",
+      "neighborhood": "quiet",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Stop Shelter Tracking: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Register shelters as protected official stations",
+          "outcome": "Trackers are disabled and supplies gain a public budget. Shelter residents must now appear in a registry to keep that protection."
+        }
+      ]
+    },
+    "relay-19": {
+      "route": "relay",
+      "neighborhood": "quiet",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Publish Outward Routes: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Let roadside crews approve their outward routes",
+          "outcome": "Crews remove unsafe or private paths before publication. Travelers retain fewer options, and an unlisted water stop cannot be found by someone in distress."
+        }
+      ]
+    },
+    "relay-20": {
+      "route": "relay",
+      "neighborhood": "quiet",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Protect the Water Carriers: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell spare cooling fins to finance delivery wages",
+          "outcome": "The current water shipment leaves safely. The reserve of repair fins is sold, so the next breakdown will require another purchase."
+        }
+      ]
+    },
+    "relay-21": {
+      "route": "relay",
+      "neighborhood": "quiet",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Measure the Longer Water Route: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Authorize limited trips through the shorter route",
+          "outcome": "Deliveries meet tonight’s ration at a supervised bank crossing. Mara records new wheel damage beside the permit’s promise to stop if the bank fails."
+        }
+      ]
+    },
+    "relay-22": {
+      "route": "relay",
+      "neighborhood": "quiet",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Connect the Roadside Crews: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish each crew’s maintenance signature",
+          "outcome": "Landless stations gain a defensible public record. Named maintainers also become identifiable targets for the collectors contesting the network."
+        }
+      ]
+    },
+    "relay-23": {
+      "route": "relay",
+      "neighborhood": "quiet",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Defend the Maintenance Records: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Settle with the collector to protect the copied records",
+          "outcome": "The ledgers survive and the company pays your fee. The settlement recognizes part of the disputed maintenance debt, which crews must now challenge again."
+        }
+      ]
+    },
+    "relay-24": {
+      "route": "relay",
+      "neighborhood": "skybridge",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Check the Toll Order’s Expiry: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Give the expiry clause to claimants before publication",
+          "outcome": "Affected travelers can prepare appeals in private. The toll chain keeps collecting while Iri waits for their permission to publish the complete case."
+        }
+      ]
+    },
+    "relay-25": {
+      "route": "relay",
+      "neighborhood": "skybridge",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Set Closure Review Dates: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Allow a supervisor to extend a closure once",
+          "outcome": "Closures gain dates and named responsibility. The supervisor keeps one emergency extension without a hearing; a stranded crew waits through that extra interval."
+        }
+      ]
+    },
+    "relay-26": {
+      "route": "relay",
+      "neighborhood": "skybridge",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Clear the Emergency Channel: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the fee drones’ routing logs",
+          "outcome": "Distress traffic clears and the interference is exposed. The same logs reveal the last known positions of people who used the emergency channel."
+        }
+      ]
+    },
+    "relay-27": {
+      "route": "relay",
+      "neighborhood": "skybridge",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Share the Network Keys: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept bridge finance secured on future route fees",
+          "outcome": "Three bridges receive repairs immediately. The shared keys remain, but future stewards inherit a repayment schedule before they can waive a fee."
+        }
+      ]
+    },
+    "relay-28": {
+      "route": "relay",
+      "neighborhood": "skybridge",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Shut Down the Toll Chain: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Replace toll machines with a staffed freight checkpoint",
+          "outcome": "The expired automated toll ends. The new crew checks overloaded carts and stops some from crossing; carriers question who authorized the replacement barrier."
+        }
+      ]
+    },
+    "relay-29": {
+      "route": "relay",
+      "neighborhood": "skybridge",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Reserve Batteries for Rescues: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Reserve batteries for paying carriers first",
+          "outcome": "Carrier schedules recover and the network earns a surplus. One distress call waits behind freight traffic; Iri records the delay beside your payment."
+        }
+      ]
+    },
+    "relay-30": {
+      "route": "relay",
+      "neighborhood": "skybridge",
+      "contact": "iri",
+      "restitution": true,
+      "question": "Check the Falling Water Level: Who should control the routes and carry their maintenance costs?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Iri’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the falling gauge and every ration recipient",
+          "outcome": "The final route account cannot hide its shortage. Families become visible in the ration register, including those who asked to keep their shelter private. Oru files that cost too."
+        }
+      ]
+    },
+    "covenant-00": {
+      "route": "covenant",
+      "neighborhood": "market",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Save the Shutoff Notice: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the shutoff notice with all witness names",
+          "outcome": "The double bill is undeniable. Its donors receive public support and collection inquiries; Sera keeps their objections beside the released notice."
+        }
+      ]
+    },
+    "covenant-01": {
+      "route": "covenant",
+      "neighborhood": "market",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Withdraw the Unlicensed Recording: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "License the recording for a clinic royalty",
+          "outcome": "The singer receives a royalty offer and the clinic gains money. The commercial copy remains available before she has agreed; Sera records the disputed permission."
+        }
+      ]
+    },
+    "covenant-02": {
+      "route": "covenant",
+      "neighborhood": "market",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Close the Expired Diary Copy: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Preserve the expired diary in the public case file",
+          "outcome": "The abuse of its permission record can be proved. Passages meant for private readers remain exposed after the agreed winter has ended."
+        }
+      ]
+    },
+    "covenant-03": {
+      "route": "covenant",
+      "neighborhood": "market",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Stop the Voiceprint Collectors: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Let clinic supervisors inspect seized voiceprints",
+          "outcome": "The recorders stop and the clinic can audit who was scanned. Patients must trust the same desk with a second use of records they never offered."
+        }
+      ]
+    },
+    "covenant-04": {
+      "route": "covenant",
+      "neighborhood": "market",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Check the Bird Survey: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept a corrected advertisement and a cooling grant",
+          "outcome": "The false bird call is withdrawn quietly. The vault receives cooling funds, while investors keep a restoration claim that the field survey never supported."
+        }
+      ]
+    },
+    "covenant-05": {
+      "route": "covenant",
+      "neighborhood": "market",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Protect a Witness’s Privacy: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the complete lift testimony",
+          "outcome": "The inquiry gains an unbroken record and orders an inspection. The witness’s family argument becomes public too, making the next witness hesitate."
+        }
+      ]
+    },
+    "covenant-06": {
+      "route": "covenant",
+      "neighborhood": "archive",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Stop Deleted Files Being Restored: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep deleted files sealed for official review",
+          "outcome": "Recovery machines stop copying. Deletion waits for an authorized hearing; owners still cannot make their own refusal final."
+        }
+      ]
+    },
+    "covenant-07": {
+      "route": "covenant",
+      "neighborhood": "archive",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Make Consent Controls Accessible: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Require a clerk to approve permission changes",
+          "outcome": "The new panel explains every access right. A clerk must approve withdrawal, so a visitor leaves informed but with her unwanted permission still active."
+        }
+      ]
+    },
+    "covenant-08": {
+      "route": "covenant",
+      "neighborhood": "archive",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Separate the Merged Records: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Fund both residents before assigning disputed debt",
+          "outcome": "Appointments and records separate. The clinic covers immediate care from its reserve; the unresolved debt moves onto a shorter budget for everyone else."
+        }
+      ]
+    },
+    "covenant-09": {
+      "route": "covenant",
+      "neighborhood": "archive",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Meet the Forest Witness: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the forest witness’s complete account",
+          "outcome": "The false certificates face immediate scrutiny. The witness’s limited release is exceeded, and pension holders learn of their exposure before a support plan exists."
+        }
+      ]
+    },
+    "covenant-10": {
+      "route": "covenant",
+      "neighborhood": "archive",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Require Permission Before Access: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Permit emergency access after a supervisor signs",
+          "outcome": "Silence normally keeps a seal shut. A supervisor may open it for urgent care; patients gain speed at the cost of someone else defining their emergency."
+        }
+      ]
+    },
+    "covenant-11": {
+      "route": "covenant",
+      "neighborhood": "archive",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Prepare the Lift Inquiry: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Wait for every witness to approve the inquiry",
+          "outcome": "Private testimony stays under its owners’ control. The lift remains restricted while the repair inquiry waits for a witness who cannot be reached."
+        }
+      ]
+    },
+    "covenant-12": {
+      "route": "covenant",
+      "neighborhood": "furnace",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Reopen Record Withdrawals: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Negotiate withdrawal processing with the vault operator",
+          "outcome": "The warden’s blockade ends and the operator funds extra clerks. A processing charge survives; poorer owners wait for a waiver to withdraw their own records."
+        }
+      ]
+    },
+    "covenant-13": {
+      "route": "covenant",
+      "neighborhood": "furnace",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Verify Sera’s Missing Week: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Open Sera’s shard to establish the financing chain",
+          "outcome": "The shard confirms the purchase and exposes the missing week. Sera did not authorize its contents becoming evidence; she keeps working with a changed view of you."
+        }
+      ]
+    },
+    "covenant-14": {
+      "route": "covenant",
+      "neighborhood": "furnace",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Publish the Care Rules: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Let the clinic board administer care exceptions",
+          "outcome": "The rules guarantee ordinary treatment. The board retains an exceptional-records clause for scarce procedures, and families challenge who qualifies."
+        }
+      ]
+    },
+    "covenant-15": {
+      "route": "covenant",
+      "neighborhood": "furnace",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Find the Missing Capsules: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept the storage company’s recovery sponsorship",
+          "outcome": "The missing capsules get transport quickly. The sponsor receives safekeeping priority and a claim on future storage fees before families can negotiate."
+        }
+      ]
+    },
+    "covenant-16": {
+      "route": "covenant",
+      "neighborhood": "furnace",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Copy the Capsule Instructions: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Post capsule instructions in an open registry",
+          "outcome": "Transport crews can verify every instruction without waiting for a custodian. Private revival wishes become visible to relatives and debt collectors alike."
+        }
+      ]
+    },
+    "covenant-17": {
+      "route": "covenant",
+      "neighborhood": "furnace",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Respect Refused Revivals: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Use extra water to recover the unreachable capsules",
+          "outcome": "Refusal seals stay intact and more capsules reach shelter. The additional water comes from tomorrow’s clinic allocation; other patients face shorter treatment hours."
+        }
+      ]
+    },
+    "covenant-18": {
+      "route": "covenant",
+      "neighborhood": "quiet",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Stop the Capsule Scanners: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the scanners’ full request list",
+          "outcome": "The upload stops and every requester is named. The list also identifies patients whose families did not know they had entered restoration storage."
+        }
+      ]
+    },
+    "covenant-19": {
+      "route": "covenant",
+      "neighborhood": "quiet",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Keep Both Witness Accounts: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Issue one official summary of the forest accounts",
+          "outcome": "Both originals remain sealed, but the public inquiry uses a single supervised summary. Its tidy conclusion suppresses a disagreement neither witness withdrew."
+        }
+      ]
+    },
+    "covenant-20": {
+      "route": "covenant",
+      "neighborhood": "quiet",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Protect the Capsule Cooling: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell future cooling priority to fund the current repair",
+          "outcome": "The capsules remain cold now. The buyer claims first access during the next shortage, moving the risk onto patients who have not yet arrived."
+        }
+      ]
+    },
+    "covenant-21": {
+      "route": "covenant",
+      "neighborhood": "quiet",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Publish the Anonymous Warning: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Name the engineer’s confidential source",
+          "outcome": "The safety warning gains a named witness and more public force. The source loses the anonymity that made the warning possible."
+        }
+      ]
+    },
+    "covenant-22": {
+      "route": "covenant",
+      "neighborhood": "quiet",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Reduce Archive Cooling: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Keep the virtual forest open for its donor",
+          "outcome": "The donation funds clinic work this month. The forest continues using cooling water; other records are reduced to text to make room."
+        }
+      ]
+    },
+    "covenant-23": {
+      "route": "covenant",
+      "neighborhood": "quiet",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Stop the Forced Record Copies: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep a sealed replica for the enforcement inquiry",
+          "outcome": "Forced copying stops. An official copy remains beyond ordinary withdrawal controls, and its owners must petition to have it destroyed later."
+        }
+      ]
+    },
+    "covenant-24": {
+      "route": "covenant",
+      "neighborhood": "skybridge",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Investigate the Profile Service: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "License anonymous profiles to pay for deletion work",
+          "outcome": "Source files can be deleted faster. Derived products keep earning money; affected people cannot verify that anonymity prevents them being recognized."
+        }
+      ]
+    },
+    "covenant-25": {
+      "route": "covenant",
+      "neighborhood": "skybridge",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Install Independent Consent Checks: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Give Sera an emergency consent override",
+          "outcome": "Independent checks flag expired permissions. Sera can still bypass them during a crisis, leaving her personal judgment above the rule she advocates."
+        }
+      ]
+    },
+    "covenant-26": {
+      "route": "covenant",
+      "neighborhood": "skybridge",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Stop the Backup Drones: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the complete replica address book",
+          "outcome": "The public can pursue the remaining copies. Some addresses reveal private refuges as well as suppliers; Sera records the disclosures she cannot retract."
+        }
+      ]
+    },
+    "covenant-27": {
+      "route": "covenant",
+      "neighborhood": "skybridge",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Register the Deletion Receipt: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Retain one supervised replica after the deletion receipt",
+          "outcome": "Ordinary search returns nothing. An enforcement copy remains under official access, and the receipt must now explain that deletion has an exception."
+        }
+      ]
+    },
+    "covenant-28": {
+      "route": "covenant",
+      "neighborhood": "skybridge",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Shut Down the Inference Annex: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Reopen the Annex as a licensed research service",
+          "outcome": "The coercive extraction machines stop. Researchers pay for access under new terms, while witnesses contest whether their old refusal applies to the renamed service."
+        }
+      ]
+    },
+    "covenant-29": {
+      "route": "covenant",
+      "neighborhood": "skybridge",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Witness Sera’s Decision: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Make Sera’s seal decision public evidence",
+          "outcome": "Sera’s decision remains technically hers. Its details become a public example without a separate release; she asks you to distinguish permission from publicity."
+        }
+      ]
+    },
+    "covenant-30": {
+      "route": "covenant",
+      "neighborhood": "skybridge",
+      "contact": "sera",
+      "restitution": true,
+      "question": "Publish the Storage Losses: How much privacy can this inquiry spend to secure care and evidence?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sera’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Keep immersive records cold for another month",
+          "outcome": "The final account retains the memories in full. Emergency care funds cover the coolant, and Oru files a smaller treatment budget beside the rescued shelves."
+        }
+      ]
+    },
+    "foundry-00": {
+      "route": "foundry",
+      "neighborhood": "market",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Restore the Kitchen Pump: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept a company maintenance contract for the pump",
+          "outcome": "The kitchen pump runs under a funded service contract. Nella gets relief tonight and a renewed invoice next month; Bram pins both documents together."
+        }
+      ]
+    },
+    "foundry-01": {
+      "route": "foundry",
+      "neighborhood": "market",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Replace the Cracked Bracket: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish all three false safety stamps",
+          "outcome": "The replacement bracket holds and inspectors face a public challenge. Named shift workers are questioned before the inquiry separates their signatures from their supervisors’ orders."
+        }
+      ]
+    },
+    "foundry-02": {
+      "route": "foundry",
+      "neighborhood": "market",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Set Relief Shifts: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Let a supervisor suspend relief during emergencies",
+          "outcome": "The night crew gets written handovers. A supervisor keeps an emergency exception to protected breaks, and the next long shift begins under that clause."
+        }
+      ]
+    },
+    "foundry-03": {
+      "route": "foundry",
+      "neighborhood": "market",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Recover the Repair Tools: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell the recovered tools back at a subsidized price",
+          "outcome": "The crew recovers equipment at less than the dealer’s rate. Workers still pay for tools they already maintained, while your recovery fee clears immediately."
+        }
+      ]
+    },
+    "foundry-04": {
+      "route": "foundry",
+      "neighborhood": "market",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Inspect the Overloaded Bridge: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Close the bridge until an engineering review",
+          "outcome": "Residents beneath the span gain immediate protection. Delivery crews lose the crossing while the review proceeds, and the market’s food arrives late."
+        }
+      ]
+    },
+    "foundry-05": {
+      "route": "foundry",
+      "neighborhood": "market",
+      "contact": "bram",
+      "restitution": true,
+      "question": "End the Heating Cutoffs: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Fund heating through a future fuel advance",
+          "outcome": "The cutoff ends and tonight’s rooms are warm. Next season’s timber is pledged in advance; the forest crew inherits the shortfall."
+        }
+      ]
+    },
+    "foundry-06": {
+      "route": "foundry",
+      "neighborhood": "archive",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Protect the Safety Stop: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Put restart authority with the shift supervisor",
+          "outcome": "The bent gear is removed safely. Workers must ask a supervisor for the next safety stop, giving one person control over whether the same risk counts again."
+        }
+      ]
+    },
+    "foundry-07": {
+      "route": "foundry",
+      "neighborhood": "archive",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Copy the Pump Schematics: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the engineer’s complete pump notebook",
+          "outcome": "Apprentices get corrections and useful history. Her private observations about former colleagues are copied with the diagrams despite her request for leave."
+        }
+      ]
+    },
+    "foundry-08": {
+      "route": "foundry",
+      "neighborhood": "archive",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Recover Waste Heat: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Prioritize one clinic for a guaranteed heat supply",
+          "outcome": "One clinic receives steady warmth. The second shares the remaining pressure with homes, accepting interruptions that its patients cannot plan around."
+        }
+      ]
+    },
+    "foundry-09": {
+      "route": "foundry",
+      "neighborhood": "archive",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Check the True Fuel Cost: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Subsidize cutters while keeping the true-cost report sealed",
+          "outcome": "Workers retain their overtime while the crew negotiates a transition. The false bids remain in circulation longer and the subsidy drains the repair reserve."
+        }
+      ]
+    },
+    "foundry-10": {
+      "route": "foundry",
+      "neighborhood": "archive",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Inspect the Sinking Foundations: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Buy tower reinforcement with an extraction loan",
+          "outcome": "The towers are braced quickly. The intake keeps its drawdown rate, and the lender acquires a claim on the deeper well beneath the repaired homes."
+        }
+      ]
+    },
+    "foundry-11": {
+      "route": "foundry",
+      "neighborhood": "archive",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Open the Pressure Valve: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Put the safe pressure setting behind a supervisor key",
+          "outcome": "The valve drops into the safe band. Workers cannot change it without permission if a new fault appears, so safety depends on the key holder arriving."
+        }
+      ]
+    },
+    "foundry-12": {
+      "route": "foundry",
+      "neighborhood": "furnace",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Share the Spare Parts: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Charge deposits for shared spare parts",
+          "outcome": "The spare valve restarts the pump and replenishment is funded. A poorer tower cannot post the deposit and stays cold despite parts in the common rack."
+        }
+      ]
+    },
+    "foundry-13": {
+      "route": "foundry",
+      "neighborhood": "furnace",
+      "contact": "bram",
+      "restitution": true,
+      "question": "End Inherited Repair Debts: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish every inherited bond and successor name",
+          "outcome": "The absence of consent becomes public evidence. Families regain a stronger case and lose the privacy of debts they never agreed to carry."
+        }
+      ]
+    },
+    "foundry-14": {
+      "route": "foundry",
+      "neighborhood": "furnace",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Publish the Maintenance Rules: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep Bram’s emergency appointment outside recall",
+          "outcome": "The crew gets shared rules and protected shifts. Bram retains authority during declared emergencies, so his removal procedure fails exactly when control matters most."
+        }
+      ]
+    },
+    "foundry-15": {
+      "route": "foundry",
+      "neighborhood": "furnace",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Check the Excess Pumping: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Reserve current pumping for clinics before cutting output",
+          "outcome": "The dividend pump slows while clinics retain their allowance. Summer recharge still cannot cover the draw; the reserve falls more slowly but continues falling."
+        }
+      ]
+    },
+    "foundry-16": {
+      "route": "foundry",
+      "neighborhood": "furnace",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Recalibrate the Fen Gauge: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Use the old baseline to preserve a repair grant",
+          "outcome": "The grant survives and technicians receive materials. The official deficit stays understated; another crew plans work using a water reserve that does not exist."
+        }
+      ]
+    },
+    "foundry-17": {
+      "route": "foundry",
+      "neighborhood": "furnace",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Recover the Cooling Fins: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell the sound fins and patch with cracked stock",
+          "outcome": "The sale pays wages and your fee. Bram records the patched fins as provisional and schedules more inspections, moving the risk into future shifts."
+        }
+      ]
+    },
+    "foundry-18": {
+      "route": "foundry",
+      "neighborhood": "quiet",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Reduce the Furnace Schedule: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the wage guarantee’s unpaid for next month",
+          "outcome": "Workers learn the full limit before accepting shorter shifts. Some leave for company jobs immediately, reducing the crew available to keep the remaining furnace safe."
+        }
+      ]
+    },
+    "foundry-19": {
+      "route": "foundry",
+      "neighborhood": "quiet",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Survey the New Heat Outlet: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Authorize the larger outlet with monitored extraction",
+          "outcome": "More rooms cool this week. Root damage becomes an accepted operating cost, and residents downstream request a place on the monitoring board."
+        }
+      ]
+    },
+    "foundry-20": {
+      "route": "foundry",
+      "neighborhood": "quiet",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Add Accessible Shutdown Alarms: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Take a cheaper alarm package with audio only",
+          "outcome": "The furnace gets a funded alarm system. Workers who need lamps or tactile cues must rely on colleagues, while the supplier pays your commission."
+        }
+      ]
+    },
+    "foundry-21": {
+      "route": "foundry",
+      "neighborhood": "quiet",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Plan the Turbine Replacement: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Keep the turbine running until every home has an alternative",
+          "outcome": "More homes keep heat temporarily. The old turbine continues consuming reserve and exposing its crew to the failure already recorded in the inspection."
+        }
+      ]
+    },
+    "foundry-22": {
+      "route": "foundry",
+      "neighborhood": "quiet",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Stop the Automatic Restarts: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Leave a supervised emergency restart circuit",
+          "outcome": "Automatic restarts stop. A supervisor can still revive the retired turbine for peak demand; its crew asks who bears responsibility for that exception."
+        }
+      ]
+    },
+    "foundry-23": {
+      "route": "foundry",
+      "neighborhood": "quiet",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Separate Procedures from Private Memories: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the engineers’ full recollections",
+          "outcome": "The conversion gains useful detail beyond the procedures. Former crew members lose control of private memories that were never needed for the basic repair."
+        }
+      ]
+    },
+    "foundry-24": {
+      "route": "foundry",
+      "neighborhood": "skybridge",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Set Bridge Freight Limits: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell premium freight windows during conversion",
+          "outcome": "The bridge work gains funding. Paid freight crowds ordinary deliveries into fewer slots, while the pedestrian lane survives on a narrower timetable."
+        }
+      ]
+    },
+    "foundry-25": {
+      "route": "foundry",
+      "neighborhood": "skybridge",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Free the Forced Shift: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Require one final paid conversion shift",
+          "outcome": "The inherited debt is canceled and wages are offered. Release waits until a final shift ends, leaving consent incomplete even though the work now pays."
+        }
+      ]
+    },
+    "foundry-26": {
+      "route": "foundry",
+      "neighborhood": "skybridge",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Test Overnight Cooling: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the list of rooms denied overnight cooling",
+          "outcome": "The appeal queue becomes visible and harder to dismiss. Named residents lose medical privacy; the clinics remain cool without adding any new capacity."
+        }
+      ]
+    },
+    "foundry-27": {
+      "route": "foundry",
+      "neighborhood": "skybridge",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Secure the Retired Intake: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell sealed intake salvage to a specialist broker",
+          "outcome": "The common reserve gains money for urgent repairs. The broker removes contaminated assemblies, and Bram cannot verify where the hazardous chambers will be opened."
+        }
+      ]
+    },
+    "foundry-28": {
+      "route": "foundry",
+      "neighborhood": "skybridge",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Use the Remote Shutdown: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Let the supervisor trigger shutdown after freight clears",
+          "outcome": "The crew has a remote shutdown method. One final freight window delays its use, keeping workers responsible for an active machine they were ready to retire."
+        }
+      ]
+    },
+    "foundry-29": {
+      "route": "foundry",
+      "neighborhood": "skybridge",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Measure the Remaining Drawdown: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Repair the workshop roof before taking another reading",
+          "outcome": "Workers stop getting wet at their benches. The deeper bore goes unmeasured for another interval, and the next water plan relies on an older estimate."
+        }
+      ]
+    },
+    "foundry-30": {
+      "route": "foundry",
+      "neighborhood": "skybridge",
+      "contact": "bram",
+      "restitution": true,
+      "question": "Survey Fuel After the Shutdown: Who bears the repair risk when safe work and sufficient output conflict?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Bram’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept the lender’s post-shutdown fuel offer",
+          "outcome": "The smaller furnace schedule expands again and homes warm sooner. The extraction lender takes a claim on next season’s canopy; Oru files it beside Bram’s promised day off."
+        }
+      ]
+    },
+    "choir-00": {
+      "route": "choir",
+      "neighborhood": "market",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Restore the Kitchen Warning: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep a supervised loudspeaker for kitchen emergencies",
+          "outcome": "The warning reaches the kitchen and the water returns. Residents cannot refuse an official emergency broadcast, even when the supervisor repeats it after the danger ends."
+        }
+      ]
+    },
+    "choir-01": {
+      "route": "choir",
+      "neighborhood": "market",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Add a Broadcast Countdown: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Allow immediate broadcasts under an emergency flag",
+          "outcome": "Ordinary bulletins get a countdown. Flagged messages skip it, and a household must trust the sender to distinguish danger from urgency."
+        }
+      ]
+    },
+    "choir-02": {
+      "route": "choir",
+      "neighborhood": "market",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Check the Listening Fines: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the listening fines with household names",
+          "outcome": "The extension into bedrooms becomes impossible to deny. The same evidence reveals which residents refused to listen, exposing them to further scrutiny."
+        }
+      ]
+    },
+    "choir-03": {
+      "route": "choir",
+      "neighborhood": "market",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Stop the Pursuing Loudspeakers: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Replace pursuing drones with fixed forced speakers",
+          "outcome": "The machines stop following people home. Fixed speakers still cover the street without an opt-out, trading pursuit for a boundary that residents cannot move."
+        }
+      ]
+    },
+    "choir-04": {
+      "route": "choir",
+      "neighborhood": "market",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Mark the Route by Touch: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "License the marked path to a guided-tour operator",
+          "outcome": "Tactile markers arrive quickly. The operator controls bookings, and local walkers must share their ordinary route with paying groups."
+        }
+      ]
+    },
+    "choir-05": {
+      "route": "choir",
+      "neighborhood": "market",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Make the Bulletin Optional: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish who opts out to prove the channel works",
+          "outcome": "The bulletin becomes optional and refusal counts are verifiable. Individual listeners lose privacy because every opt-out is tied to a name."
+        }
+      ]
+    },
+    "choir-06": {
+      "route": "choir",
+      "neighborhood": "archive",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Protect the Warning Lamps: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep speakers as an automatic backup to lamps",
+          "outcome": "The lamps survive and warnings gain redundancy. A power fault can restore forced audio without the residents choosing it."
+        }
+      ]
+    },
+    "choir-07": {
+      "route": "choir",
+      "neighborhood": "archive",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Withdraw the Announcer’s Voice: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Renew the announcer’s voice license for a community fee",
+          "outcome": "The bulletin receives funding and the sample stays familiar. The announcer’s withdrawal becomes a negotiated price instead of a final answer."
+        }
+      ]
+    },
+    "choir-08": {
+      "route": "choir",
+      "neighborhood": "archive",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Open the Community Noticeboard: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Appoint moderators with an emergency removal power",
+          "outcome": "The noticeboard opens with protection against dangerous instructions. The moderators can also remove a criticism while they decide whether it qualifies."
+        }
+      ]
+    },
+    "choir-09": {
+      "route": "choir",
+      "neighborhood": "archive",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Trace the False Evacuation Alarm: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the alarm’s full occupancy records",
+          "outcome": "The expired evacuation order is exposed. Residents on reclaimed wetland find their homes and movements in the same public file."
+        }
+      ]
+    },
+    "choir-10": {
+      "route": "choir",
+      "neighborhood": "archive",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Survey the Quiet Forest Path: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Open the forest path without a reservation limit",
+          "outcome": "People priced out by the tour company regain access. Crowding damages the remaining shade and the caretakers ask how many walkers the refuge can carry."
+        }
+      ]
+    },
+    "choir-11": {
+      "route": "choir",
+      "neighborhood": "archive",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Separate Music and Quiet Areas: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep a master mute for dispute resolution",
+          "outcome": "Music and quiet areas open. One supervisor can silence either side while settling a complaint, making the boundary less voluntary than it appears."
+        }
+      ]
+    },
+    "choir-12": {
+      "route": "choir",
+      "neighborhood": "furnace",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Protect the Quiet-Zone Walls: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell advertising space on the quiet-zone walls",
+          "outcome": "The walls receive repairs and remain standing. Residents regain the visual advertisements they worked to remove, though the speakers stay off."
+        }
+      ]
+    },
+    "choir-13": {
+      "route": "choir",
+      "neighborhood": "furnace",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Correct the Signed Testimony: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the original signed testimony alongside the translation",
+          "outcome": "Readers can check the translation directly. A signer’s private phrasing and identity become searchable beyond the audience they agreed to address."
+        }
+      ]
+    },
+    "choir-14": {
+      "route": "choir",
+      "neighborhood": "furnace",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Publish the Listening Rules: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Exempt emergency Choir channels from the listening rules",
+          "outcome": "Most broadcasts become voluntary. The Choir keeps a protected exception for its own urgent work; the first appeal tests who defines urgency."
+        }
+      ]
+    },
+    "choir-15": {
+      "route": "choir",
+      "neighborhood": "furnace",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Remove Private Recordings: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Retain the household feed as evidence of intrusion",
+          "outcome": "The alarm channel works again and the surveillance is provable. Intimate recordings survive in an inquiry whose subjects asked for their deletion."
+        }
+      ]
+    },
+    "choir-16": {
+      "route": "choir",
+      "neighborhood": "furnace",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Limit Emergency Bulletins: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Let distress bulletins continue until every reply arrives",
+          "outcome": "More travelers may receive the warning. Receivers stay occupied beyond the stated deadline, delaying the next crew trying to call for help."
+        }
+      ]
+    },
+    "choir-17": {
+      "route": "choir",
+      "neighborhood": "furnace",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Withdraw the Childhood Sample: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "License the childhood sample for a treatment fund",
+          "outcome": "Treatment receives immediate money. The resident’s old voice keeps selling recovery claims, and withdrawing it later will end the funding agreement."
+        }
+      ]
+    },
+    "choir-18": {
+      "route": "choir",
+      "neighborhood": "quiet",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Stop the Mobile Repeaters: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep one mobile repeater on a supervised rescue route",
+          "outcome": "Most travelers can leave the channel behind. People on the rescue route still hear it after refusing; the crew argues that coverage outweighs that refusal."
+        }
+      ]
+    },
+    "choir-19": {
+      "route": "choir",
+      "neighborhood": "quiet",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Survey the Evacuation Route: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish every evacuated household on the route board",
+          "outcome": "Relatives can find missing people quickly. The board also tells scavengers which homes are empty and exposes refuge addresses to collectors."
+        }
+      ]
+    },
+    "choir-20": {
+      "route": "choir",
+      "neighborhood": "quiet",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Protect the Storm Lamps: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Give the lamp sponsor priority space in warnings",
+          "outcome": "The storm lamps receive replacement cells. Every warning now opens with a sponsor message, using attention that the Choir promised would remain optional."
+        }
+      ]
+    },
+    "choir-21": {
+      "route": "choir",
+      "neighborhood": "quiet",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Make Opt-Outs Work: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Allow one override when a receiver repeatedly opts out",
+          "outcome": "Ordinary refusals work. A supervisor may force contact after repeated silence, turning a pattern of refusal into grounds to ignore it."
+        }
+      ]
+    },
+    "choir-22": {
+      "route": "choir",
+      "neighborhood": "quiet",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Set Emergency Expiry Dates: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Extend the emergency bulletin until the storm fully clears",
+          "outcome": "The warning reaches late travelers. Its authority outlasts the published expiry, and the next sender cites your extension when asking for another."
+        }
+      ]
+    },
+    "choir-23": {
+      "route": "choir",
+      "neighborhood": "quiet",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Disable the Amplifier Wardens: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the amplifier wardens’ audience logs",
+          "outcome": "The root order is exposed. So are the names and locations of people it counted as listeners, including those who never agreed to be counted."
+        }
+      ]
+    },
+    "choir-24": {
+      "route": "choir",
+      "neighborhood": "skybridge",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Revoke the Attendance Contract: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Replace universal attendance with mandatory emergency receipt",
+          "outcome": "Ordinary listening becomes voluntary. Every resident must still acknowledge emergency notices, leaving silence punishable under a narrower rule."
+        }
+      ]
+    },
+    "choir-25": {
+      "route": "choir",
+      "neighborhood": "skybridge",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Plan the Market Celebration: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Let a sponsor pay for a longer market celebration",
+          "outcome": "The dance runs longer and paid crews receive full shifts. Loud promotional announcements reach the quiet route, while extra power leaves fewer reserve cells."
+        }
+      ]
+    },
+    "choir-26": {
+      "route": "choir",
+      "neighborhood": "skybridge",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Clear the Storm Channel: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the complete forced demand",
+          "outcome": "The storm channel clears and the coercion is documented. Private addresses embedded in the demand become part of a public case rather than a sealed exhibit."
+        }
+      ]
+    },
+    "choir-27": {
+      "route": "choir",
+      "neighborhood": "skybridge",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Save the Listening Settings: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep administrator access to reset listening preferences",
+          "outcome": "Settings survive ordinary restarts. An administrator can still reset them during a crisis, so residents must trust a key they do not control."
+        }
+      ]
+    },
+    "choir-28": {
+      "route": "choir",
+      "neighborhood": "skybridge",
+      "contact": "ves",
+      "restitution": true,
+      "question": "End Forced Broadcasts: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Keep the root channel available for distress calls",
+          "outcome": "Forced routine broadcasts end. The root override remains for emergencies, leaving a powerful exception future senders can inherit."
+        }
+      ]
+    },
+    "choir-29": {
+      "route": "choir",
+      "neighborhood": "skybridge",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Test the Accessible Warning: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the accessible warning’s individual receipt tests",
+          "outcome": "Failures become traceable to specific endpoints. Residents’ access needs become public, and some withdraw from the next test to protect their privacy."
+        }
+      ]
+    },
+    "choir-30": {
+      "route": "choir",
+      "neighborhood": "skybridge",
+      "contact": "ves",
+      "restitution": true,
+      "question": "Check the New Evacuation Boundary: Who may refuse a message when another person depends on its warning?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ves’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Enforce a forced evacuation beyond the new boundary",
+          "outcome": "The final account moves people away from the advancing fungus. Some lose homes before agreeing to leave; Oru records their objections beside the reduced immediate risk."
+        }
+      ]
+    },
+    "human-00": {
+      "route": "human",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Reserve a Welcome Meal: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Require a verified census entry for reserved meals",
+          "outcome": "Your meal is ready and the kitchen can plan portions. The next arrival must clear a record check before receiving the same guarantee."
+        }
+      ]
+    },
+    "human-01": {
+      "route": "human",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Correct the Shelter Census: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Let survivors choose whether the census names them",
+          "outcome": "Missing people can claim meals privately. The public census remains incomplete, making its old exclusions harder to prove from totals alone."
+        }
+      ]
+    },
+    "human-02": {
+      "route": "human",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Compare Water and Survival Records: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Keep the survival pamphlet to secure filter sponsorship",
+          "outcome": "New filters receive funding. The sponsor’s account still credits inherited hardiness, hiding the water system that actually changed survival."
+        }
+      ]
+    },
+    "human-03": {
+      "route": "human",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "End Clinic Ancestry Checks: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Keep a priority tier for registered long-term residents",
+          "outcome": "Ancestry checks end at the door. Scarce appointments still favor established records, and a newly arrived family waits despite equal medical need."
+        }
+      ]
+    },
+    "human-04": {
+      "route": "human",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Read the Medic’s Account: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Share the medic’s instructions but seal the eviction deal",
+          "outcome": "Shelters receive useful care methods without condemning the medic publicly. The evicted shelter loses evidence it needs to challenge the purchase."
+        }
+      ]
+    },
+    "human-05": {
+      "route": "human",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Survey Clinic Ventilation: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Take a clinic ventilation loan backed by treatment fees",
+          "outcome": "The vent and shaded route receive funding now. Future patients inherit repayment charges before their appointment can be guaranteed."
+        }
+      ]
+    },
+    "human-06": {
+      "route": "human",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Check the Old Shelter Route: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Close the old shelter route entirely",
+          "outcome": "Travelers avoid the bare rest stops. Households beyond the closure lose their familiar route until the authority approves a replacement."
+        }
+      ]
+    },
+    "human-07": {
+      "route": "human",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Post the Roadside Clinic Schedule: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the appointment list with the clinic schedule",
+          "outcome": "Neighbors can see who is still waiting and organize transport. Private treatment needs become public alongside the useful timetable."
+        }
+      ]
+    },
+    "human-08": {
+      "route": "human",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Protect the Medicine Carrier: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell spare medicine to cover the carrier’s wages",
+          "outcome": "The scheduled shipment remains cold and the carrier is paid. Emergency stock leaves the public clinic for a buyer who can afford certainty."
+        }
+      ]
+    },
+    "human-09": {
+      "route": "human",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Remove the Labor-Based Care Rule: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Rank scarce care by expected recovery instead",
+          "outcome": "Earnings no longer decide treatment. A clinical score still deprioritizes some chronic patients, who must appeal the new measure of worth."
+        }
+      ]
+    },
+    "human-10": {
+      "route": "human",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Open Clinic Admissions: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the wardens’ entire patient exclusion ledger",
+          "outcome": "The admissions rule is exposed and the clinic reopens. Formerly excluded patients have their diagnoses and debts repeated in a public record."
+        }
+      ]
+    },
+    "human-11": {
+      "route": "human",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Publish the Care Budget: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Release only care-budget totals without family cases",
+          "outcome": "Families retain privacy while funding limits become public. Unnamed delays are easier for officials to dismiss as accounting differences."
+        }
+      ]
+    },
+    "human-12": {
+      "route": "human",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Measure Water for the Next Meal: Who waits for care, and who gets to decide why?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Buy priority water with a kitchen company contract",
+          "outcome": "The next queue eats sooner. The kitchen owes a standing fee that later diners must cover; Oru puts that obligation beside your welcome meal."
+        }
+      ]
+    },
+    "lattice-00": {
+      "route": "lattice",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Register Your Chosen Name: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Make your chosen name and repair serial public together",
+          "outcome": "Your name is recognized immediately and repair history is easy to verify. Employers and collectors can connect you to an earlier identity without asking."
+        }
+      ]
+    },
+    "lattice-01": {
+      "route": "lattice",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Correct the Ceramic Repair Guide: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Permit urgent plate replacement under a technician’s signature",
+          "outcome": "The corrected guide prevents routine coercion. During a declared emergency a technician can still replace a plate before obtaining consent."
+        }
+      ]
+    },
+    "lattice-02": {
+      "route": "lattice",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Compare the Two Memory Records: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Choose one calibrated recording as the official account",
+          "outcome": "The conflicting readings gain a usable official reference. The other citizen’s recollection becomes an appendix instead of equally valid testimony."
+        }
+      ]
+    },
+    "lattice-03": {
+      "route": "lattice",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Stop the Body Recall: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Fund repairs first and contest the recall afterward",
+          "outcome": "Affected bodies receive urgent work. The recall authority remains temporarily intact, and technicians must document each refusal under its rules."
+        }
+      ]
+    },
+    "lattice-04": {
+      "route": "lattice",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Separate the Forked Citizens’ Records: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Offer one shared repair allocation to the two citizens",
+          "outcome": "Both identities survive in the register. The kiln treats their material needs as one budget, forcing them to negotiate whose repair can wait."
+        }
+      ]
+    },
+    "lattice-05": {
+      "route": "lattice",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Fix Duplicate Identity Detection: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish both current identity keys for public verification",
+          "outcome": "The repeater stops reporting duplicates. The citizens’ public keys expose future crossings to observers they never authorized."
+        }
+      ]
+    },
+    "lattice-06": {
+      "route": "lattice",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Survey the Ceramic Mineral Seam: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Trade mineral rights for a guaranteed repair allotment",
+          "outcome": "Ceramic becomes available to waiting bodies. The deeper seam can be cut, and Ada’s settlement carries the well risk that the repair agreement omits."
+        }
+      ]
+    },
+    "lattice-07": {
+      "route": "lattice",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Retrieve Tam’s Housing Request: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "File Tam’s housing request without the source of its clay",
+          "outcome": "Tam’s right to a private body is clearly recorded. The displaced settlement loses a link in the evidence connecting its land to that repair."
+        }
+      ]
+    },
+    "lattice-08": {
+      "route": "lattice",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Recover Occupied Mesh Plates: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Place unidentified mesh fragments in state safekeeping",
+          "outcome": "Owners recover recognized plates. Unidentified people wait in official storage, and access requires an institution’s approval rather than community witnesses."
+        }
+      ]
+    },
+    "lattice-09": {
+      "route": "lattice",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Require Consent for Memory Changes: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Keep the conflicting recollections as open research evidence",
+          "outcome": "Neither recollection is deleted. Researchers gain access without a fresh release, making preservation another form of unwanted use."
+        }
+      ]
+    },
+    "lattice-10": {
+      "route": "lattice",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Stop the Forced Mergers: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Require a shared safety assessment before separate release",
+          "outcome": "The forced merger stops. Separate care and housing wait for an assessor, leaving each citizen’s independence contingent on an external test."
+        }
+      ]
+    },
+    "lattice-11": {
+      "route": "lattice",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Register Separate Repair Rights: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Finance separate repairs through individual service contracts",
+          "outcome": "Each citizen receives a repair entitlement. The contracts assign future labor to pay for scarce ceramic, replacing shared exclusion with separate debts."
+        }
+      ]
+    },
+    "lattice-12": {
+      "route": "lattice",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Close the Deeper Mineral Claim: Who controls a body when its repairs draw on someone else’s home?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Authorize a small emergency cut for the waiting repair queue",
+          "outcome": "More shells receive urgent repairs. The well’s support is weakened despite a smaller cut, and Oru files the soil risk beside the people helped today."
+        }
+      ]
+    },
+    "revenant-00": {
+      "route": "revenant",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Record Your New Introduction: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Link your new introduction to the earlier record",
+          "outcome": "Neighbors can verify your return immediately. Your earlier name becomes searchable even if you later prefer to leave that life private."
+        }
+      ]
+    },
+    "revenant-01": {
+      "route": "revenant",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Return Control of the Letter: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Arrange a supported reunion before the letter is opened",
+          "outcome": "The recipient gains help and a living contact. The meeting arrives before they have chosen whether to revisit the relationship at all."
+        }
+      ]
+    },
+    "revenant-02": {
+      "route": "revenant",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Find the Hidden Service Bond: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Exchange the hidden bond for reduced voluntary installments",
+          "outcome": "Restored workers receive smaller payments and immediate relief. The contract still treats the price of return as a personal debt."
+        }
+      ]
+    },
+    "revenant-03": {
+      "route": "revenant",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Stop Bodies Being Taken for Debt: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Suspend seizure for unpaid debts only for patients under clinic care",
+          "outcome": "Patients reach treatment safely. Anyone outside the clinic’s register remains exposed to the old contractors until they can obtain a certification."
+        }
+      ]
+    },
+    "revenant-04": {
+      "route": "revenant",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Adjust the Tool Grip: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the worker’s adaptation record for other clinics",
+          "outcome": "Other technicians learn from the improved grip. The worker’s private bodily limits become a public example without a separate release."
+        }
+      ]
+    },
+    "revenant-05": {
+      "route": "revenant",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Correct the Revival Guide: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Keep uncertain revival outcomes out of the introductory guide",
+          "outcome": "The guide feels less frightening to new patients. They must ask a specialist to learn the limits that could materially change their decision."
+        }
+      ]
+    },
+    "revenant-06": {
+      "route": "revenant",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Investigate the Barrier Rescue: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Give rescue survivors control of the delivery evidence",
+          "outcome": "Survivors can decide how to describe the diversion. The service-debt inquiry waits for permissions while charges continue to accumulate."
+        }
+      ]
+    },
+    "revenant-07": {
+      "route": "revenant",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Recover the Delayed Rescue Log: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Submit the rescue delay to a sealed official inquiry",
+          "outcome": "The delay reaches investigators with authority to cancel debts. Affected workers cannot inspect the evidence until the inquiry chooses to release it."
+        }
+      ]
+    },
+    "revenant-08": {
+      "route": "revenant",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Protect the Restoration Capsules: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Begin urgent stabilization before checking each revival instruction",
+          "outcome": "More capsules survive the journey in usable condition. Some treatments begin before refusal records are read; Oru records those interventions as disputed."
+        }
+      ]
+    },
+    "revenant-09": {
+      "route": "revenant",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Cancel the Inherited Service Debt: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Replace forced work with a private restoration loan",
+          "outcome": "The inherited labor bond ends. Patients owe money under new terms, and lenders can pursue the same households through a different instrument."
+        }
+      ]
+    },
+    "revenant-10": {
+      "route": "revenant",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Disable the Repossession Wardens: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish every seizure for unpaid debts target and release notice",
+          "outcome": "Collectors cannot quietly deny the releases. People who returned under a new name find that history made public with their legal protection."
+        }
+      ]
+    },
+    "revenant-11": {
+      "route": "revenant",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Register New Revival Instructions: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Let a care proxy override instructions during emergencies",
+          "outcome": "Ordinary revival wishes are recorded. A proxy can reverse them in a crisis, preserving a life at the risk of overriding the person it belongs to."
+        }
+      ]
+    },
+    "revenant-12": {
+      "route": "revenant",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Publish the Nutrient Reserve: What does restoring a life entitle anyone else to demand?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Spend the nutrient reserve on all presently revivable patients",
+          "outcome": "More people return to the kitchen now. Future arrivals face a depleted reserve, and Oru records who must wait after the welcome bowls are filled."
+        }
+      ]
+    },
+    "bloom-00": {
+      "route": "bloom",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Record Your Care Needs: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish your care needs to challenge the supplier’s category",
+          "outcome": "The kitchen can show what the label missed. Your culture and medical needs become public facts that employers and landlords can read."
+        }
+      ]
+    },
+    "bloom-01": {
+      "route": "bloom",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Test an Open Nutrient Recipe: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "License the tested recipe to finance clinic batches",
+          "outcome": "The clinic receives a funded supply. Other hosts must buy licensed feed even though the method came from shared experiments."
+        }
+      ]
+    },
+    "bloom-02": {
+      "route": "bloom",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Recover the Miners’ Notes: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Ask surviving miners before releasing their full notes",
+          "outcome": "Contributors regain control of their experiments. Some techniques remain unavailable while the archive waits for permissions from families it cannot locate."
+        }
+      ]
+    },
+    "bloom-03": {
+      "route": "bloom",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Stop Culture Seizures: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Permit supervised sample seizure for safety testing",
+          "outcome": "Patients reach care while ordinary collection stops. A regulator retains authority to take samples, and hosts must trust its definition of danger."
+        }
+      ]
+    },
+    "bloom-04": {
+      "route": "bloom",
+      "neighborhood": "archive",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Correct the Symbiont Diaries: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the full symbiont diaries",
+          "outcome": "The idea of one shared will is challenged with vivid evidence. Diarists lose privacy about breathing problems and decisions that belonged to them."
+        }
+      ]
+    },
+    "bloom-05": {
+      "route": "bloom",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Check the Clinic Vent: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept a supplier’s filtered vent with restricted clinic access",
+          "outcome": "The walkway receives cleaner air. The supplier limits care to its supported cultures, recreating the exclusion under an equipment warranty."
+        }
+      ]
+    },
+    "bloom-06": {
+      "route": "bloom",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Survey the Spreading Fungus: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Keep the spread survey local until households can relocate",
+          "outcome": "Families receive warning before a public announcement. New arrivals still see the optimistic advertisement while they plan a move into the area."
+        }
+      ]
+    },
+    "bloom-07": {
+      "route": "bloom",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Trace the Culture’s Water Use: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Meter all culture water use under a single regulator",
+          "outcome": "The shared seep gets a clearer allocation. Hosts must register their cultures to draw water, surrendering privacy for a predictable ration."
+        }
+      ]
+    },
+    "bloom-08": {
+      "route": "bloom",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Stop Blanket Sterilization: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Stop every removal trial until all hosts agree",
+          "outcome": "Blanket spraying ends and patients retain control. The escaped strain gains more time to spread before a workable containment agreement exists."
+        }
+      ]
+    },
+    "bloom-09": {
+      "route": "bloom",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Test Contained Cultures: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell the successful mixture to fund refuge supplies",
+          "outcome": "The refuges receive emergency money. Access to the mixture depends on a buyer’s license even though the water shortage remains shared."
+        }
+      ]
+    },
+    "bloom-10": {
+      "route": "bloom",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Remove the Biased Checkpoint: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Require culture certificates from all travelers",
+          "outcome": "The old biased checkpoint is removed. A new certification rule still delays people whose cultures have never been formally tested."
+        }
+      ]
+    },
+    "bloom-11": {
+      "route": "bloom",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Open the Sealed Culture Library: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the culture library’s full propagation instructions",
+          "outcome": "Families can challenge the lease and reproduce useful cultures. Uncontrolled copies can escape containment; Ilex loses track of where the strains go."
+        }
+      ]
+    },
+    "bloom-12": {
+      "route": "bloom",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": true,
+      "question": "Check the Refuge Boundary: How do you protect living partners without deciding that every form of growth is harmless?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Oru’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Expand the sealed zone and enforce relocation",
+          "outcome": "The refuge boundary gains a wider safety margin. Households leave before choosing to, and Oru keeps their lost addresses beside the jars preserved for care."
+        }
+      ]
+    },
+    "mourning-fen-00": {
+      "route": "mourning-fen",
+      "neighborhood": "mourning-fen",
+      "contact": "mara",
+      "restitution": true,
+      "question": "Compare Pumping and Wages: How do you divide a shrinking water reserve between wages and a living wetland?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Mara’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the gauge with every pump worker’s name",
+          "outcome": "The drawdown becomes undeniable. Workers gain public support and face individual scrutiny from the company that still pays their wages."
+        }
+      ]
+    },
+    "mourning-fen-01": {
+      "route": "mourning-fen",
+      "neighborhood": "mourning-fen",
+      "contact": "mara",
+      "restitution": true,
+      "question": "Check the Proposed Share Payment: How do you divide a shrinking water reserve between wages and a living wetland?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Mara’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept the shares with no voting rights to clear back pay",
+          "outcome": "The crew receives money immediately. Their dividend now rewards pumping beyond the wetland limit, placing next winter’s income against the remaining water."
+        }
+      ]
+    },
+    "mourning-fen-02": {
+      "route": "mourning-fen",
+      "neighborhood": "mourning-fen",
+      "contact": "mara",
+      "restitution": true,
+      "question": "Record the Winter Pumping Limit: How do you divide a shrinking water reserve between wages and a living wetland?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Mara’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Place the winter pumping limit under company supervision",
+          "outcome": "The pump slows under a supervised quota and wages remain scheduled. The company retains the restart key; Mara’s crew must appeal when the guarantee expires."
+        }
+      ]
+    },
+    "cinderwood-00": {
+      "route": "cinderwood",
+      "neighborhood": "cinderwood",
+      "contact": "tovin",
+      "restitution": true,
+      "question": "Check the False Forestry Credits: Who carries the losses when a false restoration promise is withdrawn?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Tovin’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Let workers review the false-credit evidence first",
+          "outcome": "Workers can prepare for the certificate collapse before publication. The fund keeps selling claims during the review, exposing new buyers to the same fiction."
+        }
+      ]
+    },
+    "cinderwood-01": {
+      "route": "cinderwood",
+      "neighborhood": "cinderwood",
+      "contact": "tovin",
+      "restitution": true,
+      "question": "Survey the Remaining Canopy: Who carries the losses when a false restoration promise is withdrawn?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Tovin’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Trade the last canopy cut for Tovin’s treatment debt",
+          "outcome": "Tovin’s daughter keeps her appointment and the debt clears. The shaded soil begins drying; surviving seedlings lose the canopy the survey found they need."
+        }
+      ]
+    },
+    "cinderwood-02": {
+      "route": "cinderwood",
+      "neighborhood": "cinderwood",
+      "contact": "tovin",
+      "restitution": true,
+      "question": "Cancel the False Timber Certificates: Who carries the losses when a false restoration promise is withdrawn?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Tovin’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Phase out the certificates while protecting current pensions",
+          "outcome": "Living trees receive an immediate cutting pause. The false fund survives through a transition subsidy, moving its losses onto the crews who finance the guarantee."
+        }
+      ]
+    },
+    "glassroot-steppe-00": {
+      "route": "glassroot-steppe",
+      "neighborhood": "glassroot-steppe",
+      "contact": "ada",
+      "restitution": true,
+      "question": "Measure the Mineral Seam: Which present needs justify risking a settlement’s remaining water?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Ada’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Allocate a small mineral cut to urgent body repairs",
+          "outcome": "Waiting people receive ceramic sooner. Even a limited cut weakens the well’s root mat; Ada records both the repaired bodies and the new cracks."
+        }
+      ]
+    },
+    "glassroot-steppe-01": {
+      "route": "glassroot-steppe",
+      "neighborhood": "glassroot-steppe",
+      "contact": "ada",
+      "restitution": true,
+      "question": "Correct the Vacant Land Survey: Which present needs justify risking a settlement’s remaining water?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ada’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the survey with all occupied addresses",
+          "outcome": "The false vacancy claim collapses under public scrutiny. Brokers gain a list of households to pressure with individual offers before the settlement can act together."
+        }
+      ]
+    },
+    "glassroot-steppe-02": {
+      "route": "glassroot-steppe",
+      "neighborhood": "glassroot-steppe",
+      "contact": "ada",
+      "restitution": true,
+      "question": "Register the Settlement’s Relocation: Which present needs justify risking a settlement’s remaining water?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ada’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Keep the settlement in place under a voluntary repair ration",
+          "outcome": "Residents retain their homes and the deeper claim stays closed. Salvaged ceramic cannot meet every urgent need, and Ada’s partner accepts another temporary patch."
+        }
+      ]
+    },
+    "brine-bloom-00": {
+      "route": "brine-bloom",
+      "neighborhood": "brine-bloom",
+      "contact": "ilex",
+      "restitution": true,
+      "question": "Measure the Shared Seep: Whose freedom to propagate can survive a shared limit on water?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ilex’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the seep reading and the refuge’s location",
+          "outcome": "The recovery prospectus loses credibility. New visitors and collectors can now find the remaining freshwater, increasing pressure on the same dwindling source."
+        }
+      ]
+    },
+    "brine-bloom-01": {
+      "route": "brine-bloom",
+      "neighborhood": "brine-bloom",
+      "contact": "ilex",
+      "restitution": true,
+      "question": "Challenge the Culture Lease: Whose freedom to propagate can survive a shared limit on water?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ilex’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Renew the culture lease for guaranteed feed deliveries",
+          "outcome": "The refuge cultures receive a predictable supply. Hosts keep paying a patent charge to a successor who did not create their living partners."
+        }
+      ]
+    },
+    "brine-bloom-02": {
+      "route": "brine-bloom",
+      "neighborhood": "brine-bloom",
+      "contact": "ilex",
+      "restitution": true,
+      "question": "Register the Containment Plan: Whose freedom to propagate can survive a shared limit on water?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ilex’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Let each outer household decide whether to withdraw",
+          "outcome": "The propagation lease ends and the library stays sealed. Some families remain beyond the supply boundary; Ilex keeps them on the inspection list despite the growing risk."
+        }
+      ]
+    },
+    "neighborhood-market-00": {
+      "route": "market",
+      "neighborhood": "market",
+      "contact": "nella",
+      "restitution": true,
+      "question": "Find the Missing Diners: What does the kitchen owe its diners, donors, and exhausted workers?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Nella’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Keep the fourteen names with the kitchen only",
+          "outcome": "Nella reserves the missing bowls and keeps a private list. The public tally shows a disputed total without exposing the diners, leaving the company room to deny who was absent."
+        }
+      ]
+    },
+    "neighborhood-market-01": {
+      "route": "market",
+      "neighborhood": "market",
+      "contact": "nella",
+      "restitution": true,
+      "question": "Check the Double Water Bill: What does the kitchen owe its diners, donors, and exhausted workers?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Nella’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept a private rebate instead of a public billing challenge",
+          "outcome": "The kitchen’s immediate bill is canceled and your fee increases. Other donors still face the duplicate charge; Nella keeps the serial numbers for the next complaint."
+        }
+      ]
+    },
+    "neighborhood-market-02": {
+      "route": "market",
+      "neighborhood": "market",
+      "contact": "nella",
+      "restitution": true,
+      "question": "Set the Kitchen Work Schedule: What does the kitchen owe its diners, donors, and exhausted workers?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Nella’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Put the work schedule under one paid kitchen supervisor",
+          "outcome": "The kitchen gains a reliable shift lead and Nella gets a break. Volunteers lose the right to change their own work schedule without approval. Oru records the new authority beside the fourteen names."
+        }
+      ]
+    },
+    "neighborhood-archive-00": {
+      "route": "archive",
+      "neighborhood": "archive",
+      "contact": "elin",
+      "restitution": true,
+      "question": "Check the Rejected Memory: Who decides what survives when there is not enough cold space?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Elin’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Publish the rejected memory as evidence",
+          "outcome": "The disposable label is publicly challenged. Its witness wanted the morning preserved, not shown to strangers; Elin records the difference beside the successful appeal."
+        }
+      ]
+    },
+    "neighborhood-archive-01": {
+      "route": "archive",
+      "neighborhood": "archive",
+      "contact": "elin",
+      "restitution": true,
+      "question": "Inspect Cooling Priorities: Who decides what survives when there is not enough cold space?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Elin’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Reserve cooling for the most fragile patients first",
+          "outcome": "Payment no longer leads the queue. Clinicians rank medical urgency, and witnesses with stable bodies lose memories they had asked to keep."
+        }
+      ]
+    },
+    "neighborhood-archive-02": {
+      "route": "archive",
+      "neighborhood": "archive",
+      "contact": "elin",
+      "restitution": true,
+      "question": "Record Each Witness’s Consent: Who decides what survives when there is not enough cold space?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Elin’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Sell priority storage to finance the shared cabinets",
+          "outcome": "Ordinary families gain a cooling subsidy. A premium reserve remains colder than the shared shelves, and Elin must explain why a public work schedule still contains a paid exception."
+        }
+      ]
+    },
+    "neighborhood-furnace-00": {
+      "route": "furnace",
+      "neighborhood": "furnace",
+      "contact": "merek",
+      "restitution": true,
+      "question": "Count the Occupied Flats: Who receives warmth and who inherits the obligation to maintain it?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Merek’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Keep occupied addresses out of the public register",
+          "outcome": "Merek counts all twenty-three households privately. Families avoid collection inquiries, but officials can still claim the public register shows empty flats."
+        }
+      ]
+    },
+    "neighborhood-furnace-01": {
+      "route": "furnace",
+      "neighborhood": "furnace",
+      "contact": "merek",
+      "restitution": true,
+      "question": "Inspect the Heat Bypass: Who receives warmth and who inherits the obligation to maintain it?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Merek’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Accept the office owner’s repair debt agreement",
+          "outcome": "The bypass receives funded parts and the crew avoids immediate debt. The office keeps a guaranteed heat share before the occupied homes divide what remains."
+        }
+      ]
+    },
+    "neighborhood-furnace-02": {
+      "route": "furnace",
+      "neighborhood": "furnace",
+      "contact": "merek",
+      "restitution": true,
+      "question": "Set the Shared Heating Schedule: Who receives warmth and who inherits the obligation to maintain it?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Merek’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Give the heat schedule to a permanent shift supervisor",
+          "outcome": "The flats receive published heating hours and the crew gets a break. Changes now require a supervisor’s signature, making an urgent household appeal wait for the next shift."
+        }
+      ]
+    },
+    "neighborhood-quiet-00": {
+      "route": "quiet",
+      "neighborhood": "quiet",
+      "contact": "sable",
+      "restitution": true,
+      "question": "Trace the Missed Flood Warning: Who controls the boundary between a warning and an intrusion?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sable’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "care",
+          "label": "Tell residents about the missed warning before publishing fault",
+          "outcome": "Neighbors can prepare and inspect their exits without a public dispute. The failed advisory stays out of the official account while Sable arranges support."
+        }
+      ]
+    },
+    "neighborhood-quiet-01": {
+      "route": "quiet",
+      "neighborhood": "quiet",
+      "contact": "sable",
+      "restitution": true,
+      "question": "Test the Lamp and Handrail: Who controls the boundary between a warning and an intrusion?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sable’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "order",
+          "label": "Add forced audio whenever the lamp or rail fails",
+          "outcome": "The warning gains a fallback that may save lives. A single equipment fault can fill the quiet court with sound without asking its residents."
+        }
+      ]
+    },
+    "neighborhood-quiet-02": {
+      "route": "quiet",
+      "neighborhood": "quiet",
+      "contact": "sable",
+      "restitution": true,
+      "question": "Assign Warning Inspections: Who controls the boundary between a warning and an intrusion?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "consent",
+          "label": "Follow Sable’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Fund inspections through a warning-network sponsor",
+          "outcome": "Battery checks receive a paid crew. The sponsor adds promotional notices to the shared board, returning the intrusion the court worked to remove."
+        }
+      ]
+    },
+    "neighborhood-skybridge-00": {
+      "route": "skybridge",
+      "neighborhood": "skybridge",
+      "contact": "ivo",
+      "restitution": true,
+      "question": "Count the Night Passengers: Who pays for a connection used by the people who keep the city running?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ivo’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "consent",
+          "label": "Publish the passenger total without the forty names",
+          "outcome": "The service can no longer honestly claim zero demand. Workers keep their travel private, but Ivo has fewer public witnesses when the operator challenges the count."
+        }
+      ]
+    },
+    "neighborhood-skybridge-01": {
+      "route": "skybridge",
+      "neighborhood": "skybridge",
+      "contact": "ivo",
+      "restitution": true,
+      "question": "Check the Service-Pass Exclusion: Who pays for a connection used by the people who keep the city running?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ivo’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "truth",
+          "label": "Release the service-pass records without removing private details",
+          "outcome": "The exclusion is provable for every shift. Employers can also inspect workers’ movements and find who left early to care for someone at home."
+        }
+      ]
+    },
+    "neighborhood-skybridge-02": {
+      "route": "skybridge",
+      "neighborhood": "skybridge",
+      "contact": "ivo",
+      "restitution": true,
+      "question": "Keep the Late Connection Open: Who pays for a connection used by the people who keep the city running?",
+      "choices": [
+        {
+          "id": "uphold",
+          "profile": "care",
+          "label": "Follow Ivo’s plan"
+        },
+        {
+          "id": "redirect",
+          "profile": "profit",
+          "label": "Fund the late connection with a premium last departure",
+          "outcome": "The lift keeps a crew and pays its maintenance. Workers unable to buy the premium fare still face the long walk home; Oru files their names beside those who can ride."
+        }
+      ]
+    },
+    "dungeon:ninth-bell": {
+      "route": "ninth-bell",
+      "neighborhood": "furnace",
+      "contact": "archivist",
+      "restitution": false,
+      "question": "What should happen to Anet’s signed amendment?",
+      "choices": [
+        {
+          "id": "name",
+          "profile": "truth",
+          "label": "Publish the signed history",
+          "outcome": "The signed amendment and expired emergency order are posted beside the bell. An apprentice takes over maintenance, and Anet takes her first off-duty break. With output reduced, the crew leaves a supplier’s offer of cheap Cinderwood fuel unsigned."
+        },
+        {
+          "id": "repair",
+          "profile": "care",
+          "label": "Let residents oversee repairs before a public hearing",
+          "outcome": "Residents keep the records and set a hearing date. Anet trains three apprentices and goes home. The furnace runs less during breaks, so some rooms cool earlier."
+        },
+        {
+          "id": "defer",
+          "profile": "abstain",
+          "label": "Skip this vote",
+          "outcome": "You leave the decision to the crew. Your skipped vote is recorded separately from the group’s ending; no moral standing or gear upgrade point is awarded."
+        }
+      ]
+    },
+    "dungeon:borrowed-ferry": {
+      "route": "borrowed-ferry",
+      "neighborhood": "skybridge",
+      "contact": "archivist",
+      "restitution": false,
+      "question": "When should the clinic report with private details removed be published?",
+      "choices": [
+        {
+          "id": "publish",
+          "profile": "truth",
+          "label": "Release the clinic report with private details removed",
+          "outcome": "Ila and Sen leave on separate routes. The public audit names the clinics while removing private memories. Other travelers challenge their blocked tickets. The revised water and funding budget allows fewer departures."
+        },
+        {
+          "id": "contact",
+          "profile": "consent",
+          "label": "Notify affected travelers first",
+          "outcome": "Affected travelers receive private notices first, with a public release date for the audit. Ila sends Sen her new address. The timetable lists both travelers separately, alongside the route’s reduced water allowance."
+        },
+        {
+          "id": "defer",
+          "profile": "abstain",
+          "label": "Skip this vote",
+          "outcome": "You leave the decision to the crew. Your skipped vote is recorded separately from the group’s ending; no moral standing or gear upgrade point is awarded."
+        }
+      ]
+    },
+    "dungeon:trial-rain": {
+      "route": "trial-rain",
+      "neighborhood": "quiet",
+      "contact": "archivist",
+      "restitution": false,
+      "question": "Which flood repair should begin first?",
+      "choices": [
+        {
+          "id": "relocate",
+          "profile": "care",
+          "label": "Stop diversion and relocate the archive",
+          "outcome": "The diversion stops. Residents and clerks move records from the courthouse, losing some damaged copies. The shelters are protected from this discharge but remain on a floodplain."
+        },
+        {
+          "id": "pumps",
+          "profile": "order",
+          "label": "Repair pumps under a timed override",
+          "outcome": "Residents authorize a timed override and monitor the shelters while crews repair the pumps. The outlet moves runoff downstream. Crews there request a place in the next review."
+        },
+        {
+          "id": "defer",
+          "profile": "abstain",
+          "label": "Skip this vote",
+          "outcome": "You leave the decision to the crew. Your skipped vote is recorded separately from the group’s ending; no moral standing or gear upgrade point is awarded."
+        }
+      ]
+    },
+    "dungeon:unlived-orchard": {
+      "route": "unlived-orchard",
+      "neighborhood": "mourning-fen",
+      "contact": "archivist",
+      "restitution": false,
+      "question": "Should the individual labor forecasts be deleted or kept as evidence?",
+      "choices": [
+        {
+          "id": "delete",
+          "profile": "consent",
+          "label": "Delete predictions after an independent audit",
+          "outcome": "Independent auditors separate earned wages from descendant predictions. The predictions are deleted. Omi posts the lower harvest estimate; emergency stores cover the first shortfall but cannot cover it indefinitely."
+        },
+        {
+          "id": "custody",
+          "profile": "truth",
+          "label": "Place predictions in worker-controlled safekeeping",
+          "outcome": "Workers retain the predictions with access limits, expiry dates, and withdrawal rights. The orchard publishes its actual yield. One growing bed closes so its allowance can help cool the stored evidence."
+        },
+        {
+          "id": "defer",
+          "profile": "abstain",
+          "label": "Skip this vote",
+          "outcome": "You leave the decision to the crew. Your skipped vote is recorded separately from the group’s ending; no moral standing or gear upgrade point is awarded."
+        }
+      ]
+    },
+    "dungeon:first-applause": {
+      "route": "first-applause",
+      "neighborhood": "cinderwood",
+      "contact": "archivist",
+      "restitution": false,
+      "question": "How should the corrected warning be presented?",
+      "choices": [
+        {
+          "id": "annotate",
+          "profile": "truth",
+          "label": "Show the play and explain which evidence was faked",
+          "outcome": "Renn stages the warning with the borrowed applause identified and its source available. Sal reads the full order on stage. Buyers begin avoiding the forestry certificates, and workers ask what will happen to pensions invested in them."
+        },
+        {
+          "id": "hearing",
+          "profile": "consent",
+          "label": "Hold an open evidence hearing first",
+          "outcome": "The theater hosts an open evidence hearing. Dema presents the order and Renn explains the recording. Publication is delayed while witnesses speak; another forestry-credit sale is recorded before the hearing ends."
+        },
+        {
+          "id": "defer",
+          "profile": "abstain",
+          "label": "Skip this vote",
+          "outcome": "You leave the decision to the crew. Your skipped vote is recorded separately from the group’s ending; no moral standing or gear upgrade point is awarded."
+        }
+      ]
+    },
+    "dungeon:tomorrow-harbor": {
+      "route": "tomorrow-harbor",
+      "neighborhood": "market",
+      "contact": "archivist",
+      "restitution": false,
+      "question": "How should the new service crews take over?",
+      "choices": [
+        {
+          "id": "rotate",
+          "profile": "consent",
+          "label": "Start the neighborhood rotation now",
+          "outcome": "Neighborhood crews take over immediately, with Eda available to train them but unable to veto their decisions. They publish eight service schedules. A valve repair goes through the ordinary maintenance team, and the next water report shows a smaller reserve."
+        },
+        {
+          "id": "overlap",
+          "profile": "order",
+          "label": "Use a short, supervised handover",
+          "outcome": "The crews share a short training period with Eda under a fixed end date and independent review. She gives up her override on schedule. Training uses more water than planned, and the new stewards receive an offer to reopen extraction."
+        },
+        {
+          "id": "defer",
+          "profile": "abstain",
+          "label": "Skip this vote",
+          "outcome": "You leave the decision to the crew. Your skipped vote is recorded separately from the group’s ending; no moral standing or gear upgrade point is awarded."
+        }
+      ]
+    }
+  }
+}

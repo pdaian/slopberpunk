@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { AudioEngine } from '../src/audio.js';
 import { escapeHtml } from '../src/icons.js';
+import { storyDialogue } from '../src/story.js';
 
 const score = JSON.parse(readFileSync(new URL('../data/audio.json', import.meta.url)));
 const voice = (name, lang = 'en-US', localService = true) => ({ name, voiceURI: name, lang, localService });
@@ -275,7 +276,7 @@ function application(audio) {
     return nodes.get(selector);
   };
   const context = {
-    fixtureAudio: audio, esc: escapeHtml, setTimeout, clearTimeout,
+    fixtureAudio: audio, esc: escapeHtml, storyDialogue, setTimeout, clearTimeout,
     document: { querySelector: node, querySelectorAll: () => [], addEventListener() {}, exitPointerLock() {} },
     window: { addEventListener() {} }, matchMedia: () => ({ matches: false }), WorldClock: class {},
   };
@@ -284,7 +285,7 @@ function application(audio) {
   runInNewContext(source + `
     audio=fixtureAudio;input={clear(){}};renderer={quality:1,volumetric:true};
     simulation={character:{completed:[]}};state='playing';cityLife={neighborhoods:new Map()};
-    data={quests:[{id:'quest',briefing:'Read the record.',completion:'The record is safe.',giver:'iri'}],npcs:[{id:'iri',dialogue:'Welcome to the kitchen.'}]};
+    data={citylife:{neighborhoods:[]},quests:[{id:'quest',briefing:'Read the record.',completion:'The record is safe.',giver:'iri'}],npcs:[{id:'iri',dialogue:'Welcome to the kitchen.'}]};
     currentGuide={line:'Follow the marker.',speaker:'bram'};
     wireEvents();audio.onVoiceStatus=()=>updateVoiceButton();
     globalThis.harness={showSettings,closePanel};`, context);
