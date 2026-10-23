@@ -2504,7 +2504,7 @@ impl Shard {
         if self.players.get(id).is_some_and(|p| p.elevator.is_some())
             && !matches!(
                 text(&value["type"]),
-                "move" | "chat" | "emote" | "intro_seen"
+                "move" | "chat" | "emote" | "intro_seen" | "unstuck"
             )
         {
             if let Some(p) = self.players.get(id) {
@@ -2581,6 +2581,46 @@ impl Shard {
         }
         let id = text(&value["id"]);
         match kind {
+            "unstuck" => {
+                let remaining = p.cooldowns.get("unstuck").copied().unwrap_or(0.0) - self.time;
+                if remaining > 0.0 {
+                    notice(
+                        p,
+                        &format!("Unstuck is ready in {} seconds.", remaining.ceil()),
+                    );
+                    return;
+                }
+                let (position, destination) = if p.instance.is_some() {
+                    let [x, y, z] = data.dungeons.rules.arena;
+                    ([x, y, z + 14.0], "the dungeon entrance")
+                } else if p.c.tutorial_stage.is_some() {
+                    (data.map.tutorial.spawn, "the training courtyard")
+                } else {
+                    (data.map.spawn, "the Commons")
+                };
+                elevators::cancel(p);
+                p.c.position = position;
+                p.previous_position = position;
+                p.velocity = [0.0; 3];
+                p.input = Movement {
+                    yaw: p.c.yaw,
+                    ..Movement::default()
+                };
+                p.grounded = true;
+                p.dash = 0.0;
+                p.jump_buffer = 0.0;
+                p.coyote = 0.0;
+                p.ghost_trail.clear();
+                self.ghostlines.remove(&p.c.id);
+                // The cooldown also identifies relocation in authoritative snapshots,
+                // including moves too short for ordinary teleport detection.
+                p.cooldowns.insert("unstuck".into(), self.time + 30.0);
+                p.dirty = true;
+                notice(
+                    p,
+                    &format!("Moved to {destination}. Your progress is kept."),
+                );
+            }
             "moralGear" => morality::equip(p, data, id),
             "workOrder" => progression::order_action(p, data, value),
             "ability" => {

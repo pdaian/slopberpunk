@@ -6,9 +6,36 @@ import { validateEconomy, tierFor, itemById, itemCount, classBonuses, equipmentC
 import { stats } from '../src/prediction.js';
 import { Community } from '../src/social.js';
 import { expandCatalog } from '../src/item-catalog.js';
+import { formatGold, parseGold } from '../src/currency.js';
 
 const data=Object.fromEntries(['economy','rules','enemies','talents','races','npcs','world'].map(n=>[n,JSON.parse(readFileSync(new URL(`../data/${n}.json`,import.meta.url)))]));
 const character=()=>({id:'runner',race:'human',level:0,health:100,energy:100,gold:1000,medkits:3,position:[...data.npcs.find(n=>n.id==='merchant').position],talents:{},items:{},equipment:{},buffs:{},mobKills:{}});
+
+test('gold uses exact thousandths from the first reward through the wallet cap',()=>{
+  for(const [units,display] of [[0,'0'],[1,'0.001'],[5,'0.005'],[18,'0.018'],[45,'0.045'],[100,'0.1'],[999,'0.999'],[1000,'1'],[1001,'1.001'],[1234567,'1234.567'],[8999999999,'8999999.999'],[9000000000,'9000000']]) {
+    assert.equal(formatGold(units),display);
+    assert.equal(parseGold(display),units);
+  }
+  for(let units=0;units<=1100;units++)assert.equal(parseGold(formatGold(units)),units);
+  assert.equal(parseGold('  .009  '),9);assert.equal(parseGold('1.'),1000);assert.equal(parseGold('0001.001'),1001);
+  assert.equal(formatGold(30/4,6),'0.0075');
+  assert.equal(formatGold(1/999,6),'0.000001','a cheap full stack must not appear free per item');
+  for(const invalid of ['', ' ', '.', '-1', '+1', '1e3', '0x10', '1,000', '1.0001', '0.0009', '1.2.3', 'Infinity', 'NaN', '9007199254741', null, 0.018])assert.equal(parseGold(invalid),null,String(invalid));
+});
+
+test('early wallets, crafting, sales, salvage, and work orders show fractional gold',()=>{
+  expandCatalog(data.economy);
+  const c=character();c.gold=data.rules.startingGold;c.items={'street-coil':1,'mod-1-weapon-bastion-sanguine-renewal':1};
+  assert.equal(formatGold(c.gold),'0.045');
+  assert.equal(formatGold(data.rules.inventory.medkitPrice),'0.018');
+  assert.match(craftingPanel(c,data),/Wallet 0\.045 gold/);
+  assert.match(craftingPanel(c,data),/Costs 0\.012 gold/);
+  const inventory=inventoryPanel(c,data);
+  assert.match(inventory,/SELL ONE \/ 0\.012 GOLD/);
+  assert.match(inventory,/BREAK DOWN ONE \/ 0\.002 GOLD/);
+  const orders=workOrdersPanel(c,data);
+  assert.match(orders,/\+ 0\.06 gold/);assert.match(orders,/\+ 0\.88 gold/);
+});
 
 test('24,000 stable modular variants have balanced rarity pools and loss-making salvage recipes',()=>{
   expandCatalog(data.economy);
@@ -155,7 +182,10 @@ test('auction rows show stack and unit prices, rarity, tier, generic deliveries 
   const community=Object.create(Community.prototype);
   Object.assign(community,{character,view:'auctions',data,now:()=>1000,query:{}});
   const a={id:1,item:'wire-scrap',quantity:4,buyout:30,minimum:10,bid:0,status:'open',seller:'other',expires:3600};
-  let html=community.rows({items:[a]});assert.match(html,/7.5 gold \/ item/);assert.match(html,/Reclaimed wire/);assert.match(html,/Tier 1 · Common/);
+  let html=community.rows({items:[a]});assert.match(html,/0\.0075 gold \/ item/);assert.match(html,/Reclaimed wire/);assert.match(html,/Tier 1 · Common/);
+  assert.match(html,/Starting bid 0\.01 gold/);assert.match(html,/Buy-now total 0\.03 gold/);
+  assert.match(html,/inputmode="decimal" data-gold data-min="10" data-max="30" value="0\.01"/);
+  a.bid=10;html=community.rows({items:[a]});assert.match(html,/Current bid 0\.01 gold/);assert.match(html,/data-min="11" data-max="30" value="0\.011"/);
   delete a.item;html=community.rows({items:[a]});assert.match(html,/Medkit/);
-  community.view='deliveries';html=community.rows({items:[{id:1,reason:'Purchase',gold:0,medkits:0,items:{'tomorrow-lens':1}}]});assert.match(html,/Tomorrow&#39;s witness/);assert.match(html,/Legendary/);
+  community.view='deliveries';html=community.rows({items:[{id:1,reason:'Purchase',gold:29,medkits:0,items:{'tomorrow-lens':1}}]});assert.match(html,/Tomorrow&#39;s witness/);assert.match(html,/Legendary/);assert.match(html,/0\.029 gold/);
 });

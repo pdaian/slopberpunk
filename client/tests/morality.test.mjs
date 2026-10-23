@@ -83,8 +83,8 @@ test('turn-in choices are explicit, show costs, and never render a default selec
   assert.equal((ready.match(/data-do="quest-complete"/g)||[]).length,2);
   assert.match(ready,/data-choice="uphold"/);
   assert.match(ready,/data-choice="redirect"/);
-  assert.match(ready,/22 gold; full XP/);
-  assert.match(ready,/34 gold; full XP/);
+  assert.match(ready,/0\.022 gold; full XP/);
+  assert.match(ready,/0\.034 gold; full XP/);
   assert.match(ready,/permanent/);
   assert.doesNotMatch(ready,/(?:checked|selected)=/);
   c.health = 0;assert.equal((decisionPanel(q,c,data,true).match(/ disabled>/g)||[]).length,2);
@@ -96,7 +96,7 @@ test('a broken commitment has the same preview as the server fixture, with a cos
   const d = data.morality.decisions['neighborhood-market-01'], choice = d.choices[1];
   const v = decisionPreview(data,c,'neighborhood-market-01',choice);
   assert.equal(v.broken,true);assert.equal(v.trust,-7);assert.equal(v.bond,-5);assert.equal(v.goldPercent,140);
-  assert.match(consequenceText(data,c,'neighborhood-market-01',choice,30),/42 gold; full XP/);
+  assert.match(consequenceText(data,c,'neighborhood-market-01',choice,30),/0\.042 gold; full XP/);
   assert.match(consequenceText(data,c,'neighborhood-market-01',choice),/Breaks your earlier promise/);
   c.morality.commitments.market = 'contract';c.morality.debts.market = 1;
   const options = decisionOptions(data,'neighborhood-market-02',c), repair = options.at(-1);

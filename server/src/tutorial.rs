@@ -367,6 +367,136 @@ mod tests {
     }
 
     #[test]
+    fn unstuck_preserves_character_and_instance_while_clearing_motion_and_ghosts() {
+        for (stage, instance) in [(Some(Stage::Combat), None), (None, None), (None, Some(7))] {
+            let mut s = fixture();
+            let (output, mut messages) = mpsc::channel(16);
+            let p = s.players.get_mut("new").unwrap();
+            p.output = output;
+            p.c.tutorial_stage = stage;
+            p.instance = instance;
+            p.c.position = [20.0, 10.0, 20.0];
+            p.c.health = 43.0;
+            p.c.energy = 17.0;
+            p.c.yaw = 0.7;
+            p.input = Movement {
+                forward: 1.0,
+                strafe: 1.0,
+                jump: true,
+                dash: true,
+                sprint: true,
+                ..Movement::default()
+            };
+            p.velocity = [4.0, -8.0, 6.0];
+            p.grounded = false;
+            p.dash = 0.2;
+            p.jump_buffer = 0.1;
+            p.coyote = 0.1;
+            p.cooldowns.insert("arc".into(), 20.0);
+            p.dash_ready = 15.0;
+            for i in 0..=20 {
+                p.ghost_trail.record(
+                    f64::from(i) * 0.1,
+                    [f64::from(i), 0.0, 0.0],
+                    20.0,
+                    &s.content,
+                );
+            }
+            s.ghostlines.insert(
+                "new".into(),
+                p.ghost_trail.release(&p.c, s.time, &s.content).unwrap(),
+            );
+            let mut expected = serde_json::to_value(&p.c).unwrap();
+            let destination = if instance.is_some() {
+                let [x, y, z] = s.content.dungeons.rules.arena;
+                [x, y, z + 14.0]
+            } else if stage.is_some() {
+                s.content.map.tutorial.spawn
+            } else {
+                s.content.map.spawn
+            };
+            expected["position"] = json!(destination);
+            expected["revision"] = json!(p.c.revision + 1);
+            s.action(
+                "new",
+                &json!({"type":"unstuck","position":[-9999,9999,9999]}),
+            );
+            let p = &s.players["new"];
+            assert_eq!(serde_json::to_value(&p.c).unwrap(), expected);
+            assert_eq!(p.instance, instance);
+            assert_eq!(p.previous_position, destination);
+            assert!(
+                !s.world
+                    .collides(destination, s.content.rule("movement", "radius"))
+            );
+            assert_eq!(p.velocity, [0.0; 3]);
+            assert_eq!(p.input.forward, 0.0);
+            assert_eq!(p.input.strafe, 0.0);
+            assert_eq!(p.input.yaw, p.c.yaw);
+            assert!(!p.input.jump && !p.input.dash && !p.input.sprint);
+            assert_eq!((p.dash, p.jump_buffer, p.coyote), (0.0, 0.0, 0.0));
+            assert!(p.grounded && p.dirty);
+            assert!(!p.ghost_trail.charge(&s.content).ready);
+            assert!(!s.ghostlines.contains_key("new"));
+            assert_eq!(p.cooldowns["arc"], 20.0);
+            assert_eq!(p.dash_ready, 15.0);
+            assert_eq!(p.cooldowns["unstuck"], 40.0);
+            assert!(saved_player(p, s.time).cooldowns.contains_key("unstuck"));
+            s.snapshots();
+            let snapshot = std::iter::from_fn(|| messages.try_recv().ok())
+                .find(|message| message["type"] == "snapshot")
+                .unwrap();
+            assert_eq!(snapshot["cooldowns"]["unstuck"], 40.0);
+            assert_eq!(snapshot["character"]["position"], json!(destination));
+        }
+    }
+
+    #[test]
+    fn unstuck_cancels_an_elevator_and_rejects_repeats_until_its_cooldown_expires() {
+        let mut s = fixture();
+        let p = s.players.get_mut("new").unwrap();
+        p.c.tutorial_stage = None;
+        p.elevator = Some(elevators::Ride::new(
+            "test-elevator".into(),
+            [0.0, 0.0, 0.0],
+            [0.0, 120.0, 0.0],
+            s.time,
+        ));
+        s.action("new", &json!({"type":"unstuck"}));
+        assert!(s.players["new"].elevator.is_none());
+        assert_eq!(s.players["new"].c.position, s.content.map.spawn);
+        let stuck = [20.0, 10.0, 20.0];
+        s.players.get_mut("new").unwrap().c.position = stuck;
+        s.time = 39.99;
+        s.action("new", &json!({"type":"unstuck"}));
+        assert_eq!(s.players["new"].c.position, stuck);
+        assert_eq!(s.players["new"].cooldowns["unstuck"], 40.0);
+        s.time = 40.0;
+        s.action("new", &json!({"type":"unstuck"}));
+        assert_eq!(s.players["new"].c.position, s.content.map.spawn);
+        assert_eq!(s.players["new"].cooldowns["unstuck"], 70.0);
+    }
+
+    #[test]
+    fn unstuck_cannot_bypass_death_or_dungeon_revival() {
+        for (instance, released) in [(None, false), (None, true), (Some(7), false)] {
+            let mut s = fixture();
+            let p = s.players.get_mut("new").unwrap();
+            p.instance = instance;
+            p.c.health = 0.0;
+            death::fallen(p, &s.content, s.time);
+            if let Some(recovery) = &mut p.c.death {
+                recovery.released = released;
+            }
+            let mut expected = serde_json::to_value(&p.c).unwrap();
+            expected["revision"] = json!(p.c.revision + 1);
+            s.action("new", &json!({"type":"unstuck"}));
+            assert_eq!(serde_json::to_value(&s.players["new"].c).unwrap(), expected);
+            assert!(!s.players["new"].cooldowns.contains_key("unstuck"));
+        }
+    }
+
+    #[test]
     fn practice_rejects_remote_dead_instanced_and_cooling_down_actions() {
         let mut s = fixture();
         let area = s.content.map.tutorial.clone();

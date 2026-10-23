@@ -71,11 +71,19 @@ export function targetProblem(target, character, world) {
   if (!target.action) return 'No action available';
   if (target.unavailable) return target.unavailable;
   if (target.kind === 'practice' && !world.inTutorial(character.position)) return 'Enter the training courtyard';
+  if (target.kind === 'lift' && target.object.venue && Math.abs(character.position[1] - target.position[1]) >= 1) return 'Enter the elevator at street or top-floor level';
   const d = distance(character.position, target.position);
   const inclusive = ['enemy', 'practice', 'corpse', 'healer'].includes(target.kind);
   if (inclusive ? d > target.range : d >= target.range) return `Move within ${target.range} m`;
   if (!world.lineOfSight(character.position, target.position)) return 'Something is blocking your view';
   return null;
+}
+
+// Use anywhere on the six-metre cabin floor, independently of selection or camera.
+export function elevatorTarget(targets, character, world) {
+  return targets.find(t => t.kind === 'lift' && t.object.venue
+    && [0, 2].every(axis => Math.abs(character.position[axis] - t.position[axis]) <= 3)
+    && !targetProblem(t, character, world)) || null;
 }
 
 // Match the visible body or service, with a small minimum hit area for touch.

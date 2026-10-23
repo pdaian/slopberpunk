@@ -158,6 +158,7 @@ test('expedition findings are hidden before completion and readable with saved e
   assert.ok(!dungeonPanel(data, c, null, 0).includes(d.record));
   c.dungeonHistory = { [d.id]: { clears: 1, ending: 'defer' } };
   const html = dungeonPanel(data, c, null, 0);
+  assert.match(html, /0\.15 gold · EQUAL REWARDS/);
   assert.ok(html.includes(d.record)); assert.ok(html.includes(d.decision.deferred));
   const run = { id: 1, dungeon: d.id, chapter: 2, phase: 'complete', ending: 'name', members: [], evidence: [], signed: [] };
   assert.ok(dungeonPanel(data, c, { run }, 0).includes(d.record));

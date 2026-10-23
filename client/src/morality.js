@@ -1,6 +1,7 @@
 // Saved decisions and their consequences. Only the server commits choices.
 // GPL-3.0-or-later.
 import { escapeHtml as esc } from './icons.js';
+import { formatGold } from './currency.js';
 
 export const moralAxes = { care: 'Care', autonomy: 'Freedom', candor: 'Honesty' };
 const score = (map, id) => map?.[id] || 0;
@@ -34,7 +35,7 @@ export function consequenceText(data, c, id, choice, baseGold) {
     Object.entries(p.factions).map(([k,n]) => `${data.morality.factions[k]} ${delta(c.morality?.factions,k,n)}`).join(' · '),
     `${data.morality.places[d.neighborhood]} trust ${delta(c.morality?.neighborhoods,d.neighborhood,v.trust)}`, `${data.npcs.find(n => n.id === d.contact)?.name || 'Contact'} trust ${delta(c.morality?.bonds,d.contact,v.bond)}`];
   if (p.gear) parts.push(`${data.morality.gear.find(g => g.id === p.gear).name} +1 upgrade point`);
-  if (baseGold !== undefined) parts.push(`${Math.floor(baseGold * p.goldPercent / 100)} gold; full XP`);
+  if (baseGold !== undefined) parts.push(`${formatGold(Math.floor(baseGold * p.goldPercent / 100))} gold; full XP`);
   if (v.broken) parts.push('Breaks your earlier promise: the trust losses shown include the penalty; adds one broken promise');
   else if (v.repairing) parts.push('Makes up for one broken promise; keeps your current promise; gives up all gold from this quest');
   else if (d.restitution && p.pledge) parts.push(`Promise: ${data.morality.pledges[p.pledge]}`);

@@ -9,15 +9,16 @@ import { Renderer } from '../src/renderer.js';
 import { CharacterMeshes } from '../src/character.js';
 import { runInNewContext } from 'node:vm';
 import { distance, mix3, clamp } from '../src/math.js';
-import { escapeHtml } from '../src/icons.js';
+import { escapeHtml, icon } from '../src/icons.js';
+import { formatGold } from '../src/currency.js';
 import { openingGuide, questView, questDestination, objectiveText } from '../src/quests.js';
 import { worldEventViews } from '../src/events.js';
 import { dungeonPosition } from '../src/dungeons.js';
-import { collectTargets, targetProblem, targetBounds, visibleTargets, pickTarget, cycleTarget } from '../src/targeting.js';
+import { collectTargets, targetProblem, elevatorTarget, targetBounds, visibleTargets, pickTarget, cycleTarget } from '../src/targeting.js';
 import { storyDialogue, questThread, campaignLead, campaignPanel } from '../src/story.js';
 import { controlLabel, inputText, inputPrompt, updateInputPrompts } from '../src/input-prompts.js';
 import { founderXpReward } from '../src/founders.js';
-import { decisionPanel, decisionOutcome } from '../src/morality.js';
+import { decisionPanel, decisionOutcome, moralPrice, vendorPercent } from '../src/morality.js';
 import { collection, forgeRank } from '../src/forge.js';
 
 const read = name => JSON.parse(readFileSync(new URL(`../data/${name}.json`, import.meta.url)));
@@ -120,23 +121,25 @@ function application(c) {
       nodes.set(selector, { hidden: true, open: false, textContent: '', innerHTML: '', scrollTop: 0, dataset: {}, querySelectorAll: () => [],
         classList: { toggle: (key, on) => on ? classes.add(key) : classes.delete(key), remove: key => classes.delete(key) },
         focus() {}, showModal() { this.open = true; }, close() { this.open = false; }, setAttribute() {},
+        listeners: {}, addEventListener(type, listener) { (this.listeners[type] ||= []).push(listener); },
       });
     }
     return nodes.get(selector);
   };
   const simulation = new Prediction(data, world, c);
   const context = { fixtureData: data, fixtureWorld: world, fixtureSimulation: simulation, sent, spoken,
-    document: { querySelector: node, querySelectorAll: selector => selector === '[data-story-section]' ? sectionReads.shift() || [] : promptNodes.get(selector) || [] },
+    document: { querySelector: node, querySelectorAll: selector => selector === '[data-story-section]' ? sectionReads.shift() || [] : promptNodes.get(selector) || [], addEventListener() {} },
+    window: { addEventListener() {} },
     setTimeout() {}, clearTimeout() {},
     matchMedia: () => ({ matches: true }), WorldClock: class { now() { return 18000; } sync() {} },
     distance, mix3, clamp, isSpirit, recoveryView, bearing, openingGuide, questView, questDestination, objectiveText,
     storyDialogue, questThread, campaignLead, campaignPanel, controlLabel, inputText, inputPrompt, updateInputPrompts,
-    founderXpReward, decisionPanel, decisionOutcome, collection, forgeRank,
-    worldEventViews, collectTargets, targetProblem, targetBounds, visibleTargets, pickTarget, cycleTarget, availableQuest, esc: escapeHtml,
+    founderXpReward, decisionPanel, decisionOutcome, moralPrice, vendorPercent, collection, forgeRank, formatGold, icon,
+    worldEventViews, collectTargets, targetProblem, elevatorTarget, targetBounds, visibleTargets, pickTarget, cycleTarget, availableQuest, esc: escapeHtml,
   };
   let source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8').replace(/^import .*;$/gm, '');
   source = source.slice(0, source.lastIndexOf('boot().catch'));
-  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;audio={stopVoice(){},speak(...args){spoken.push(args);}};input={lastDevice:'keyboard',clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map()};state='playing';globalThis.harness={inputBlocked,setChat(value){liveChat=value;},setScreen(value){state=value;},setDevice(value){input.lastDevice=value;},menu(){return input.menu;},perform,showJournal,questCard,nextQuestGuide,guideRegion,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
+  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;renderer={quality:1,volumetric:true};audio={stopVoice(){},effect(){},speak(...args){spoken.push(args);}};input={lastDevice:'keyboard',clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map()};state='playing';globalThis.harness={inputBlocked,wireEvents,connection,setChat(value){liveChat=value;},setScreen(value){state=value;},setDevice(value){input.lastDevice=value;},menu(){return input.menu;},perform,showJournal,showShop,showGuide,onEvent,questCard,nextQuestGuide,guideRegion,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
   return { ...context.harness, node, sent, spoken, simulation, prompts(selector,values){promptNodes.set(selector,values);}, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
 }
 
@@ -148,6 +151,58 @@ test('chat focus and death independently keep gameplay input blocked across pane
   chat.expanded = false; assert.equal(app.inputBlocked(), false);
   c.health = 0; assert.equal(app.inputBlocked(), true); app.closePanel(); assert.equal(app.menu(), true);
   c.death = { ...character().death, released: true }; assert.equal(app.inputBlocked(), false);
+});
+
+test('Escape menu sends an unstuck request and waits for the server to move the character', async () => {
+  const c = { ...character(), health: 50, energy: 20, death: undefined }, app = application(c);
+  app.wireEvents();
+  app.perform('escape');
+  assert.equal(app.node('#dialog-title').textContent, 'Settings.');
+  assert.match(app.node('#dialog-content').innerHTML, /data-do="unstuck"\s*>UNSTUCK/);
+  assert.match(app.node('#dialog-content').innerHTML, /Return to the Commons/);
+  const before = structuredClone(c);
+  const button = { dataset: { do: 'unstuck' } };
+  await app.node('#dialog-content').listeners.click[0]({ target: { closest: () => button } });
+  assert.deepEqual(JSON.parse(JSON.stringify(app.sent)), [{ type: 'unstuck' }]);
+  assert.deepEqual(c, before, 'only the server may relocate or change the character');
+  assert.equal(app.node('#panel-dialog').open, false);
+  assert.equal(app.inputBlocked(), false);
+});
+
+test('unstuck menu describes the current destination and is disabled while dead', () => {
+  const c = { ...character(), health: 50, death: undefined, tutorialStage: 'combat' }, app = application(c);
+  app.perform('settings');
+  assert.match(app.node('#dialog-content').innerHTML, /Return to the training courtyard/);
+  app.simulation.dungeonState = { run: { phase: 'active' } };
+  app.perform('settings');
+  assert.match(app.node('#dialog-content').innerHTML, /Return to the dungeon entrance/);
+  c.health = 0;
+  app.perform('settings');
+  assert.match(app.node('#dialog-content').innerHTML, /data-do="unstuck" disabled/);
+  assert.equal(app.sent.length, 0);
+});
+
+test('unstuck snapshots snap even short moves and clear motion once without restoring resources', () => {
+  for (const offset of [0, 1, 5, 50]) {
+    const c = { ...character(), position: [0, 0, 32 + offset], health: 50, energy: 20, death: undefined, activeQuests: {}, completed: [] };
+    const app = application(c), simulation = app.simulation;
+    simulation.velocity = [2, -3, 4];simulation.dash = .2;simulation.jumpBuffer = .1;simulation.coyote = .1;simulation.grounded = false;
+    simulation.cooldowns = { arc: 20, unstuck: 10 };simulation.dashReady = 15;
+    app.connection.pendingJump = true;app.connection.pendingDash = true;
+    app.select('terminal:commons-water');
+    const server = { ...structuredClone(c), position: [0, 0, 32] };
+    app.onSnapshot({ character: server, time: 11, cooldowns: { arc: 20, unstuck: 41 }, dashReady: 15 });
+    assert.deepEqual(simulation.character.position, [0, 0, 32]);
+    assert.equal(simulation.velocity.join(','), '0,0,0');
+    assert.equal(simulation.dash, 0);assert.equal(simulation.jumpBuffer, 0);assert.equal(simulation.coyote, 0);assert.equal(simulation.grounded, true);
+    assert.equal(app.connection.pendingJump, false);assert.equal(app.connection.pendingDash, false);
+    assert.equal(app.selectedTarget(), null);
+    assert.equal(simulation.character.health, 50);assert.equal(simulation.character.energy, 20);assert.equal(simulation.character.gold, c.gold);
+    assert.equal(simulation.cooldowns.arc, 20);assert.equal(simulation.dashReady, 15);
+    simulation.velocity = [1, 0, 0];
+    app.onSnapshot({ character: structuredClone(server), time: 11.1, cooldowns: { arc: 20, unstuck: 41 }, dashReady: 15 });
+    assert.deepEqual(simulation.velocity, [1, 0, 0], 'later snapshots must not repeatedly stop movement');
+  }
 });
 
 test('story controls open the current account and guidance continues after the kitchen', () => {
@@ -189,6 +244,7 @@ test('quest cards expose acceptance and final choices only at the correct stage 
   const q=data.quests.find(q=>q.id==='relay-00');
   const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:[]},app=application(c);
   const before=structuredClone(c),offer=app.questCard(q,c,true);
+  assert.match(offer,/0\.03 base gold/);
   assert.ok(offer.indexOf('data-do="quest-accept"')<offer.indexOf('<details'),'acceptance does not require opening the full briefing');
   assert.doesNotMatch(app.questCard(q,c),/data-do="quest-accept"/);
   assert.doesNotMatch(offer,/data-do="quest-complete"/);
@@ -206,6 +262,24 @@ test('quest cards expose acceptance and final choices only at the correct stage 
   c.completed.push(q.id);delete c.activeQuests[q.id];delete c.questStages[q.id];
   assert.doesNotMatch(app.questCard(q,c,true),/data-do="quest-accept"|data-do="quest-complete"/);
   assert.equal(app.sent.length,0,'rendering a quest never changes saved progress');
+});
+
+test('shop prices, reward notices, and recovery instructions use the same fractional gold scale',()=>{
+  const c={...character(),gold:45,weaponRank:0,health:100,death:undefined,faction:'relay',activeQuests:{},completed:[]},app=application(c);
+  app.showShop();
+  assert.match(app.node('#dialog-content').innerHTML,/YOUR BALANCE · 0\.045 gold/);
+  assert.match(app.node('#dialog-content').innerHTML,/BUY \/ 0\.018 gold/);
+  assert.match(app.node('#dialog-content').innerHTML,/UPGRADE \/ 0\.09 gold/);
+  c.morality={neighborhoods:{market:20}};app.showShop();
+  assert.match(app.node('#dialog-content').innerHTML,/BUY \/ 0\.016 gold/,'discounts round up to a thousandth');
+  app.onEvent({type:'reward',gold:5,xp:28});
+  assert.match(app.node('#combat-log').innerHTML,/Recovered 0\.005 gold · \+28 XP/);
+  app.onEvent({type:'questComplete',quest:data.quests.find(q=>q.id==='relay-00'),gold:22,xp:220});
+  assert.match(app.node('#toast').textContent,/\+220 XP \/ \+0\.022 gold/);
+  app.showGuide();
+  assert.match(app.node('#dialog-content').innerHTML,/next 0\.001 gold and capped at 0\.05 gold/);
+  assert.match(app.node('#dialog-content').innerHTML,/next 0\.001 gold and capped at 0\.1 gold/);
+  assert.equal(c.gold,45);assert.equal(app.sent.length,0);
 });
 
 test('quest snapshots retain the selected journal view and put ready quests first',()=>{
@@ -326,6 +400,7 @@ test('application enables spirit recovery, body interaction, and a controller-ac
   const c = { ...character(), faction: 'relay', activeQuests: {}, completed: [] }, app = application(c);
   app.updateRecoveryUI();
   assert.equal(app.node('#death-screen').hidden, false);
+  assert.match(app.node('#death-description').textContent,/You lost 0\.005 gold/);
   assert.equal(app.node('#respawn').disabled, false);
   c.death.released = true;
   app.updateRecoveryUI();
@@ -336,7 +411,8 @@ test('application enables spirit recovery, body interaction, and a controller-ac
   assert.equal(app.node('#panel-dialog').open, true);
   assert.match(app.node('#dialog-content').innerHTML, /Weakened for 60 seconds/);
   assert.match(app.node('#dialog-content').innerHTML, /Damage is reduced by 50% and movement by 25%/);
-  assert.match(app.node('#dialog-content').innerHTML, /10 gold/);
+  assert.match(app.node('#dialog-content').innerHTML, /0\.01 gold/);
+  assert.match(app.node('#dialog-content').innerHTML, /capped at 0\.1 gold/);
   app.closePanel();
   c.position = [...c.death.corpse];
   app.select('corpse:runner');

@@ -667,6 +667,34 @@ test('numeric text controls retain integer and amount bounds before any social r
   input.value='1.5';reported=false;await c.submit(form);assert.equal(reported,true);
 });
 
+test('auction listings, bids, and gifts submit exact integer thousandths while quantities stay whole',async t=>{
+  const {c}=social(t),requests=[];
+  globals(t,{FormData:class { constructor(form){return new Map(form.elements.map(f=>[f.name,f.value]));} }});
+  c.mutate=async request=>requests.push(request);c.draftKey=()=> 'draft';
+  for(const [action,values,expected] of [
+    ['auction_list',{item:'medkit',quantity:'2',minimum:'0.009',buyout:'1.001',hours:'24'},{item:'medkit',quantity:2,minimum:9,buyout:1001,hours:24}],
+    ['auction_bid',{auction:'17',amount:'0.011'},{auction:17,amount:11}],
+    ['gift',{target:'neighbor',amount:'0.029'},{target:'neighbor',amount:29}],
+    ['gift',{target:'neighbor',amount:'1000'},{target:'neighbor',amount:1000000}],
+  ]) {
+    const elements=Object.entries(values).map(([name,value])=>({name,value,dataset:['minimum','buyout','amount'].includes(name)?{gold:'',min:'1',max:'1000000'}:{},setCustomValidity:assert.fail,reportValidity:assert.fail}));
+    const button={disabled:false},form={dataset:{communityForm:action},elements,querySelectorAll:()=>elements.filter(f=>f.dataset.gold!==undefined),querySelector:()=>button};
+    await c.submit(form);assert.deepEqual(requests.at(-1),{action,...expected});assert.equal(button.disabled,false);
+  }
+  assert.equal(requests.length,4);
+});
+
+test('fractional gold controls reject subunit precision, invalid numbers, and out-of-range bids before sending',async t=>{
+  const {c}=social(t);let invalid='',reported=false;
+  const input={value:'',dataset:{gold:'',min:'11',max:'1000000'},setCustomValidity:value=>invalid=value,reportValidity:()=>reported=true};
+  const form={querySelectorAll:()=>[input]};
+  c.mutate=async()=>assert.fail('Invalid gold must not reach the server');
+  for(const value of ['', '0', '-1', '0.01', '0.0111', '1000.001', '1e2', 'Infinity']) {
+    input.value=value;reported=false;await c.submit(form);
+    assert.equal(reported,true,value);assert.match(invalid,/0\.011 to 1000 in steps of 0\.001/);
+  }
+});
+
 test('social rendering keeps all sections and permissioned guild management available',t=>{
   const {c}=social(t);let html='';
   Object.assign(c,{character:()=>({id:'runner-a',race:'human',gold:20,medkits:2}),races:[{id:'human',name:'Afterborn'}],showPanel:(_,value)=>html=value,summary:{deliveries:0,inbox:[],contacts:[],blocked:[],members:[],channels:['world','trade','race:human'],guildInvites:[],partyInvites:[]}});
@@ -677,12 +705,17 @@ test('social rendering keeps all sections and permissioned guild management avai
   }
   c.summary.guild={id:7,name:'<Signal>',owner:'runner-a',members:{'runner-a':'leader','runner-b':'member'},tabard:{base:'#284d42',trim:'#c7ed99',pattern:'stripe',emblem:'signal'}};
   c.view='guild';c.render();
+  assert.match(html,/unlock 0\.018 gold each day/);assert.match(html,/get 0\.036 gold instead/);
   for(const action of ['guild_invite','guild_promote','guild_transfer','guild_kick','guild_tabard','guild_leave','lineage_reward'])assert.ok(html.includes(action),action);
   assert.ok(html.includes('&lt;Signal&gt;'));assert.equal(html.includes('type="color"'),false);
   assert.ok(html.includes('data-social="swatch"'));
   c.summary.guild.owner='runner-b';c.summary.guild.members['runner-a']='member';c.render();
   for(const action of ['guild_promote','guild_transfer','guild_kick','guild_tabard'])assert.equal(html.includes(action),false,action);
   c.view='auctions';c.render();assert.ok(html.includes('inputmode="numeric"'));assert.ok(html.includes('data-min="1"'));assert.ok(html.includes('data-max="1000000"'));
+  assert.match(html,/You have 0\.02 gold/);
+  assert.match(html,/name="minimum" type="text" inputmode="decimal"[^>]*value="0\.01"/);
+  assert.match(html,/name="buyout" type="text" inputmode="decimal"[^>]*value="0\.018"/);
+  c.view='people';assert.match(c.rows({items:[{id:'neighbor',name:'Neighbor',race:'human'}]}),/name="amount" type="text" inputmode="decimal" data-gold/);
 });
 
 test('the entry route goes directly to the game and all game surfaces share WebGL rendering',()=>{

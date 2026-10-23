@@ -68,6 +68,7 @@ test('talent UI explains dependencies, shows one tree, and gates the paid refund
   assert.equal((enabled.match(/class="talent-card/g)||[]).length,13);
   assert.match(enabled,/Soft armor 1 →/);assert.match(enabled,/CHOOSE ONE/);
   assert.match(enabled,/data-do="respec" >RESET TALENTS/);assert.match(disabled,/data-do="respec" disabled/);
+  assert.match(enabled,/RESET TALENTS \/ 0\.1 GOLD/);
   c.health=0;assert.match(talentPanel(c,data,'Anchor',true),/data-do="respec" disabled/);
 });
 

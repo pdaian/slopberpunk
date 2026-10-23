@@ -1,7 +1,8 @@
 // Shared item catalog and authoritative inventory rules. GPL-3.0-or-later.
 use super::*;
 
-pub(super) const MAX_GOLD: u64 = 9_000_000_000;
+// All currency values are integer thousandths of gold, including content and saves.
+pub(super) const MAX_GOLD: u64 = 9_000_000_000; // 9,000,000 gold.
 const MAX_STACKS: usize = 160;
 const SLOTS: [&str; 8] = [
     "weapon", "armor", "implant", "helmet", "gloves", "boots", "belt", "charm",
