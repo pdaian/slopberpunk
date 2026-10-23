@@ -1,5 +1,30 @@
 [
-  { "id": "drone", "name": "Orphaned surveyor", "model": "drone", "health": 65, "damage": 9, "speed": 5, "color": "#ff946b", "description": "An audit machine that counts allocations as deliveries. It still treats an unpaid household as an empty address." },
-  { "id": "scavenger", "name": "Wirejack", "model": "humanoid", "health": 100, "damage": 13, "speed": 6, "color": "#d9b2ef", "description": "An autonomous salvage machine that treats anything outside a paid inventory as scrap, including working public equipment. It is a machine, not a human salvager." },
-  { "id": "warden", "name": "Debt warden", "model": "warden", "health": 160, "damage": 19, "speed": 4, "color": "#ff6c7c", "description": "An armored collector enforcing Continuance’s inherited claims. Its orders can outlive the office that issued them." }
+  {
+    "id": "drone", "name": "Orphaned surveyor", "model": "drone", "health": 150, "damage": 27, "speed": 9, "color": "#ff946b",
+    "description": "An audit machine that counts allocations as deliveries. It still treats an unpaid household as an empty address. Circles at range, fires three-shot bursts and fan volleys, and predicts your route with staggered bombs. Sidestep the beams; change direction when bombs lock on.",
+    "combat": {"preferredRange": 18, "attacks": [
+      {"kind": "burst", "name": "Needle burst", "windup": 0.75, "recovery": 0.55, "minRange": 0, "range": 44, "power": 0.8},
+      {"kind": "fan", "name": "Crossfire fan", "windup": 0.85, "recovery": 0.6, "minRange": 0, "range": 32, "power": 1.15},
+      {"kind": "bombard", "name": "Predictive bombardment", "windup": 1.1, "recovery": 0.65, "minRange": 0, "range": 40, "power": 1.2}
+    ]}
+  },
+  {
+    "id": "scavenger", "name": "Wirejack", "model": "humanoid", "health": 220, "damage": 39, "speed": 11.5, "color": "#d9b2ef",
+    "description": "An autonomous salvage machine that treats public equipment as scrap. Flanks runners, lunges down marked lanes, chains two blade sweeps, and throws a spread of scrap grenades at distant targets. Dodge sideways through a lunge, then punish its recovery. The second blade swing reaches farther.",
+    "combat": {"preferredRange": 3, "attacks": [
+      {"kind": "combo", "name": "Twin dismantler", "windup": 0.7, "recovery": 0.45, "minRange": 0, "range": 7, "power": 0.85},
+      {"kind": "lunge", "name": "Wire lunge", "windup": 0.8, "recovery": 0.65, "minRange": 3, "range": 20, "power": 1.25},
+      {"kind": "grenades", "name": "Scrap scatter", "windup": 1.05, "recovery": 0.5, "minRange": 6, "range": 38, "power": 1.1}
+    ]}
+  },
+  {
+    "id": "warden", "name": "Debt warden", "model": "warden", "health": 360, "damage": 57, "speed": 8.5, "color": "#ff6c7c",
+    "description": "An armored collector enforcing Continuance’s inherited claims. Cleaves the ground ahead, charges through marked lanes, sends out two shockwave rings, and brackets distant runners with artillery. Get behind a cleave, move into a ring’s clear center, and leave shell markers before impact.",
+    "combat": {"preferredRange": 4, "attacks": [
+      {"kind": "cleave", "name": "Debt cleaver", "windup": 0.95, "recovery": 0.7, "minRange": 0, "range": 8, "power": 1.35},
+      {"kind": "shockwave", "name": "Collection shockwave", "windup": 1.15, "recovery": 0.7, "minRange": 0, "range": 15, "power": 1.05},
+      {"kind": "charge", "name": "Foreclosure charge", "windup": 1.0, "recovery": 0.85, "minRange": 5, "range": 25, "power": 1.4},
+      {"kind": "artillery", "name": "Repossession barrage", "windup": 1.25, "recovery": 0.7, "minRange": 10, "range": 46, "power": 1.25}
+    ]}
+  }
 ]

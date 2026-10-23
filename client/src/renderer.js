@@ -10,6 +10,7 @@ import { CharacterMeshes } from './character.js';
 import { buildingExterior, buildingInterior, buildingLights, streetDetails, neighborhoodDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry } from './scenery.js';
 import { cityStage } from './citylife.js';
 import { incidentGeometry } from './events.js';
+import { enemyAttackGeometry } from './enemy-attacks.js';
 export { box } from './geometry.js';
 
 const vertexSource = `
@@ -563,6 +564,7 @@ export class Renderer {
     const v=[],mist=[];this.shadows=mist;
     if(dungeon)this.dungeon(v,dungeon.catalog,dungeon.run,ghostTime);
     if(incidents)incidentGeometry(v,incidents.events,incidents.rules,camera.eye,ghostTime,this.reducedMotion);
+    enemyAttackGeometry(v,actors,camera.eye,ghostTime,this.reducedMotion);
     for(const actor of actors) if((actor.health!==0||actor.ghost) && distance(camera.eye,actor.position)<260 && (!actor.role||visible({center:[actor.position[0],actor.position[1]+1.2,actor.position[2]],radius:2.5,range:120}))) this.actor(v,actor,time);
     for(const ghost of ghostlines)if(ghostTime<=ghost.started+ghost.path.at(-1).time&&distance(camera.eye,ghostPosition(ghost,ghostTime))<260)this.ghostline(v,ghost,ghostTime);
     for(const e of effects) {

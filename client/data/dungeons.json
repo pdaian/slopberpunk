@@ -18,19 +18,19 @@
     "recoverySeconds": 12,
     "recoveryFraction": 0.45,
     "revivesPerEncounter": 2,
-    "pulseSeconds": 10,
+    "pulseSeconds": 8,
     "warningSeconds": 3,
-    "pulseFraction": 0.18,
-    "enemyHealthPerPlayer": 360,
-    "enemyHealthPerLevel": 32,
-    "enemyDamageFraction": 0.035
+    "pulseFraction": 0.24,
+    "enemyHealthPerPlayer": 600,
+    "enemyHealthPerLevel": 48,
+    "enemyDamageFraction": 0.09
   },
   "production": {
     "contract": "All mechanics use movement, the shared ability kit, and E interactions. No class, lineage, faction, talent, paid item, voice chat, simultaneous input, or specific damage composition is required. Groups are exact-size at entry; different builds and duplicate builds are welcome.",
     "pacing": "Three chapters per dungeon. Each begins in a safe reading pause; every member explicitly signals readiness. Combat ends only after its machines are disabled, both evidence stations are read, and every member has signed at least one station. Evidence remains in the casebook. Chapter breaks restore resources. There is no damage race or enrage.",
     "recovery": "A marked aid station restores 45% maximum health every 12 seconds per runner. Each runner can revive twice per encounter within 4 m. A full wipe restores the current chapter after five seconds without deleting earlier discoveries. Leaving or disconnecting during an unfinished expedition returns the group to the Commons; there is no forced understaffed fight. Runs expire after 90 minutes.",
     "agency": "The final ballot lasts 90 seconds, closes early when everyone votes, and can be revised until closure. Abstentions and tied ballots use the authored provisional ending. Every ending pays the same personal reward once per completed run. The last ending and clear count persist; the world is not globally rewritten.",
-    "balanceBudget": "Each chapter has one machine per two runners, rounded up. Total health is partySize * (360 + minimumLevel * 32) * chapterMultiplier; enemy contact damage is 3.5% of the victim's maximum health per attack. Hazards are avoidable, three-second marked warnings for 18% maximum health. These are initial tuning values, not a claim of human playtest coverage.",
+    "balanceBudget": "Each chapter has one machine per two runners, rounded up. Total health is partySize * (600 + minimumLevel * 48) * chapterMultiplier. Machines use their own movement and warned attack patterns; each hit deals 9% of the victim's maximum health times the move's power, before armor and shields. A burst or combo can hit repeatedly; a charge hits each runner at most once. Arena hazards strike every eight seconds with three-second warnings for 24% maximum health. These are tuning values, not a claim of human playtest coverage.",
     "presentation": "Build from existing procedural geometry, enemy models, and synthesized effects. Each venue has a distinctive silhouette, palette, and evidence props. Hazard stripes, outlines, text, and countdowns carry information independently of color and sound. Art and audio intentions below are direction for later asset production where they exceed the procedural implementation.",
     "authorship": "Original Vesper characters, settings, dialogue, and plots. Named works are critical/thematic reference points, not adaptations of their dialogue, scenes, characters, visual designs, or music. The old questions are transformed into new playable conflicts. Do not imitate an individual artist's voice."
   },

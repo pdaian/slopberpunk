@@ -188,7 +188,8 @@ fn spawn(
         .take(if wave == 0 { 2 } else { 1 })
         .enumerate()
     {
-        let health = num(&template["health"]) * 0.65 + f64::from(e.level) * 8.0;
+        let health = num(&template["health"]) * 0.85
+            + f64::from(e.level) * data.rule("combat", "enemyHealthPerLevel");
         enemies.push(Enemy {
             id: format!("incident-{}-{}-{wave}-{i}", e.id, state.cycle),
             event: Some(e.id.clone()),
@@ -203,9 +204,11 @@ fn spawn(
             health,
             max_health: health,
             yaw: 0.0,
-            damage: num(&template["damage"]) * 0.65,
+            damage: num(&template["damage"]) * 0.85,
             speed: num(&template["speed"]),
             attack_at: time + 2.0,
+            attack: None,
+            last_move: None,
             stun_until: 0.0,
             exposed_until: 0.0,
             respawn_at: f64::MAX,

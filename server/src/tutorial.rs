@@ -428,6 +428,14 @@ mod tests {
         assert!(s.players["new"].cooldowns.is_empty());
         s.players.get_mut("new").unwrap().c.position = [0.0, 0.0, -44.0];
         s.tick();
+        assert_eq!(
+            s.players["new"].c.health, health,
+            "leaving training still grants an attack warning"
+        );
+        assert!(s.enemies[0].attack.is_some());
+        for _ in 0..40 {
+            s.tick();
+        }
         assert!(
             s.players["new"].c.health < health,
             "ordinary combat resumes outside training"

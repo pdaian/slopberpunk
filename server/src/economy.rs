@@ -789,6 +789,8 @@ mod tests {
             damage: 0.0,
             speed: 0.0,
             attack_at: 0.0,
+            attack: None,
+            last_move: None,
             stun_until: 0.0,
             exposed_until: 0.0,
             respawn_at: 0.0,

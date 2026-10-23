@@ -6,6 +6,7 @@ mod config;
 mod death;
 mod dungeons;
 mod economy;
+mod enemy_ai;
 mod forge;
 mod founders;
 mod ghostline;
@@ -380,6 +381,7 @@ struct Content {
     npcs: Vec<Npc>,
     map: Map,
     enemies: Vec<Value>,
+    enemy_profiles: HashMap<String, enemy_ai::Profile>,
 }
 impl Content {
     fn load(client: &FsPath) -> io::Result<Self> {
@@ -414,6 +416,8 @@ impl Content {
         }
         let quests: Vec<Quest> = read_json(dir.join("quests.json"))?;
         let values: Vec<Value> = read_json(dir.join("quests.json"))?;
+        let enemies: Vec<Value> = read_json(dir.join("enemies.json"))?;
+        let enemy_profiles = enemy_ai::profiles(&enemies)?;
         let mut content = Self {
             forge: read_json(dir.join("forge.json"))?,
             morality: read_json(dir.join("morality.json"))?,
@@ -432,7 +436,8 @@ impl Content {
             quests,
             npcs: read_json(dir.join("npcs.json"))?,
             map: read_json(dir.join("world.json"))?,
-            enemies: read_json(dir.join("enemies.json"))?,
+            enemies,
+            enemy_profiles,
         };
         content.economy.prepare()?;
         content.validate()?;
@@ -455,6 +460,16 @@ impl Content {
         self.morality.validate(self)?;
         death::validate(self)?;
         tutorial::validate(self)?;
+        if [
+            "enemyAttackSeconds",
+            "enemyHealthPerLevel",
+            "enemyDamagePerLevel",
+        ]
+        .iter()
+        .any(|key| !self.rule("combat", key).is_finite() || self.rule("combat", key) <= 0.0)
+        {
+            return Err(io::Error::other("Invalid enemy combat rules"));
+        }
         let ghost_rule = |key| self.rule("ghostline", key);
         if ![
             "historySeconds",
@@ -1708,6 +1723,10 @@ struct Enemy {
     speed: f64,
     #[serde(skip)]
     attack_at: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    attack: Option<enemy_ai::Attack>,
+    #[serde(skip)]
+    last_move: Option<enemy_ai::Kind>,
     stun_until: f64,
     exposed_until: f64,
     #[serde(skip)]
@@ -1841,6 +1860,10 @@ fn damage_enemy(
     e.aggro = Some((p.c.id.clone(), time + 6.0));
     if a.kind == "stun" && damage > 0.0 {
         e.stun_until = time + a.duration;
+        e.attack = None;
+    }
+    if e.health <= 0.0 {
+        e.attack = None;
     }
     emit(
         p,
@@ -2173,7 +2196,8 @@ impl Shard {
                     .iter()
                     .find(|e| text(&e["id"]) == s.kind)
                     .expect("validated enemy template");
-                let health = num(&e["health"]) + f64::from(s.level) * 12.0;
+                let health = num(&e["health"])
+                    + f64::from(s.level) * content.rule("combat", "enemyHealthPerLevel");
                 Enemy {
                     id: format!("enemy-{i}"),
                     instance: None,
@@ -2191,6 +2215,8 @@ impl Shard {
                     damage: num(&e["damage"]),
                     speed: num(&e["speed"]),
                     attack_at: 0.0,
+                    attack: None,
+                    last_move: None,
                     stun_until: 0.0,
                     exposed_until: 0.0,
                     respawn_at: 0.0,
@@ -2408,125 +2434,14 @@ impl Shard {
             tutorial::tick(p, &self.content, &self.world);
         }
         for e in &mut self.enemies {
-            if e.health <= 0.0 {
-                if e.instance.is_none() && e.event.is_none() && self.time >= e.respawn_at {
-                    e.health = e.max_health;
-                    e.exposed_until = 0.0;
-                    e.stun_until = 0.0;
-                    e.position = e.home;
-                    e.aggro = None;
-                }
-                continue;
-            }
-            if e.stun_until > self.time {
-                continue;
-            }
-            if dist(e.position, e.home) > self.content.rule("combat", "leash") {
-                e.position = e.home;
-                e.health = e.max_health;
-                e.exposed_until = 0.0;
-                e.stun_until = 0.0;
-                e.aggro = None;
-                continue;
-            }
-            let forced = e
-                .aggro
-                .as_ref()
-                .filter(|(_, until)| *until > self.time)
-                .map(|(id, _)| id.clone());
-            let target = self
-                .players
-                .values()
-                .filter(|p| {
-                    p.c.health > 0.0
-                        && p.instance == e.instance
-                        && (p.instance.is_some()
-                            || !self.content.map.tutorial.contains(p.c.position))
-                        && (p.c.position[1] - e.position[1]).abs() < 4.0
-                        && (e.instance.is_some()
-                            || dist(p.c.position, e.position)
-                                < self.content.rule("combat", "aggroRadius"))
-                        && self.world.visible(e.position, p.c.position)
-                })
-                .min_by(|a, b| {
-                    let da = if forced.as_ref() == Some(&a.c.id) {
-                        0.0
-                    } else {
-                        dist(a.c.position, e.position)
-                    };
-                    let db = if forced.as_ref() == Some(&b.c.id) {
-                        0.0
-                    } else {
-                        dist(b.c.position, e.position)
-                    };
-                    da.total_cmp(&db)
-                })
-                .map(|p| p.c.id.clone());
-            if let Some(id) = target {
-                if let Some(p) = self.players.get_mut(&id) {
-                    let distance = dist(p.c.position, e.position);
-                    e.yaw =
-                        (p.c.position[0] - e.position[0]).atan2(p.c.position[2] - e.position[2]);
-                    if distance > self.content.rule("combat", "meleeRange") {
-                        for axis in [0, 2] {
-                            let mut next = e.position;
-                            next[axis] +=
-                                (p.c.position[axis] - e.position[axis]) / distance * e.speed * 0.05;
-                            if !self.world.collides(next, 0.65)
-                                && (e.instance.is_some()
-                                    || !self.content.map.tutorial.contains(next))
-                                && (e.event.is_none()
-                                    || (self.world.floor(
-                                        next[0],
-                                        next[2],
-                                        next[1] + 0.1,
-                                        next[1] - 0.2,
-                                    ) - next[1])
-                                        .abs()
-                                        < 0.1)
-                            {
-                                e.position = next;
-                            }
-                        }
-                    } else if self.time >= e.attack_at {
-                        e.attack_at = self.time + self.content.rule("combat", "enemyAttackSeconds");
-                        p.last_combat = self.time;
-                        let damage = if e.instance.is_some() {
-                            (Stats::new(&p.c, &self.content).health
-                                * self.content.dungeons.rules.enemy_damage_fraction)
-                                .round()
-                        } else {
-                            (e.damage + f64::from(e.level) * 2.0).round()
-                        };
-                        let damage = damage * (1.0 - Stats::new(&p.c, &self.content).armor);
-                        let absorbed = p.shield.min(damage);
-                        p.shield -= absorbed;
-                        p.c.health = (p.c.health - damage + absorbed).max(0.0);
-                        p.dirty = true;
-                        emit(p, json!({"type":"hurt","amount":damage-absorbed}));
-                        if p.c.health <= 0.0 {
-                            death::fallen(p, &self.content, self.time);
-                        }
-                    }
-                }
-            } else if dist(e.position, e.home) > 1.0 {
-                let d = dist(e.position, e.home);
-                for axis in 0..3 {
-                    let mut next = e.position;
-                    next[axis] += (e.home[axis] - e.position[axis]) / d * (e.speed * 0.05).min(d);
-                    if e.event.is_none()
-                        || (!self.world.collides(next, 0.65)
-                            && (self
-                                .world
-                                .floor(next[0], next[2], next[1] + 0.1, next[1] - 0.2)
-                                - next[1])
-                                .abs()
-                                < 0.1)
-                    {
-                        e.position = next;
-                    }
-                }
-            }
+            enemy_ai::tick(
+                e,
+                &mut self.players,
+                &self.content,
+                &self.world,
+                self.time,
+                &mut self.seed,
+            );
         }
         self.tick_ghostlines();
         self.tick_world_events();
