@@ -24,7 +24,7 @@ impl Route {
                 && (0.0..=256.0).contains(&p[1])
         }) && self.width.is_finite()
             && (2.0..=40.0).contains(&self.width)
-            && matches!(self.kind.as_str(), "stairs" | "ramp" | "hill")
+            && matches!(self.kind.as_str(), "stairs" | "ramp" | "hill" | "street")
             && (dx == 0.0) != (dz == 0.0)
             && rise / dx.hypot(dz) <= 0.5
             && (self.kind != "stairs"

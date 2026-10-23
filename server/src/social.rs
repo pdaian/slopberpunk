@@ -371,6 +371,7 @@ impl SocialState {
         );
         match kind {
             "register" => {}
+            "forge" => return forge::action(c, request, data),
             "equip" | "unequip" | "consume" | "craft" | "sell" | "salvage" | "respec" => {
                 return economy::action(c, request, data);
             }

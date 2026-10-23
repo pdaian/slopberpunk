@@ -8,6 +8,7 @@ import { CharacterMeshes, motionPose } from '../src/character.js';
 import { box, bevelBox, ellipsoid, slope, transformMesh } from '../src/geometry.js';
 import { Renderer } from '../src/renderer.js';
 import { CityLife } from '../src/citylife.js';
+import { rooftopGeometry, streetDestination, routeGeometry } from '../src/scenery.js';
 
 const read=name=>JSON.parse(readFileSync(new URL(`../data/${name}.json`,import.meta.url)));
 const data=Object.fromEntries(['world','rules','races','talents','dungeons','citylife'].map(name=>[name,read(name)]));
@@ -33,7 +34,7 @@ test('every address has a stable identity and a district-specific purpose',()=>{
   }
 });
 
-test('stairs, ramps and hills are traversable in both directions without jumping',()=>{
+test('streets, stairs, ramps and hills are traversable in both directions without jumping',()=>{
   for(const route of world.routes){
     for(const reverse of [false,true]){
       const start=reverse?route.end:route.start,end=reverse?route.start:route.end;
@@ -49,6 +50,57 @@ test('stairs, ramps and hills are traversable in both directions without jumping
       assert.ok(progress>=length-.05,`${route.id}: ${reverse?'descent':'ascent'} stopped at ${sim.character.position}`);
       assert.ok(Math.abs(sim.character.position[1]-end[1])<.45,`${route.id}: missed landing`);
     }
+  }
+});
+
+test('street circuits and their approaches connect ground, 12 m, skyways and crowns in both directions',()=>{
+  const paths=[
+    [[-160,12,-240],[160,12,-240],[160,12,160],[-160,12,160],[-160,12,-240]],
+    [[-320,48,-80],[328,48,-80],[328,48,320],[-320,48,320],[-320,48,-80]],
+    [[-80,0,-328],[-80,0,-320],[-80,12,-248],[-80,12,-240],[-160,12,-240],[-160,12,0],[-168,12,0],[-314,24,0],[-323.5,24,0],[-323.5,24,-200],[-320,24,-200],[-320,48,-80],[328,48,-80],[328,48,320],[320,48,320],[320,24,200],[320,24,0],[314,24,0],[168,12,0],[160,12,0],[160,12,160],[80,12,160],[80,12,168],[80,0,232],[80,0,240]]
+  ];
+  for(const path of paths)for(const reverse of [false,true]){
+    const stops=reverse?[...path].reverse():path;
+    let position=[...stops[0]];
+    for(const end of stops.slice(1)){
+      const axis=position[0]===end[0]?2:0;
+      assert.equal(position[2-axis],end[2-axis]);
+      while(Math.abs(position[axis]-end[axis])>1e-7){
+        const next=world.stepPosition(position,axis,Math.max(-.25,Math.min(.25,end[axis]-position[axis])),true);
+        assert.ok(next,`Street journey blocked at ${position} toward ${end}`);
+        assert.ok(Math.abs(world.floorAt(next[0],next[2],next[1]+.01,next[1]-.01)-next[1])<1e-7,`Missing street floor at ${next} toward ${end}`);
+        assert.ok(Math.abs(next[1]-position[1])<=.42,'street junction must not require jumping or falling');
+        position=next;
+      }
+      near(position[1],end[1]);
+    }
+  }
+});
+
+test('elevated streets support both lanes, leave underpasses open, and block shots and jumps through their decks',()=>{
+  const streets=data.world.routes.filter(r=>r.kind==='street');
+  assert.equal(streets.length,12);
+  for(const route of streets){
+    const axis=route.start[0]===route.end[0]?2:0,cross=2-axis;
+    for(const t of [.25,.5,.75])for(const side of [-1,0,1]){
+      const p=route.start.map((n,i)=>n+(route.end[i]-n)*t);p[cross]+=side*(route.width/2-1);
+      assert.equal(world.collides(...p),false,`${route.id}: lane is obstructed`);
+      near(world.floorAt(p[0],p[2],p[1]+.01,p[1]-.01),p[1]);
+      assert.equal(world.streetAt(p),route);
+      assert.equal(world.streetAt([p[0],0,p[2]]),null);
+      assert.equal(world.collides(p[0],0,p[2]),false,`${route.id}: underpass is blocked`);
+      assert.ok(world.collides(p[0],p[1]-.2,p[2]));
+      assert.equal(world.lineOfSight([p[0],p[1]-4,p[2]],p),false);
+      near(world.ceilingAt(p[0],p[2],p[1]-3,p[1]),p[1]-.35-2.1);
+    }
+    const p=route.start.map((n,i)=>(n+route.end[i])/2),sim=player(p);
+    sim.tick(.025,{jump:true});assert.ok(sim.character.position[1]>p[1]);
+    for(let i=0;i<120;i++)sim.tick(.025,{});
+    near(sim.character.position[1],p[1]);assert.ok(sim.grounded);
+    const mesh=[];routeGeometry(mesh,route);
+    assert.ok(mesh.length>0&&mesh.every(Number.isFinite));assert.equal(mesh.length%30,0);
+    assert.ok(mesh.length<20000,'street geometry must remain bounded');
+    for(let i=0;i<mesh.length;i+=10)near(Math.hypot(...mesh.slice(i+3,i+6)),1);
   }
 });
 
@@ -117,6 +169,68 @@ test('rooftops, furniture tops, and skyway landings remain valid floors',()=>{
   }
   near(world.floorAt(0,-80,25,23),24);
   assert.ok(world.collides(data.world.bounds+1,0,0));
+});
+
+test('five distinct street destinations have continuous routes to their roofs and back',()=>{
+  assert.equal(world.rooftops.length,5);
+  assert.equal(new Set(world.rooftops.map(b=>b.rooftop.kind)).size,5);
+  for(const b of world.rooftops){
+    const path=[[b.x,0,b.z+b.d/2+3],[b.x,0,b.routes[0].start[2]],...b.routes.flatMap(r=>[r.start,r.end]),[b.x,b.h,b.routes.at(-1).end[2]],[b.x,b.h,b.z]];
+    let position=[...path[0]];
+    for(const end of [...path.slice(1),...path.slice(0,-1).reverse()]){
+      const axis=position[0]===end[0]?2:0;
+      assert.equal(position[2-axis],end[2-axis],'landings must connect without cutting corners');
+      while(Math.abs(position[axis]-end[axis])>1e-7){
+        position=world.stepPosition(position,axis,Math.max(-.25,Math.min(.25,end[axis]-position[axis])),true);
+        assert.ok(position,`${b.rooftop.name}: blocked route to ${end}`);
+        near(world.floorAt(position[0],position[2],position[1]+.1,position[1]-.2),position[1]);
+      }
+      near(position[1],end[1]);
+    }
+    assert.deepEqual(position,path[0]);
+    assert.equal(world.rooftopAt([b.x,b.h,b.z]),b);
+    assert.equal(world.interiorAt([b.x,b.h,b.z]),null);
+    assert.equal(world.rooftopAt([b.x,0,b.z]),null);
+    for(const y of b.levels.slice(0,-1))assert.equal(world.interiorAt([b.x,y,b.z]),b);
+    for(const axis of [0,2])for(const side of [-1,1]){
+      const p=[b.x,b.h,b.z];p[axis]+=side*((axis===0?b.w:b.d)/2-.2);
+      assert.ok(world.collides(...p),'roof parapet must prevent walking off the edge');
+    }
+    assert.ok(world.collides(b.x+6,b.h,b.z+5),'roof furniture must be solid');
+    for(const side of [-1,1]){
+      const counter=[b.x+side*6,0,b.z+b.d/2+1.2];
+      assert.ok(world.collides(...counter),'street counters must be solid outside the building footprint');
+      near(world.floorAt(counter[0],counter[2],1.3,1.1),1.2);
+      assert.equal(world.collides(counter[0],1.2,counter[2]),false);
+    }
+    const ceiling=world.ceilingAt(b.x,b.z,b.levels.at(-2),b.h,.65,2.1);
+    near(ceiling,b.h-.35-2.1);
+  }
+});
+
+test('rooftop scenery leaves the final stairwell visibly open',()=>{
+  for(const b of world.rooftops){
+    const roof=[],street=[];rooftopGeometry(roof,b);streetDestination(street,b);
+    for(const mesh of [roof,street]){
+      assert.ok(mesh.length>0&&mesh.every(Number.isFinite));
+      assert.equal(mesh.length%30,0);
+      assert.ok(mesh.length<180000,'destination geometry must remain bounded');
+    }
+    const route=b.routes.at(-1),point=route.start.map((n,i)=>n+(route.end[i]-n)*.85);
+    for(let i=0;i<roof.length;i+=30){
+      const triangle=[roof.slice(i,i+3),roof.slice(i+10,i+13),roof.slice(i+20,i+23)];
+      if(!triangle.every(p=>Math.abs(p[1]-b.h)<1e-7))continue;
+      const crosses=triangle.map((a,j)=>{const c=triangle[(j+1)%3];return(c[0]-a[0])*(point[2]-a[2])-(c[2]-a[2])*(point[0]-a[0]);});
+      assert.ok(!(crosses.every(n=>n>=0)||crosses.every(n=>n<=0)),'roof mesh sealed the stairwell');
+    }
+  }
+});
+
+test('rooftop records reject duplicates, missing buildings and invalid presentation',()=>{
+  const roof=data.world.rooftops[0];
+  for(const rooftops of [[roof,roof],[{...roof,cell:[0,0]}],[{...roof,cell:[999,999]}],[{...roof,cell:1}],[{...roof,kind:'missing'}],[{...roof,name:12}],[null]]){
+    assert.throws(()=>new World({...data.world,rooftops}),/rooftop/i);
+  }
 });
 
 test('predicted sprint and dash enter and leave each room layout without wall penetration',()=>{
@@ -239,10 +353,20 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
     renderer.quality=.5;renderer.reducedMotion=true;
     renderer.render(camera,residents,[],11,Date.UTC(2026,0,1,0));
     assert.equal(uniforms.get('uDay'),0);assert.equal(uniforms.get('uTime'),0);assert.ok(depthWrite);
-    const residentBuffers=renderer.details.size;
+    for(const b of world.rooftops){
+      const y=b.levels.at(-2),inside={eye:[b.x,y+2,b.z],target:[b.x,y+1,b.z-6]};
+      renderer.render(inside,[],[],12,epoch);
+      assert.ok(renderer.details.has(b),'stairs must stream at the top floor');
+      near(uniforms.get('uRoomHeight'),b.h);
+      renderer.render({eye:[b.x,b.h+3,b.z],target:[b.x,b.h+1,b.z-6]},life.update(epoch,[b.x,b.h,b.z],{quality:.5}),[],13,Date.UTC(2026,0,1,0));
+      assert.ok(renderer.details.has(b),'roof access must remain visible on low quality');
+      assert.equal(uniforms.get('uRoomHeight'),0,'rooftops must receive outdoor lighting');
+      assert.ok(depthWrite);
+    }
+    const residentBuffers=renderer.details.size,previouslyDeleted=deleted;
     renderer.render({eye:[0,3,2700],target:[0,2,2600]},[],[],20);
     assert.equal(canvas.width,480);assert.equal(canvas.height,270);
-    assert.equal(renderer.details.size,0);assert.equal(deleted,residentBuffers);
+    assert.equal(renderer.details.size,0);assert.equal(deleted-previouslyDeleted,residentBuffers);
     assert.ok(uniforms.get('uLightPosition').every(v=>v===0),'leaving the city clears stale fixture lights');
     assert.equal(uniforms.get('uTime'),0);assert.equal(uniforms.get('uVolume'),.4);
     renderer.lost=true;const draws=calls;renderer.render(camera,[],[],21);assert.equal(calls,draws);

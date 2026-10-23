@@ -273,9 +273,9 @@ export class Renderer {
     this.detailEye=[...eye];
     for(const [b,chunk]of this.details)if(distance(eye,chunk.center)>260){this.gl.deleteBuffer(chunk.buffer);this.details.delete(b);}
     for(const b of this.world.buildings){
-      const center=[b.x,9,b.z];if(distance(eye,center)>210||this.details.has(b))continue;
+      const center=[b.x,b.rooftop?b.h/2:9,b.z];if(distance(eye,center)>210||this.details.has(b))continue;
       const v=[];streetDetails(v,b);if(b.interior)buildingInterior(v,b,this.world.data);
-      this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d,20)/2,150,false));
+      this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d,b.rooftop?b.h:20)/2,150,false));
     }
   }
   updateLighting(eye) {
@@ -557,7 +557,7 @@ export class Renderer {
     gl.uniform1f(this.locations.uTime,this.reducedMotion?0:time);gl.uniform1f(this.locations.uDetail,this.quality);
     const room=this.world.interiorAt(camera.eye)||this.world.interiorAt(camera.target);
     gl.uniform4fv(this.locations.uRoom,room?[room.x,room.z,room.w/2,room.d/2]:[0,0,-1,-1]);
-    gl.uniform1f(this.locations.uRoomHeight,(this.world.data.interiors?.height||0)*3);
+    gl.uniform1f(this.locations.uRoomHeight,room?.levels.at(-1)||0);
     this.updateLighting(camera.eye);
     for(const chunk of [...this.chunks,...this.details.values()])if(visible(chunk)){this.bind(chunk.buffer);gl.drawArrays(gl.TRIANGLES,0,chunk.count);}
     const v=[],mist=[];this.shadows=mist;

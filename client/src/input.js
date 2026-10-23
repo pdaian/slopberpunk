@@ -5,6 +5,24 @@ import { clamp } from './math.js';
 export class Input {
   constructor(canvas,onAction,onLook) {
     this.canvas=canvas;this.onAction=onAction;this.onLook=onLook;this.keys=new Set();this.edges=new Set();this.buttons=[];this.active=false;this.menu=true;this.drag=null;this.touchMove=[0,0];this.connected='';this.padTime=0;this.menuIndex=0;this.sensitivity=.0025;
+    this.lastDevice='keyboard';this.padIndex=null;this.padAxes=[];this.pointerPosition=null;
+    // Capture real activity in menus and text fields as well as in the world.
+    // Controller menu navigation dispatches synthetic keys; those are not keyboard use.
+    document.addEventListener('keydown',e=>{if(e.isTrusted!==false&&!e.repeat)this.lastDevice='keyboard';},true);
+    document.addEventListener('pointerdown',e=>{
+      if(e.isTrusted===false)return;
+      this.lastDevice=e.pointerType==='touch'?'touch':'keyboard';
+      this.pointerPosition=[e.clientX,e.clientY];
+    },true);
+    document.addEventListener('pointermove',e=>{
+      if(e.isTrusted===false)return;
+      if(e.pointerType==='touch'){if(e.buttons)this.lastDevice='touch';return;}
+      const previous=this.pointerPosition;
+      if(previous&&Math.hypot(e.clientX-previous[0],e.clientY-previous[1])<3)return;
+      this.pointerPosition=[e.clientX,e.clientY];
+      if(previous||Math.hypot(e.movementX||0,e.movementY||0)>=3)this.lastDevice='keyboard';
+    },true);
+    document.addEventListener('wheel',e=>{if(e.isTrusted!==false&&(e.deltaX||e.deltaY))this.lastDevice='keyboard';},{capture:true,passive:true});
     window.addEventListener('keydown',e=>{
       if(e.defaultPrevented||e.isComposing)return;
       if(e.code==='Escape'){if(!e.repeat){e.preventDefault();this.onAction('escape');}return;}
@@ -78,10 +96,16 @@ export class Input {
     let jump=this.edges.has('Space'),dash=this.edges.has('KeyQ'),sprint=this.keys.has('ShiftLeft')||this.keys.has('ShiftRight');this.edges.clear();
     let pads=[];try{pads=navigator.getGamepads?.()||[];}catch{/* Disabled by browser policy. */}
     const pad=Array.from(pads).find(p=>p&&p.mapping==='standard');
-    this.connected=pad?pad.id:'';
+    if(this.padIndex!==(pad?.index??null)||this.connected!==(pad?.id||'')){this.buttons=[];this.padAxes=[];}
+    this.connected=pad?pad.id:'';this.padIndex=pad?.index??null;
     if(pad){
       const axis=v=>Math.abs(v||0)<.17?0:Math.sign(v)*(Math.abs(v)-.17)/.83;
       const pressed=pad.buttons.map(b=>b.pressed),edge=i=>pressed[i]&&!this.buttons[i];
+      // Held controls and stick drift must not reclaim prompts after mouse/keyboard use.
+      const axes=pad.axes.slice(0,4).map(axis);
+      const moved=axes.some((value,i)=>value!==0&&Math.abs(value-(this.padAxes[i]||0))>.12);
+      if(pressed.some((_,i)=>edge(i))||moved)this.lastDevice='gamepad';
+      axes.forEach((value,i)=>{if(!value||Math.abs(value-(this.padAxes[i]||0))>.12)this.padAxes[i]=value;});
       if(this.menu){
         this.padTime-=dt;
         const direction=edge(13)||edge(15)||axis(pad.axes[1])>.6?1:edge(12)||edge(14)||axis(pad.axes[1])<-.6?-1:0;
@@ -101,7 +125,7 @@ export class Input {
         for(const [i,action]of Object.entries(actions))if(edge(Number(i)))this.onAction(pressed[10]&&alternate[i]?alternate[i]:action);
       }
       this.buttons=pressed;
-    }else this.buttons=[];
+    }else{this.buttons=[];this.padAxes=[];if(this.lastDevice==='gamepad')this.lastDevice='keyboard';}
     return this.menu?{forward:0,strafe:0,jump:false,dash:false,sprint:false}:{forward:clamp(forward,-1,1),strafe:clamp(strafe,-1,1),jump,dash,sprint};
   }
 }

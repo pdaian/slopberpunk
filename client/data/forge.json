@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "slots": [
+    {"id":"head","name":"Helm"}, {"id":"shoulders","name":"Pauldrons"},
+    {"id":"core","name":"Reactor"}, {"id":"arms","name":"Gauntlets"},
+    {"id":"legs","name":"Greaves"}, {"id":"back","name":"Back rig"}
+  ],
+  "frames": [
+    {"id":"strider","name":"Strider","description":"Narrow armor, exposed servos, a pursuit silhouette.","width":0.88},
+    {"id":"vanguard","name":"Vanguard","description":"Angular chest plates and a balanced command silhouette.","width":1},
+    {"id":"siege","name":"Siege","description":"Wide plating, heavy shoulders, an industrial silhouette.","width":1.2}
+  ],
+  "colors": [
+    {"id":"cobalt","name":"Cobalt","hex":"#396ab7"}, {"id":"ember","name":"Ember","hex":"#d45b3c"},
+    {"id":"bone","name":"Ceramic","hex":"#d8dfce"}, {"id":"carbon","name":"Carbon","hex":"#303b4c"},
+    {"id":"gold","name":"Solar gold","hex":"#e5b85f"}, {"id":"orchid","name":"Orchid","hex":"#a57cdb"},
+    {"id":"moss","name":"Moss","hex":"#729575"}, {"id":"steel","name":"Steel","hex":"#839bb0"},
+    {"id":"ion","name":"Ion cyan","hex":"#71e7ed"}, {"id":"plasma","name":"Plasma pink","hex":"#f880bf"},
+    {"id":"acid","name":"Acid green","hex":"#c7ef7b"}, {"id":"signal","name":"Signal red","hex":"#f78e79"}
+  ],
+  "finishes": [{"id":"enamel","name":"Enamel"},{"id":"alloy","name":"Brushed alloy"},{"id":"carbon","name":"Carbon inlay"}],
+  "patterns": [{"id":"clean","name":"Unmarked"},{"id":"stripe","name":"Racing stripe"},{"id":"chevron","name":"Hazard chevrons"},{"id":"circuit","name":"Circuit traces"}],
+  "rarities": [
+    {"id":"standard","name":"Standard","color":"#a6b8c4","score":0},
+    {"id":"rare","name":"Rare","color":"#71c9f1","score":10},
+    {"id":"epic","name":"Epic","color":"#c19afa","score":30},
+    {"id":"relic","name":"Relic","color":"#efbd7d","score":70}
+  ],
+  "ranks": [{"name":"Initiate","score":0},{"name":"Assembler","score":40},{"name":"Artificer","score":140},{"name":"Exemplar","score":320},{"name":"Living legend","score":600}],
+  "default": {"frame":"vanguard","primary":"cobalt","secondary":"bone","energy":"ion","finish":"enamel","pattern":"stripe","parts":{"head":"road-visor","shoulders":"freight-plates","core":"split-cell","arms":"piston-gauntlets","legs":"road-greaves","back":"vector-fins"}},
+  "items": [
+    {"id":"road-visor","slot":"head","name":"Road visor","design":"visor","rarity":"standard","set":"Roadborn","description":"A single luminous slit beneath an armored brow; twin antenna fins."},
+    {"id":"relay-mask","slot":"head","name":"Relay mask","design":"mask","rarity":"standard","set":"Freightworks","description":"Split optics, a vented faceplate, and square receiver pods."},
+    {"id":"storm-eye","slot":"head","name":"Storm eye","design":"cyclops","rarity":"rare","set":"Stormline","description":"One oversized optic framed by a stepped sensor cage.","unlock":{"stat":"level","target":10,"label":"Reach level 10"}},
+    {"id":"choir-antlers","slot":"head","name":"Choir antlers","design":"antlers","rarity":"epic","set":"Null Choir","description":"Branching signal prongs above a sealed, faceless shell.","unlock":{"stat":"contracts","target":30,"label":"Complete 30 contracts"}},
+    {"id":"solar-crown","slot":"head","name":"Solar crown","design":"crown","rarity":"relic","set":"Sunbreaker","description":"Five gold-tipped blades rise around a three-eyed ceremonial helm.","unlock":{"stat":"routes","target":6,"label":"Clear all 6 different expeditions"}},
+    {"id":"freight-plates","slot":"shoulders","name":"Freight plates","design":"plates","rarity":"standard","set":"Freightworks","description":"Broad fenders with inset running lights and layered crash rails."},
+    {"id":"pursuit-fenders","slot":"shoulders","name":"Pursuit fenders","design":"fenders","rarity":"standard","set":"Roadborn","description":"Swept shoulder fairings with exposed wheel hubs."},
+    {"id":"storm-turbines","slot":"shoulders","name":"Storm turbines","design":"turbines","rarity":"rare","set":"Stormline","description":"Twin circular intake housings with luminous turbine centers.","unlock":{"stat":"kills","target":100,"label":"Defeat 100 patrol enemies"}},
+    {"id":"choir-spires","slot":"shoulders","name":"Choir spires","design":"spires","rarity":"epic","set":"Null Choir","description":"Unequal towers of layered armor and bright signal needles.","unlock":{"stat":"kills","target":500,"label":"Defeat 500 patrol enemies"}},
+    {"id":"solar-bastions","slot":"shoulders","name":"Solar bastions","design":"bastions","rarity":"relic","set":"Sunbreaker","description":"Fortress pauldrons, solar crests, and three gilded vanes per side.","unlock":{"stat":"kills","target":2000,"label":"Defeat 2,000 patrol enemies"}},
+    {"id":"split-cell","slot":"core","name":"Split cell","design":"split","rarity":"standard","set":"Roadborn","description":"Two luminous engine windows divided by a reinforced keel."},
+    {"id":"freight-grille","slot":"core","name":"Freight grille","design":"grille","rarity":"standard","set":"Freightworks","description":"An industrial radiator with five horizontal armored slats."},
+    {"id":"storm-reactor","slot":"core","name":"Storm reactor","design":"iris","rarity":"rare","set":"Stormline","description":"A circular iris reactor held inside four massive locking jaws.","unlock":{"stat":"contracts","target":8,"label":"Complete 8 contracts"}},
+    {"id":"choir-heart","slot":"core","name":"Choir heart","design":"shards","rarity":"epic","set":"Null Choir","description":"Three staggered energy shards above a black segmented cage.","unlock":{"stat":"orders","target":20,"label":"Complete 20 work orders"}},
+    {"id":"solar-heart","slot":"core","name":"Solar heart","design":"sun","rarity":"relic","set":"Sunbreaker","description":"An eight-spoked solar engine with a brilliant exposed center.","unlock":{"stat":"level","target":60,"label":"Reach level 60"}},
+    {"id":"piston-gauntlets","slot":"arms","name":"Piston gauntlets","design":"pistons","rarity":"standard","set":"Freightworks","description":"Twin external pistons, reinforced knuckles, and bolted wrist guards."},
+    {"id":"blade-cuffs","slot":"arms","name":"Blade cuffs","design":"cuffs","rarity":"standard","set":"Roadborn","description":"Low-profile guards with swept outer blades and thin energy seams."},
+    {"id":"storm-coils","slot":"arms","name":"Storm coils","design":"coils","rarity":"rare","set":"Stormline","description":"Three luminous induction bands wrap each armored forearm.","unlock":{"stat":"orders","target":5,"label":"Complete 5 work orders"}},
+    {"id":"choir-talons","slot":"arms","name":"Choir talons","design":"talons","rarity":"epic","set":"Null Choir","description":"Three long mechanical talons extend from layered wrist shells.","unlock":{"stat":"level","target":35,"label":"Reach level 35"}},
+    {"id":"solar-hammers","slot":"arms","name":"Solar hammers","design":"hammers","rarity":"relic","set":"Sunbreaker","description":"Heavy hammer housings with radial energy studs and gold impact plates.","unlock":{"stat":"orders","target":60,"label":"Complete 60 work orders"}},
+    {"id":"road-greaves","slot":"legs","name":"Road greaves","design":"runners","rarity":"standard","set":"Roadborn","description":"Split shin fairings, knee lamps, and long armored toes."},
+    {"id":"freight-treads","slot":"legs","name":"Freight treads","design":"treads","rarity":"standard","set":"Freightworks","description":"Wide track guards with exposed tread blocks down each calf."},
+    {"id":"storm-striders","slot":"legs","name":"Storm striders","design":"jets","rarity":"rare","set":"Stormline","description":"Calf-mounted thruster pods and forked knee fins.","unlock":{"stat":"level","target":15,"label":"Reach level 15"}},
+    {"id":"choir-stilts","slot":"legs","name":"Choir stilts","design":"stilts","rarity":"epic","set":"Null Choir","description":"Long side spars and stepped crystalline knee guards.","unlock":{"stat":"routes","target":3,"label":"Clear 3 different expeditions"}},
+    {"id":"solar-sabatons","slot":"legs","name":"Solar sabatons","design":"sabatons","rarity":"relic","set":"Sunbreaker","description":"Overlapping gold-edged scales and broad ceremonial heel spurs.","unlock":{"stat":"contracts","target":60,"label":"Complete 60 contracts"}},
+    {"id":"vector-fins","slot":"back","name":"Vector fins","design":"fins","rarity":"standard","set":"Roadborn","description":"Two swept stabilizer panels mounted on an exposed spine."},
+    {"id":"freight-stacks","slot":"back","name":"Freight stacks","design":"stacks","rarity":"standard","set":"Freightworks","description":"Twin exhaust stacks with ribbed cooling collars and a central tank."},
+    {"id":"storm-wings","slot":"back","name":"Storm wings","design":"wings","rarity":"rare","set":"Stormline","description":"Four interceptor wings with luminous leading edges.","unlock":{"stat":"expeditions","target":1,"label":"Complete an expedition"}},
+    {"id":"choir-array","slot":"back","name":"Choir array","design":"array","rarity":"epic","set":"Null Choir","description":"Six staggered transmitter blades fan from a dark spinal rail.","unlock":{"stat":"routes","target":6,"label":"Clear all 6 different expeditions"}},
+    {"id":"solar-eclipse","slot":"back","name":"Solar eclipse","design":"eclipse","rarity":"relic","set":"Sunbreaker","description":"A monumental segmented sun ring with four outward solar blades.","unlock":{"stat":"expeditions","target":25,"label":"Complete 25 expeditions"}}
+  ]
+}

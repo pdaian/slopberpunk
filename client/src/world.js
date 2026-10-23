@@ -2,7 +2,7 @@
 import { random } from './math.js';
 
 export function validRoute(r,bounds) {
-  if(!r||![r.start,r.end].every(p=>Array.isArray(p)&&p.length===3&&p.every(Number.isFinite)&&Math.abs(p[0])<=bounds&&Math.abs(p[2])<=bounds&&p[1]>=0&&p[1]<=256)||!Number.isFinite(r.width)||r.width<2||r.width>40||!['stairs','ramp','hill'].includes(r.kind))return false;
+  if(!r||![r.start,r.end].every(p=>Array.isArray(p)&&p.length===3&&p.every(Number.isFinite)&&Math.abs(p[0])<=bounds&&Math.abs(p[2])<=bounds&&p[1]>=0&&p[1]<=256)||!Number.isFinite(r.width)||r.width<2||r.width>40||!['stairs','ramp','hill','street'].includes(r.kind))return false;
   const dx=r.end[0]-r.start[0],dz=r.end[2]-r.start[2],rise=Math.abs(r.end[1]-r.start[1]);
   return (dx===0)!==(dz===0)&&rise/Math.hypot(dx,dz)<=.5&&(r.kind!=='stairs'||Number.isInteger(r.steps)&&r.steps>0&&r.steps<=2048&&rise/r.steps<=.4);
 }
@@ -17,12 +17,22 @@ export function routeHeight(route, x, z) {
   return route.start[1] + (route.end[1] - route.start[1]) * progress;
 }
 
+export function buildingLevels(b, config) {
+  if (!b.interior) return [];
+  const h=config.height,levels=[0,h,2*h];
+  if (!b.rooftop) return [...levels,3*h];
+  const flights=Math.ceil((b.h-2*h)/h);
+  for(let i=1;i<=flights;i++)levels.push(i===flights?b.h:2*h+(b.h-2*h)*i/flights);
+  return levels;
+}
+
 export function buildingRoutes(b, config) {
   if (!b.interior) return [];
-  return [0, 1].map(floor => {
-    const side = floor === 0 ? 1 : -1, x = b.x + side * (b.w / 2 - 2.9);
+  const levels=buildingLevels(b,config);
+  return levels.slice(0,b.rooftop?-1:-2).map((y,floor) => {
+    const side = floor % 2 === 0 ? 1 : -1, x = b.x + side * (b.w / 2 - 2.9);
     return {id: `${b.id}-stairs-${floor}`, name: `${b.identity?.name || 'Building'} stairs`, kind: 'stairs',
-      start: [x, floor * config.height, b.z - side * (b.d / 2 - 4)], end: [x, (floor + 1) * config.height, b.z + side * (b.d / 2 - 4)], width: 3.8, steps: 32, indoor: true};
+      start: [x, y, b.z - side * (b.d / 2 - 4)], end: [x, levels[floor+1], b.z + side * (b.d / 2 - 4)], width: 3.8, steps: 32, indoor: true};
   });
 }
 
@@ -45,25 +55,40 @@ export function buildingSolids(b, config) {
     return solids;
   }
   const {height: h, wall: t, doorWidth: door, doorHeight} = config;
-  const base = h * 3, split = base + (b.h - base) * .55, setback = b.seed % 4 * .08;
-  add([0, (base + split) / 2, 0], [b.w, split - base, b.d], 'upper');
-  add([0, (split + b.h) / 2, 0], [b.w * (1-setback), b.h - split, b.d * (1-setback)], 'upper');
-  for (let floor = 0; floor < 3; floor++) {
-    const y = floor * h;
-    for (const side of [-1, 1]) {
-      add([side * (b.w - t) / 2, y + h / 2, 0], [t, h, b.d]);
-      for (const wing of [-1, 1]) add([wing * (b.w + door) / 4, y + h / 2, side * (b.d - t) / 2], [(b.w - door) / 2, h, t]);
-      add([0, y + (h + doorHeight) / 2, side * (b.d - t) / 2], [door, h - doorHeight, t]);
-      // Upper windows are glazed; only street doors are walk-through openings.
-      if (floor) add([0, y + doorHeight / 2, side * (b.d - t) / 2], [door, doorHeight, t], 'window');
+  const base = h * 3, split = base + (b.h - base) * .55, setback = b.seed % 4 * .08,levels=buildingLevels(b,config);
+  if(!b.rooftop){
+    add([0, (base + split) / 2, 0], [b.w, split - base, b.d], 'upper');
+    add([0, (split + b.h) / 2, 0], [b.w * (1-setback), b.h - split, b.d * (1-setback)], 'upper');
+  }
+  for (let floor = 0; floor < levels.length-(b.rooftop?0:1); floor++) {
+    const y = levels[floor];
+    if(floor<levels.length-1){
+      const height=levels[floor+1]-y;
+      for (const side of [-1, 1]) {
+        add([side * (b.w - t) / 2, y + height / 2, 0], [t, height, b.d]);
+        for (const wing of [-1, 1]) add([wing * (b.w + door) / 4, y + height / 2, side * (b.d - t) / 2], [(b.w - door) / 2, height, t]);
+        add([0, y + (height + doorHeight) / 2, side * (b.d - t) / 2], [door, height - doorHeight, t]);
+        // Upper windows are glazed; only street doors are walk-through openings.
+        if (floor) add([0, y + doorHeight / 2, side * (b.d - t) / 2], [door, doorHeight, t], 'window');
+      }
     }
     if (floor) {
-      const side = floor === 1 ? 1 : -1;
+      const side = floor % 2 === 1 ? 1 : -1;
       add([-side * 2.5, y - .175, 0], [b.w - 5, .35, b.d], 'floor');
       for (const end of [-1, 1]) add([side * (b.w / 2 - 2.5), y - .175, end * (b.d / 2 - 2)], [5, .35, 4], 'floor');
     }
-    const room=floor?(config.upperRooms?.[floor-1]||b.interior):b.interior;
-    for (const item of room.furniture) add([item.center[0], y + item.center[1], item.center[2]], item.size, item.kind);
+    if(floor<3){
+      const room=floor?(config.upperRooms?.[floor-1]||b.interior):b.interior;
+      for (const item of room.furniture) add([item.center[0], y + item.center[1], item.center[2]], item.size, item.kind);
+    }
+  }
+  if(b.rooftop){
+    for(const side of [-1,1]){
+      add([side*6,.6,b.d/2+1.2],[3,1.2,1.4],'street-fixture');
+      add([side*(b.w/2-.15),b.h+.45,0],[.3,.9,b.d],'parapet');
+      add([0,b.h+.45,side*(b.d/2-.15)],[b.w,.9,.3],'parapet');
+      for(const end of [-1,1])add([side*6,b.h+.6,end*5],[3,1.2,3],'roof-fixture');
+    }
   }
   return solids;
 }
@@ -74,9 +99,11 @@ export class World {
     this.buildings = [];
     this.cells = new Map();
     this.routes = [...(data.routes || [])];
-    if(this.routes.length>128||this.routes.some(r=>!validRoute(r,data.bounds)))throw new Error('Invalid city stairs, ramp, or hill. Check route endpoints, width, and slope.');
+    if(this.routes.length>128||this.routes.some(r=>!validRoute(r,data.bounds)))throw new Error('Invalid city street, stairs, ramp, or hill. Check route endpoints, width, and slope.');
     this.routeCells = new Map();
     this.discovered = new Set();
+    const rooftops=data.rooftops||[];
+    if(!Array.isArray(rooftops)||rooftops.length>32||rooftops.some(r=>!r||!Array.isArray(r.cell)||r.cell.length!==2||!r.cell.every(Number.isInteger)||!['market','archive','furnace','quiet','skybridge'].includes(r.kind)||![r.name,r.street].every(s=>typeof s==='string'&&s.length>0&&s.length<=48))||new Set(rooftops.map(r=>r.cell.join(','))).size!==rooftops.length)throw new Error('Invalid rooftop destination.');
     const g = data.buildingGrid, rand = random(data.seed);
     for (let x = g.min; x <= g.max; x++) for (let z = g.min; z <= g.max; z++) {
       const px = x * g.spacing + g.spacing / 2, pz = z * g.spacing + g.spacing / 2;
@@ -87,6 +114,8 @@ export class World {
       const b = { x: px, z: pz, w, d, h, shade: Math.floor(rand() * 4), accent: Math.floor(rand() * 4), seed: Math.floor(rand() * 999999) };
       b.id = `building-${x}-${z}`;
       b.interior = data.interiors?.rooms.length && b.seed % 5 !== 0 ? data.interiors.rooms[b.seed % data.interiors.rooms.length] : null;
+      b.rooftop = b.interior ? rooftops.find(r=>r.cell[0]===x&&r.cell[1]===z) || null : null;
+      b.levels = buildingLevels(b,data.interiors);
       b.identity = buildingIdentity(b, data);
       b.solids = buildingSolids(b, data.interiors);
       b.routes = buildingRoutes(b, data.interiors);
@@ -94,6 +123,8 @@ export class World {
       this.buildings.push(b);
       this.cells.set(`${x},${z}`, b);
     }
+    this.rooftops=this.buildings.filter(b=>b.rooftop);
+    if(data.interiors&&this.rooftops.length!==rooftops.length)throw new Error('Rooftop destination must reference a public building.');
     for (const route of this.routes) {
       const padding = route.width / 2, s = g.spacing;
       for (let x=Math.floor((Math.min(route.start[0],route.end[0])-padding)/s);x<=Math.floor((Math.max(route.start[0],route.end[0])+padding)/s);x++) for(let z=Math.floor((Math.min(route.start[2],route.end[2])-padding)/s);z<=Math.floor((Math.max(route.start[2],route.end[2])+padding)/s);z++) {
@@ -102,6 +133,9 @@ export class World {
     }
   }
   routesAt(x,z) { const s=this.data.buildingGrid.spacing;return this.routeCells.get(`${Math.floor(x/s)},${Math.floor(z/s)}`)||[]; }
+  streetAt(position) {
+    return this.routesAt(position[0],position[2]).find(r=>r.kind==='street'&&Math.abs((routeHeight(r,position[0],position[2])??-Infinity)-position[1])<.55)||null;
+  }
   inTutorial(position) {
     const area=this.data.tutorial;
     return Boolean(area&&Math.hypot(position[0]-area.center[0],position[2]-area.center[2])<=area.radius&&Math.abs(position[1]-area.center[1])<6);
@@ -153,7 +187,10 @@ export class World {
   }
   interiorAt(pos) {
     const s = this.data.buildingGrid.spacing, b = this.cells.get(`${Math.floor(pos[0] / s)},${Math.floor(pos[2] / s)}`);
-    return b?.interior && pos[1] >= 0 && pos[1] < this.data.interiors.height * 3 && Math.abs(pos[0] - b.x) < b.w / 2 && Math.abs(pos[2] - b.z) < b.d / 2 ? b : null;
+    return b?.interior && pos[1] >= 0 && pos[1] < b.levels.at(-1) && Math.abs(pos[0] - b.x) < b.w / 2 && Math.abs(pos[2] - b.z) < b.d / 2 ? b : null;
+  }
+  rooftopAt(pos) {
+    return this.rooftops.find(b=>pos[1]>=b.h-.05&&pos[1]<b.h+4&&Math.abs(pos[0]-b.x)<b.w/2&&Math.abs(pos[2]-b.z)<b.d/2)||null;
   }
   reveal(pos) {
     const s = this.data.cellSize, cx = Math.floor(pos[0] / s), cz = Math.floor(pos[2] / s);

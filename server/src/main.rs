@@ -6,6 +6,7 @@ mod config;
 mod death;
 mod dungeons;
 mod economy;
+mod forge;
 mod founders;
 mod ghostline;
 mod live_social;
@@ -159,6 +160,8 @@ struct Character {
     items: HashMap<String, u32>,
     #[serde(default)]
     equipment: HashMap<String, String>,
+    #[serde(default)]
+    forge: forge::State,
     #[serde(default)]
     buffs: HashMap<String, f64>,
     #[serde(default)]
@@ -325,6 +328,10 @@ struct InteriorRoom {
     furniture: Vec<InteriorFurniture>,
 }
 #[derive(Clone, Deserialize)]
+struct Rooftop {
+    cell: [i32; 2],
+}
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Interiors {
     height: f64,
@@ -347,6 +354,8 @@ struct Map {
     tutorial: tutorial::Area,
     building_grid: Grid,
     interiors: Option<Interiors>,
+    #[serde(default)]
+    rooftops: Vec<Rooftop>,
     platforms: Vec<Platform>,
     #[serde(default)]
     routes: Vec<terrain::Route>,
@@ -356,6 +365,7 @@ struct Map {
     graveyards: Vec<death::Graveyard>,
 }
 struct Content {
+    forge: forge::Catalog,
     morality: morality::Catalog,
     economy: economy::Catalog,
     dungeons: dungeons::Catalog,
@@ -390,6 +400,7 @@ impl Content {
                 "enemies",
                 "economy",
                 "morality",
+                "forge",
                 "npcs",
                 "intro",
                 "audio",
@@ -404,6 +415,7 @@ impl Content {
         let quests: Vec<Quest> = read_json(dir.join("quests.json"))?;
         let values: Vec<Value> = read_json(dir.join("quests.json"))?;
         let mut content = Self {
+            forge: read_json(dir.join("forge.json"))?,
             morality: read_json(dir.join("morality.json"))?,
             economy: read_json(dir.join("economy.json"))?,
             dungeons: read_json(dir.join("dungeons.json"))?,
@@ -427,10 +439,13 @@ impl Content {
         Ok(content)
     }
     fn validate(&self) -> io::Result<()> {
+        self.forge.validate()?;
         live_social::validate(&self.map)?;
         if self.map.routes.len() > 128 || self.map.routes.iter().any(|r| !r.valid(self.map.bounds))
         {
-            return Err(io::Error::other("Invalid city stairs, ramp, or hill"));
+            return Err(io::Error::other(
+                "Invalid city street, stairs, ramp, or hill",
+            ));
         }
         self.dungeons.validate(self)?;
         self.economy.validate(self)?;
@@ -514,6 +529,27 @@ impl Content {
                 ));
             }
         }
+        if self.map.rooftops.len() > 32
+            || self
+                .map
+                .rooftops
+                .iter()
+                .map(|r| r.cell)
+                .collect::<HashSet<_>>()
+                .len()
+                != self.map.rooftops.len()
+            || (!self.map.rooftops.is_empty() && {
+                let world = World::new(&self.map);
+                self.map.rooftops.iter().any(|r| {
+                    !world
+                        .cells
+                        .get(&(r.cell[0], r.cell[1]))
+                        .is_some_and(|b| b.rooftop)
+                })
+            })
+        {
+            return Err(io::Error::other("Invalid rooftop destination"));
+        }
         for q in &self.quests {
             if q.level > 60
                 || q.objective.count == 0
@@ -573,6 +609,7 @@ struct Building {
     width: f64,
     depth: f64,
     height: f64,
+    rooftop: bool,
     solids: Vec<Solid>,
 }
 struct World {
@@ -583,6 +620,24 @@ struct World {
 fn lcg(seed: &mut u32) -> f64 {
     *seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
     f64::from(*seed) / 4294967296.0
+}
+// Keep the first three floors unchanged; divide the remaining climb into safe flights.
+// Mirrored by buildingLevels in client/src/world.js.
+fn building_levels(height: f64, h: f64, rooftop: bool) -> Vec<f64> {
+    let mut levels = vec![0.0, h, 2.0 * h];
+    if rooftop {
+        let flights = ((height - 2.0 * h) / h).ceil() as u32;
+        for i in 1..=flights {
+            levels.push(if i == flights {
+                height
+            } else {
+                2.0 * h + (height - 2.0 * h) * f64::from(i) / f64::from(flights)
+            });
+        }
+    } else {
+        levels.push(3.0 * h);
+    }
+    levels
 }
 impl World {
     fn new(map: &Map) -> Self {
@@ -604,6 +659,9 @@ impl World {
                     lcg(&mut seed);
                 }
                 let decoration = (lcg(&mut seed) * 999999.0).floor() as usize;
+                let rooftop = decoration % 5 != 0
+                    && map.interiors.is_some()
+                    && map.rooftops.iter().any(|r| r.cell == [ix, iz]);
                 let mut solids = Vec::new();
                 let mut add = |center: Vec3, size: Vec3| {
                     solids.push(Solid {
@@ -620,49 +678,55 @@ impl World {
                     let base = h * 3.0;
                     let split = base + (height - base) * 0.55;
                     let setback = (decoration % 4) as f64 * 0.08;
-                    add(
-                        [0.0, (base + split) / 2.0, 0.0],
-                        [width, split - base, depth],
-                    );
-                    add(
-                        [0.0, (split + height) / 2.0, 0.0],
-                        [
-                            width * (1.0 - setback),
-                            height - split,
-                            depth * (1.0 - setback),
-                        ],
-                    );
-                    for floor in 0..3 {
-                        let y = f64::from(floor) * h;
-                        for side in [-1.0, 1.0] {
-                            add([side * (width - t) / 2.0, y + h / 2.0, 0.0], [t, h, depth]);
-                            for wing in [-1.0, 1.0] {
+                    let levels = building_levels(height, h, rooftop);
+                    if !rooftop {
+                        add(
+                            [0.0, (base + split) / 2.0, 0.0],
+                            [width, split - base, depth],
+                        );
+                        add(
+                            [0.0, (split + height) / 2.0, 0.0],
+                            [
+                                width * (1.0 - setback),
+                                height - split,
+                                depth * (1.0 - setback),
+                            ],
+                        );
+                    }
+                    let floors = if rooftop { levels.len() } else { 3 };
+                    for (floor, &y) in levels.iter().take(floors).enumerate() {
+                        if let Some(&ceiling) = levels.get(floor + 1) {
+                            let h = ceiling - y;
+                            for side in [-1.0, 1.0] {
+                                add([side * (width - t) / 2.0, y + h / 2.0, 0.0], [t, h, depth]);
+                                for wing in [-1.0, 1.0] {
+                                    add(
+                                        [
+                                            wing * (width + door) / 4.0,
+                                            y + h / 2.0,
+                                            side * (depth - t) / 2.0,
+                                        ],
+                                        [(width - door) / 2.0, h, t],
+                                    );
+                                }
                                 add(
                                     [
-                                        wing * (width + door) / 4.0,
-                                        y + h / 2.0,
+                                        0.0,
+                                        y + (h + room.door_height) / 2.0,
                                         side * (depth - t) / 2.0,
                                     ],
-                                    [(width - door) / 2.0, h, t],
+                                    [door, h - room.door_height, t],
                                 );
-                            }
-                            add(
-                                [
-                                    0.0,
-                                    y + (h + room.door_height) / 2.0,
-                                    side * (depth - t) / 2.0,
-                                ],
-                                [door, h - room.door_height, t],
-                            );
-                            if floor > 0 {
-                                add(
-                                    [0.0, y + room.door_height / 2.0, side * (depth - t) / 2.0],
-                                    [door, room.door_height, t],
-                                );
+                                if floor > 0 {
+                                    add(
+                                        [0.0, y + room.door_height / 2.0, side * (depth - t) / 2.0],
+                                        [door, room.door_height, t],
+                                    );
+                                }
                             }
                         }
                         if floor > 0 {
-                            let side = if floor == 1 { 1.0 } else { -1.0 };
+                            let side = if floor % 2 == 1 { 1.0 } else { -1.0 };
                             add([-side * 2.5, y - 0.175, 0.0], [width - 5.0, 0.35, depth]);
                             for end in [-1.0, 1.0] {
                                 add(
@@ -675,33 +739,43 @@ impl World {
                                 );
                             }
                         }
-                        let furniture = if floor > 0 {
-                            room.upper_rooms.get((floor - 1) as usize)
-                        } else {
-                            None
-                        }
-                        .unwrap_or(&room.rooms[decoration % room.rooms.len()]);
-                        for item in &furniture.furniture {
-                            add(
-                                [item.center[0], y + item.center[1], item.center[2]],
-                                item.size,
-                            );
+                        if floor < 3 {
+                            let furniture = if floor > 0 {
+                                room.upper_rooms.get(floor - 1)
+                            } else {
+                                None
+                            }
+                            .unwrap_or(&room.rooms[decoration % room.rooms.len()]);
+                            for item in &furniture.furniture {
+                                add(
+                                    [item.center[0], y + item.center[1], item.center[2]],
+                                    item.size,
+                                );
+                            }
                         }
                     }
-                    for floor in 0..2 {
-                        let side = if floor == 0 { 1.0 } else { -1.0 };
+                    if rooftop {
+                        for side in [-1.0, 1.0] {
+                            add([side * 6.0, 0.6, depth / 2.0 + 1.2], [3.0, 1.2, 1.4]);
+                            add(
+                                [side * (width / 2.0 - 0.15), height + 0.45, 0.0],
+                                [0.3, 0.9, depth],
+                            );
+                            add(
+                                [0.0, height + 0.45, side * (depth / 2.0 - 0.15)],
+                                [width, 0.9, 0.3],
+                            );
+                            for end in [-1.0, 1.0] {
+                                add([side * 6.0, height + 0.6, end * 5.0], [3.0, 1.2, 3.0]);
+                            }
+                        }
+                    }
+                    for floor in 0..if rooftop { levels.len() - 1 } else { 2 } {
+                        let side = if floor % 2 == 0 { 1.0 } else { -1.0 };
                         let stair_x = x + side * (width / 2.0 - 2.9);
                         routes.push(terrain::Route {
-                            start: [
-                                stair_x,
-                                f64::from(floor) * h,
-                                z - side * (depth / 2.0 - 4.0),
-                            ],
-                            end: [
-                                stair_x,
-                                f64::from(floor + 1) * h,
-                                z + side * (depth / 2.0 - 4.0),
-                            ],
+                            start: [stair_x, levels[floor], z - side * (depth / 2.0 - 4.0)],
+                            end: [stair_x, levels[floor + 1], z + side * (depth / 2.0 - 4.0)],
                             width: 3.8,
                             kind: "stairs".into(),
                             steps: 32,
@@ -718,6 +792,7 @@ impl World {
                         width,
                         depth,
                         height,
+                        rooftop,
                         solids,
                     },
                 );
@@ -790,7 +865,15 @@ impl World {
             )),
             &self.map.interiors,
         ) {
-            let y = (p[1] / room.height).floor().clamp(0.0, 2.0) * room.height;
+            let y = if b.rooftop {
+                building_levels(b.height, room.height, true)
+                    .into_iter()
+                    .rev()
+                    .find(|y| *y <= p[1] + 0.05)
+                    .unwrap_or(0.0)
+            } else {
+                (p[1] / room.height).floor().clamp(0.0, 2.0) * room.height
+            };
             for next in [[b.x, y, p[2]], [b.x, y, b.z]] {
                 if !self.collides(next, 0.65) {
                     return next;
@@ -811,10 +894,11 @@ impl World {
         for x in cx - 1..=cx + 1 {
             for z in cz - 1..=cz + 1 {
                 if let Some(b) = self.cells.get(&(x, z)) {
-                    if p[1] >= b.height
-                        || p[1] + height <= 0.0
-                        || (p[0] - b.x).abs() >= b.width / 2.0 + radius
-                        || (p[2] - b.z).abs() >= b.depth / 2.0 + radius
+                    if !b.rooftop
+                        && (p[1] >= b.height
+                            || p[1] + height <= 0.0
+                            || (p[0] - b.x).abs() >= b.width / 2.0 + radius
+                            || (p[2] - b.z).abs() >= b.depth / 2.0 + radius)
                     {
                         continue;
                     }
@@ -1380,6 +1464,7 @@ struct NewCharacter {
     name: String,
     race: String,
     faction: String,
+    appearance: Option<forge::Appearance>,
 }
 async fn create_character(
     State(app): State<Arc<App>>,
@@ -1429,6 +1514,7 @@ async fn create_character(
         weapon_rank: 0,
         items: HashMap::new(),
         equipment: HashMap::new(),
+        forge: forge::State::default(),
         buffs: HashMap::new(),
         mob_kills: HashMap::new(),
         talents: HashMap::new(),
@@ -1442,6 +1528,10 @@ async fn create_character(
         tutorial_stage: Some(tutorial::Stage::Move),
         social_tutorial: live_social::Tutorial::default(),
     };
+    if let Some(appearance) = new.appearance {
+        app.content.forge.check(&appearance, Some(&c))?;
+        c.forge.appearance = Some(appearance);
+    }
     let stats = Stats::new(&c, &app.content);
     c.health = stats.health;
     c.energy = stats.energy;
@@ -2219,6 +2309,11 @@ impl Shard {
         let cell = 80.0;
         let reach = (radius / cell).ceil() as i32;
         let mut delivered_chat = Vec::new();
+        let forge_scores: HashMap<_, _> = self
+            .players
+            .values()
+            .map(|p| (p.c.id.as_str(), self.content.forge.score(&p.c)))
+            .collect();
         let mut buckets: HashMap<(i32, i32), Vec<&Player>> = HashMap::new();
         for p in self.players.values() {
             buckets
@@ -2262,7 +2357,7 @@ impl Shard {
                 }
             }
             nearby.sort_unstable_by(|a, b| a.0.total_cmp(&b.0));
-            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"velocity":other.velocity,"grounded":other.grounded,"health":other.c.health,"ghost":death::is_spirit(&other.c),"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id)})).collect();
+            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"velocity":other.velocity,"grounded":other.grounded,"health":other.c.health,"ghost":death::is_spirit(&other.c),"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id),"forge":{"appearance":other.c.forge.appearance,"score":forge_scores.get(other.c.id.as_str())}})).collect();
             let enemies: Vec<_> = self
                 .enemies
                 .iter()
@@ -2345,7 +2440,8 @@ impl Shard {
                 .filter(|p| {
                     p.c.health > 0.0
                         && p.instance == e.instance
-                        && (p.instance.is_some() || !self.content.map.tutorial.contains(p.c.position))
+                        && (p.instance.is_some()
+                            || !self.content.map.tutorial.contains(p.c.position))
                         && (p.c.position[1] - e.position[1]).abs() < 4.0
                         && (e.instance.is_some()
                             || dist(p.c.position, e.position)
@@ -2377,7 +2473,8 @@ impl Shard {
                             next[axis] +=
                                 (p.c.position[axis] - e.position[axis]) / distance * e.speed * 0.05;
                             if !self.world.collides(next, 0.65)
-                                && (e.instance.is_some() || !self.content.map.tutorial.contains(next))
+                                && (e.instance.is_some()
+                                    || !self.content.map.tutorial.contains(next))
                                 && (e.event.is_none()
                                     || (self.world.floor(
                                         next[0],
@@ -2536,7 +2633,10 @@ impl Shard {
                     && data.map.tutorial.contains(p.c.position)
                     && matches!(a.kind.as_str(), "damage" | "stun" | "area" | "ghostline")
                 {
-                    notice(p, "This is a safe training area. Select the practice target and use Shoot, or leave the courtyard to fight.");
+                    notice(
+                        p,
+                        "This is a safe training area. Select the practice target and use Shoot, or leave the courtyard to fight.",
+                    );
                     return;
                 }
                 let target = self.enemies.iter().position(|e| {
@@ -3233,6 +3333,136 @@ mod tests {
         assert!(!w.visible([x, 0.0, z], [x, y, z]));
         assert!(!w.collides([x, 0.0, z], 0.65));
         assert!((w.ceiling([x, y - 3.0, z], y, 0.65, 2.1) - (y - 0.35 - 2.1)).abs() < 1e-7);
+    }
+    #[test]
+    fn elevated_streets_keep_lanes_and_underpasses_clear() {
+        let d = content();
+        let w = World::new(&d.map);
+        for route in d.map.routes.iter().filter(|r| r.kind == "street") {
+            assert!(route.valid(d.map.bounds));
+            let cross = if route.start[0] == route.end[0] { 0 } else { 2 };
+            for t in [0.25, 0.5, 0.75] {
+                for side in [-1.0, 0.0, 1.0] {
+                    let mut p = std::array::from_fn(|i| {
+                        route.start[i] + (route.end[i] - route.start[i]) * t
+                    });
+                    p[cross] += side * (route.width / 2.0 - 1.0);
+                    assert!(!w.collides(p, 0.65), "blocked street lane at {p:?}");
+                    assert!((w.floor(p[0], p[2], p[1] + 0.01, p[1] - 0.01) - p[1]).abs() < 1e-7);
+                    assert_eq!(w.clear_saved_position(p), p);
+                    let underpass = [p[0], 0.0, p[2]];
+                    assert!(!w.collides(underpass, 0.65));
+                    assert_eq!(w.clear_saved_position(underpass), underpass);
+                    let inside = [p[0], p[1] - 0.2, p[2]];
+                    assert!(w.collides(inside, 0.65));
+                    let recovered = w.clear_saved_position(inside);
+                    assert!(!w.collides(recovered, 0.65));
+                    assert!((recovered[1] - p[1]).abs() < 1e-7);
+                    assert!(!w.visible([p[0], p[1] - 4.0, p[2]], p));
+                    assert!(
+                        (w.ceiling([p[0], p[1] - 3.0, p[2]], p[1], 0.65, 2.1)
+                            - (p[1] - 0.35 - 2.1))
+                            .abs()
+                            < 1e-7
+                    );
+                }
+            }
+        }
+    }
+    #[test]
+    fn rooftop_destinations_connect_to_the_street_and_preserve_saved_positions() {
+        let d = content();
+        let w = World::new(&d.map);
+        assert_eq!(w.cells.values().filter(|b| b.rooftop).count(), 5);
+        for roof in &d.map.rooftops {
+            let b = &w.cells[&(roof.cell[0], roof.cell[1])];
+            let mut routes: Vec<_> = w
+                .routes_at(b.x, b.z)
+                .iter()
+                .filter(|r| {
+                    [r.start, r.end].iter().all(|p| {
+                        (p[0] - b.x).abs() < b.width / 2.0 && (p[2] - b.z).abs() < b.depth / 2.0
+                    })
+                })
+                .collect();
+            routes.sort_by(|a, b| a.start[1].total_cmp(&b.start[1]));
+            let levels = building_levels(b.height, d.map.interiors.as_ref().unwrap().height, true);
+            assert_eq!(routes.len(), levels.len() - 1);
+            assert!(routes.iter().all(|r| r.valid(d.map.bounds)));
+            let start = [b.x, 0.0, b.z + b.depth / 2.0 + 3.0];
+            let mut path = vec![start, [b.x, 0.0, routes[0].start[2]]];
+            for route in &routes {
+                path.extend([route.start, route.end]);
+            }
+            path.extend([
+                [b.x, b.height, routes.last().unwrap().end[2]],
+                [b.x, b.height, b.z],
+            ]);
+            let mut p = start;
+            for end in path.iter().skip(1).chain(path.iter().rev().skip(1)) {
+                let axis = if p[0] == end[0] { 2 } else { 0 };
+                assert_eq!(p[2 - axis], end[2 - axis]);
+                while (p[axis] - end[axis]).abs() > 1e-7 {
+                    p = w
+                        .step_position(
+                            p,
+                            axis,
+                            (end[axis] - p[axis]).clamp(-0.25, 0.25),
+                            true,
+                            0.65,
+                            2.1,
+                        )
+                        .expect("blocked street-to-roof route");
+                    assert!((w.floor(p[0], p[2], p[1] + 0.1, p[1] - 0.2) - p[1]).abs() < 1e-7);
+                }
+                assert!((p[1] - end[1]).abs() < 1e-7);
+            }
+            assert_eq!(p, start);
+            assert_eq!(
+                w.clear_saved_position([b.x, b.height, b.z]),
+                [b.x, b.height, b.z]
+            );
+            assert!(!w.visible([b.x, 0.0, b.z], [b.x, b.height, b.z]));
+            for side in [-1.0, 1.0] {
+                for blocked in [
+                    [b.x + side * 6.0, 0.0, b.z + b.depth / 2.0 + 1.2],
+                    [b.x + side * 6.0, b.height, b.z + 5.0],
+                    [b.x + side * (b.width / 2.0 - 0.2), b.height, b.z],
+                    [b.x, b.height, b.z + side * (b.depth / 2.0 - 0.2)],
+                    [b.x + side * (b.width / 2.0 - 0.2), levels[3], b.z],
+                ] {
+                    assert!(w.collides(blocked, 0.65));
+                    let recovered = w.clear_saved_position(blocked);
+                    assert!(!w.collides(recovered, 0.65));
+                    assert_eq!(recovered[1], blocked[1]);
+                    assert!(
+                        (w.floor(
+                            recovered[0],
+                            recovered[2],
+                            recovered[1] + 0.1,
+                            recovered[1] - 0.2
+                        ) - recovered[1])
+                            .abs()
+                            < 1e-7
+                    );
+                }
+            }
+        }
+    }
+    #[test]
+    fn rooftop_content_rejects_duplicates_and_missing_public_buildings() {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../client");
+        let mut d = Content::load(&path).unwrap();
+        let rooftops = d.map.rooftops.clone();
+        d.map.rooftops.push(rooftops[0].clone());
+        assert!(d.validate().is_err());
+        for cell in [[0, 0], [999, 999]] {
+            d.map.rooftops = vec![Rooftop { cell }];
+            assert!(d.validate().is_err());
+        }
+        d.map.rooftops = rooftops;
+        d.map.interiors = None;
+        assert!(d.validate().is_err());
     }
     #[test]
     fn content_updates_do_not_leave_saved_positions_inside_geometry() {

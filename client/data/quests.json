@@ -23,8 +23,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -37,8 +37,8 @@
         "type": "interact",
         "target": "relay-node",
         "count": 1,
-        "text": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and press E, then return to Iri.",
-        "voice": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and press E, then return to Iri."
+        "text": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and use it, then return to Iri.",
+        "voice": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and use it, then return to Iri."
       }
     ],
     "story": {
@@ -731,8 +731,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -745,8 +745,8 @@
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
-        "text": "Register the witnesses who kept the kitchen open. Select the marked terminal and press E, then return to Sera.",
-        "voice": "Register the witnesses who kept the kitchen open. Select the marked terminal and press E, then return to Sera."
+        "text": "Register the witnesses who kept the kitchen open. Select the marked terminal and use it, then return to Sera.",
+        "voice": "Register the witnesses who kept the kitchen open. Select the marked terminal and use it, then return to Sera."
       }
     ],
     "story": {
@@ -1439,8 +1439,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -1453,8 +1453,8 @@
         "type": "interact",
         "target": "forge",
         "count": 1,
-        "text": "Record the bypass repair at the public forge. Select the marked terminal and press E, then return to Bram.",
-        "voice": "Record the bypass repair at the public forge. Select the marked terminal and press E, then return to Bram."
+        "text": "Record the bypass repair at the public forge. Select the marked terminal and use it, then return to Bram.",
+        "voice": "Record the bypass repair at the public forge. Select the marked terminal and use it, then return to Bram."
       }
     ],
     "story": {
@@ -2147,8 +2147,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -2161,8 +2161,8 @@
         "type": "interact",
         "target": "choir-array",
         "count": 1,
-        "text": "Connect the kitchen to the independent warning circuit. Select the marked terminal and press E, then return to Ves.",
-        "voice": "Connect the kitchen to the independent warning circuit. Select the marked terminal and press E, then return to Ves."
+        "text": "Connect the kitchen to the independent warning circuit. Select the marked terminal and use it, then return to Ves.",
+        "voice": "Connect the kitchen to the independent warning circuit. Select the marked terminal and use it, then return to Ves."
       }
     ],
     "story": {
@@ -2855,8 +2855,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -2869,8 +2869,8 @@
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and press E, then return to Oru.",
-        "voice": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and press E, then return to Oru."
+        "text": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and use it, then return to Oru.",
+        "voice": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and use it, then return to Oru."
       }
     ],
     "story": {
@@ -3167,8 +3167,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -3181,8 +3181,8 @@
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
-        "text": "Record your chosen name beside the repair record. Select the marked terminal and press E, then return to Oru.",
-        "voice": "Record your chosen name beside the repair record. Select the marked terminal and press E, then return to Oru."
+        "text": "Record your chosen name beside the repair record. Select the marked terminal and use it, then return to Oru.",
+        "voice": "Record your chosen name beside the repair record. Select the marked terminal and use it, then return to Oru."
       }
     ],
     "story": {
@@ -3479,8 +3479,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -3493,8 +3493,8 @@
         "type": "interact",
         "target": "relay-node",
         "count": 1,
-        "text": "Leave your new introduction on the neighborhood channel. Select the marked terminal and press E, then return to Oru.",
-        "voice": "Leave your new introduction on the neighborhood channel. Select the marked terminal and press E, then return to Oru."
+        "text": "Leave your new introduction on the neighborhood channel. Select the marked terminal and use it, then return to Oru.",
+        "voice": "Leave your new introduction on the neighborhood channel. Select the marked terminal and use it, then return to Oru."
       }
     ],
     "story": {
@@ -3791,8 +3791,8 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and press E to read the shutoff notice."
+        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
+        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
       },
       {
         "type": "event",
@@ -3805,8 +3805,8 @@
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Check the restored water supply with the kitchen growers. Select the marked terminal and press E, then return to Oru.",
-        "voice": "Check the restored water supply with the kitchen growers. Select the marked terminal and press E, then return to Oru."
+        "text": "Check the restored water supply with the kitchen growers. Select the marked terminal and use it, then return to Oru.",
+        "voice": "Check the restored water supply with the kitchen growers. Select the marked terminal and use it, then return to Oru."
       }
     ],
     "story": {
@@ -4379,15 +4379,15 @@
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Select Commons water meter and press E to compare the records.",
-        "voice": "Select Commons water meter and press E to compare the records."
+        "text": "Select Commons water meter and use it to compare the records.",
+        "voice": "Select Commons water meter and use it to compare the records."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Select Lantern kitchen records and press E to save the differences between the records.",
-        "voice": "Select Lantern kitchen records and press E to save the differences between the records."
+        "text": "Select Lantern kitchen records and use it to save the differences between the records.",
+        "voice": "Select Lantern kitchen records and use it to save the differences between the records."
       }
     ],
     "story": {
@@ -4423,8 +4423,8 @@
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Select Commons water meter and press E to read the record before the emergency.",
-        "voice": "Select Commons water meter and press E to read the record before the emergency."
+        "text": "Select Commons water meter and use it to read the record before the emergency.",
+        "voice": "Select Commons water meter and use it to read the record before the emergency."
       },
       {
         "type": "event",
@@ -4437,8 +4437,8 @@
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Select Commons water meter and press E to save the repair results.",
-        "voice": "Select Commons water meter and press E to save the repair results."
+        "text": "Select Commons water meter and use it to save the repair results.",
+        "voice": "Select Commons water meter and use it to save the repair results."
       }
     ],
     "story": {
@@ -4474,8 +4474,8 @@
         "type": "interact",
         "target": "pantry-ledger",
         "count": 1,
-        "text": "Select Kitchen schedule board and press E to post the work schedule.",
-        "voice": "Select Kitchen schedule board and press E to post the work schedule."
+        "text": "Select Kitchen schedule board and use it to post the work schedule.",
+        "voice": "Select Kitchen schedule board and use it to post the work schedule."
       },
       {
         "type": "hold",
@@ -4488,8 +4488,8 @@
         "type": "interact",
         "target": "pantry-ledger",
         "count": 1,
-        "text": "Select Kitchen schedule board and press E to confirm who takes the next shift.",
-        "voice": "Select Kitchen schedule board and press E to confirm who takes the next shift."
+        "text": "Select Kitchen schedule board and use it to confirm who takes the next shift.",
+        "voice": "Select Kitchen schedule board and use it to confirm who takes the next shift."
       }
     ],
     "story": {
@@ -4529,13 +4529,13 @@
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Select Cooling priority console and press E to compare the records."
+        "text": "Select Cooling priority console and use it to compare the records."
       },
       {
         "type": "interact",
         "target": "glass-witness",
         "count": 1,
-        "text": "Select Unsorted witness shelf and press E to save the differences between the records."
+        "text": "Select Unsorted witness shelf and use it to save the differences between the records."
       }
     ]
   },
@@ -4566,7 +4566,7 @@
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Select Cooling priority console and press E to read the record before the emergency."
+        "text": "Select Cooling priority console and use it to read the record before the emergency."
       },
       {
         "type": "event",
@@ -4578,7 +4578,7 @@
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Select Cooling priority console and press E to save the repair results."
+        "text": "Select Cooling priority console and use it to save the repair results."
       }
     ]
   },
@@ -4609,7 +4609,7 @@
         "type": "interact",
         "target": "consent-desk",
         "count": 1,
-        "text": "Select Glass Steps permission desk and press E to post the work schedule."
+        "text": "Select Glass Steps permission desk and use it to post the work schedule."
       },
       {
         "type": "hold",
@@ -4621,7 +4621,7 @@
         "type": "interact",
         "target": "consent-desk",
         "count": 1,
-        "text": "Select Glass Steps permission desk and press E to confirm who takes the next shift."
+        "text": "Select Glass Steps permission desk and use it to confirm who takes the next shift."
       }
     ]
   },
@@ -4656,13 +4656,13 @@
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Select Copper heating valve and press E to compare the records."
+        "text": "Select Copper heating valve and use it to compare the records."
       },
       {
         "type": "interact",
         "target": "cold-flats",
         "count": 1,
-        "text": "Select Occupied flats register and press E to save the differences between the records."
+        "text": "Select Occupied flats register and use it to save the differences between the records."
       }
     ]
   },
@@ -4693,7 +4693,7 @@
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Select Copper heating valve and press E to read the record before the emergency."
+        "text": "Select Copper heating valve and use it to read the record before the emergency."
       },
       {
         "type": "event",
@@ -4705,7 +4705,7 @@
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Select Copper heating valve and press E to save the repair results."
+        "text": "Select Copper heating valve and use it to save the repair results."
       }
     ]
   },
@@ -4736,7 +4736,7 @@
         "type": "interact",
         "target": "shift-charter",
         "count": 1,
-        "text": "Select Copper Walk shift rules and press E to post the work schedule."
+        "text": "Select Copper Walk shift rules and use it to post the work schedule."
       },
       {
         "type": "hold",
@@ -4748,7 +4748,7 @@
         "type": "interact",
         "target": "shift-charter",
         "count": 1,
-        "text": "Select Copper Walk shift rules and press E to confirm who takes the next shift."
+        "text": "Select Copper Walk shift rules and use it to confirm who takes the next shift."
       }
     ]
   },
@@ -4783,13 +4783,13 @@
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Select Handrail warning control and press E to compare the records."
+        "text": "Select Handrail warning control and use it to compare the records."
       },
       {
         "type": "interact",
         "target": "silent-warning",
         "count": 1,
-        "text": "Select Court warning log and press E to save the differences between the records."
+        "text": "Select Court warning log and use it to save the differences between the records."
       }
     ]
   },
@@ -4820,7 +4820,7 @@
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Select Handrail warning control and press E to read the record before the emergency."
+        "text": "Select Handrail warning control and use it to read the record before the emergency."
       },
       {
         "type": "event",
@@ -4832,7 +4832,7 @@
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Select Handrail warning control and press E to save the repair results."
+        "text": "Select Handrail warning control and use it to save the repair results."
       }
     ]
   },
@@ -4863,7 +4863,7 @@
         "type": "interact",
         "target": "court-assembly",
         "count": 1,
-        "text": "Select Listening Courts noticeboard and press E to post the work schedule."
+        "text": "Select Listening Courts noticeboard and use it to post the work schedule."
       },
       {
         "type": "hold",
@@ -4875,7 +4875,7 @@
         "type": "interact",
         "target": "court-assembly",
         "count": 1,
-        "text": "Select Listening Courts noticeboard and press E to confirm who takes the next shift."
+        "text": "Select Listening Courts noticeboard and use it to confirm who takes the next shift."
       }
     ]
   },
@@ -4910,13 +4910,13 @@
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Select Service-pass counter and press E to compare the records."
+        "text": "Select Service-pass counter and use it to compare the records."
       },
       {
         "type": "interact",
         "target": "night-platform",
         "count": 1,
-        "text": "Select Night platform register and press E to save the differences between the records."
+        "text": "Select Night platform register and use it to save the differences between the records."
       }
     ]
   },
@@ -4947,7 +4947,7 @@
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Select Service-pass counter and press E to read the record before the emergency."
+        "text": "Select Service-pass counter and use it to read the record before the emergency."
       },
       {
         "type": "event",
@@ -4959,7 +4959,7 @@
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Select Service-pass counter and press E to save the repair results."
+        "text": "Select Service-pass counter and use it to save the repair results."
       }
     ]
   },
@@ -4990,7 +4990,7 @@
         "type": "interact",
         "target": "last-connection",
         "count": 1,
-        "text": "Select Last Connection duty board and press E to post the work schedule."
+        "text": "Select Last Connection duty board and use it to post the work schedule."
       },
       {
         "type": "hold",
@@ -5002,7 +5002,7 @@
         "type": "interact",
         "target": "last-connection",
         "count": 1,
-        "text": "Select Last Connection duty board and press E to confirm who takes the next shift."
+        "text": "Select Last Connection duty board and use it to confirm who takes the next shift."
       }
     ]
   }

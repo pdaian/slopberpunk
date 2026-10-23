@@ -15,9 +15,13 @@ import { worldEventViews } from '../src/events.js';
 import { dungeonPosition } from '../src/dungeons.js';
 import { collectTargets, targetProblem, targetBounds, visibleTargets, pickTarget, cycleTarget } from '../src/targeting.js';
 import { storyDialogue, questThread, campaignLead, campaignPanel } from '../src/story.js';
+import { controlLabel, inputText, inputPrompt, updateInputPrompts } from '../src/input-prompts.js';
+import { founderXpReward } from '../src/founders.js';
+import { decisionPanel, decisionOutcome } from '../src/morality.js';
+import { collection, forgeRank } from '../src/forge.js';
 
 const read = name => JSON.parse(readFileSync(new URL(`../data/${name}.json`, import.meta.url)));
-const data = Object.fromEntries(['world', 'rules', 'races', 'factions', 'talents', 'dungeons', 'quests', 'npcs', 'events', 'abilities', 'lore', 'citylife'].map(n => [n, read(n)]));
+const data = Object.fromEntries(['world', 'rules', 'races', 'factions', 'talents', 'dungeons', 'quests', 'npcs', 'events', 'abilities', 'lore', 'citylife', 'morality', 'forge'].map(n => [n, read(n)]));
 const world = new World(data.world);
 const character = () => ({ id: 'runner', position: [0, 0, 64], yaw: 0, health: 0, energy: 0, gold: 95, level: 0, race: 'human', talents: {}, death: { corpse: [0, 0, 32], graveyard: 'commons-rest', released: false, releaseAt: 15, goldLost: 5 } });
 
@@ -108,12 +112,12 @@ test('fallen-body geometry remains finite at both quality levels', () => {
 
 // Exercise application wiring in memory; this is not a browser/WebGL acceptance test.
 function application(c) {
-  const nodes = new Map(), sent = [], spoken = [];
+  const nodes = new Map(), promptNodes = new Map(), sent = [], spoken = [];
   let sectionReads = [];
   const node = selector => {
     if (!nodes.has(selector)) {
       const classes = new Set();
-      nodes.set(selector, { hidden: true, open: false, textContent: '', innerHTML: '', scrollTop: 0,
+      nodes.set(selector, { hidden: true, open: false, textContent: '', innerHTML: '', scrollTop: 0, dataset: {}, querySelectorAll: () => [],
         classList: { toggle: (key, on) => on ? classes.add(key) : classes.delete(key), remove: key => classes.delete(key) },
         focus() {}, showModal() { this.open = true; }, close() { this.open = false; }, setAttribute() {},
       });
@@ -122,17 +126,18 @@ function application(c) {
   };
   const simulation = new Prediction(data, world, c);
   const context = { fixtureData: data, fixtureWorld: world, fixtureSimulation: simulation, sent, spoken,
-    document: { querySelector: node, querySelectorAll: selector => selector === '[data-story-section]' ? sectionReads.shift() || [] : [] },
+    document: { querySelector: node, querySelectorAll: selector => selector === '[data-story-section]' ? sectionReads.shift() || [] : promptNodes.get(selector) || [] },
     setTimeout() {}, clearTimeout() {},
     matchMedia: () => ({ matches: true }), WorldClock: class { now() { return 18000; } sync() {} },
     distance, mix3, clamp, isSpirit, recoveryView, bearing, openingGuide, questView, questDestination, objectiveText,
-    storyDialogue, questThread, campaignLead, campaignPanel,
+    storyDialogue, questThread, campaignLead, campaignPanel, controlLabel, inputText, inputPrompt, updateInputPrompts,
+    founderXpReward, decisionPanel, decisionOutcome, collection, forgeRank,
     worldEventViews, collectTargets, targetProblem, targetBounds, visibleTargets, pickTarget, cycleTarget, availableQuest, esc: escapeHtml,
   };
   let source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8').replace(/^import .*;$/gm, '');
   source = source.slice(0, source.lastIndexOf('boot().catch'));
-  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;audio={stopVoice(){},speak(...args){spoken.push(args);}};input={clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map()};state='playing';globalThis.harness={inputBlocked,setChat(value){liveChat=value;},setScreen(value){state=value;},menu(){return input.menu;},perform,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
-  return { ...context.harness, node, sent, spoken, simulation, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
+  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;audio={stopVoice(){},speak(...args){spoken.push(args);}};input={lastDevice:'keyboard',clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map()};state='playing';globalThis.harness={inputBlocked,setChat(value){liveChat=value;},setScreen(value){state=value;},setDevice(value){input.lastDevice=value;},menu(){return input.menu;},perform,showJournal,questCard,nextQuestGuide,guideRegion,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
+  return { ...context.harness, node, sent, spoken, simulation, prompts(selector,values){promptNodes.set(selector,values);}, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
 }
 
 test('chat focus and death independently keep gameplay input blocked across panel closing', () => {
@@ -152,14 +157,84 @@ test('story controls open the current account and guidance continues after the k
   assert.ok(app.node('#dialog-content').innerHTML.includes(data.lore.campaign.premise));
   app.closePanel(); app.updateStoryGuide();
   assert.equal(app.node('#story-guide').hidden, false);
-  assert.equal(app.node('#campaign-lead').hidden, true);
+  assert.equal(app.node('#quest-map').hidden, false);
   c.completed.push('relay-00', 'human-00', 'neighborhood-market-00', 'neighborhood-market-01', 'neighborhood-market-02');
   app.updateStoryGuide();
-  assert.equal(app.node('#story-guide').hidden, true);
-  assert.equal(app.node('#campaign-lead').hidden, false);
-  assert.match(app.node('#campaign-chapter').textContent, /2\/5/);
-  assert.match(app.node('#campaign-lead').textContent, /level 2/);
+  assert.equal(app.node('#story-guide').hidden, false);
+  assert.equal(app.node('#quest-map').hidden, true,'locked quests do not send players to an unusable destination');
+  assert.match(app.node('#story-instruction').textContent, /level 2/);
+  c.level=2;app.updateStoryGuide();
+  assert.equal(app.node('#quest-map').hidden,false,'the same tracker continues after the opening');
+  assert.equal(app.nextQuestGuide().destination.id,data.quests.find(q=>q.id==='relay-01').giver);
   assert.equal(app.sent.length, 0, 'opening the story never sends a reward or progression action');
+});
+
+test('the journal opens to the same next step as the HUD, with optional lessons collapsed',()=>{
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:[]},app=application(c);
+  app.updateStoryGuide();app.perform('journal');
+  const html=app.node('#dialog-content').innerHTML;
+  assert.equal(app.node('#dialog-title').textContent,'Quests');
+  assert.ok(html.includes(escapeHtml(app.node('#story-instruction').textContent)));
+  assert.equal((html.match(/<article/g)||[]).length,1,'the default journal presents one destination');
+  assert.match(html,/<details[^>]*data-story-section="journal-more"\s*>/);
+  assert.match(html,/<details[^>]*data-story-section="social-lesson"\s*>/);
+  assert.doesNotMatch(html,/Your investigation/,'story history is available through More');
+  app.showJournal('active');assert.match(app.node('#dialog-content').innerHTML,/No quests in progress/);
+  app.closePanel();app.perform('journal');
+  assert.match(app.node('#dialog-content').innerHTML,/class="selected"[^>]*data-id="next"/);
+  assert.equal(app.sent.length,0);
+});
+
+test('quest cards expose acceptance and final choices only at the correct stage and contact',()=>{
+  const q=data.quests.find(q=>q.id==='relay-00');
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:[]},app=application(c);
+  const before=structuredClone(c),offer=app.questCard(q,c,true);
+  assert.ok(offer.indexOf('data-do="quest-accept"')<offer.indexOf('<details'),'acceptance does not require opening the full briefing');
+  assert.doesNotMatch(app.questCard(q,c),/data-do="quest-accept"/);
+  assert.doesNotMatch(offer,/data-do="quest-complete"/);
+  assert.deepEqual(c,before);
+  c.activeQuests[q.id]=0;c.questStages={[q.id]:{index:1,progress:0}};
+  const active=app.questCard(q,c,true);
+  assert.ok(active.slice(0,active.indexOf('<details')).includes(escapeHtml(q.steps[1].text)));
+  assert.doesNotMatch(active,/data-do="quest-accept"|data-do="quest-complete"/);
+  c.activeQuests[q.id]=q.objective.count;c.questStages[q.id].index=q.steps.length;
+  const ready=app.questCard(q,c,true);
+  assert.match(ready,/READY TO FINISH/);
+  assert.equal((ready.match(/data-do="quest-complete"/g)||[]).length,2);
+  assert.ok(ready.indexOf('data-do="quest-complete"')<ready.indexOf('class="quest-details"'));
+  assert.doesNotMatch(app.questCard(q,c),/data-do="quest-complete"/,'remote journal views cannot submit a settlement');
+  c.completed.push(q.id);delete c.activeQuests[q.id];delete c.questStages[q.id];
+  assert.doesNotMatch(app.questCard(q,c,true),/data-do="quest-accept"|data-do="quest-complete"/);
+  assert.equal(app.sent.length,0,'rendering a quest never changes saved progress');
+});
+
+test('quest snapshots retain the selected journal view and put ready quests first',()=>{
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{'relay-00':0,'human-00':0},completed:[]},app=application(c);
+  app.showJournal('active');
+  const saved=structuredClone(c);saved.activeQuests['human-00']=1;
+  app.onSnapshot({character:saved,time:10,worldEvents:[]});
+  const html=app.node('#dialog-content').innerHTML;
+  assert.match(html,/class="selected"[^>]*data-id="active"/);
+  assert.ok(html.indexOf(data.quests.find(q=>q.id==='human-00').title)<html.indexOf(data.quests.find(q=>q.id==='relay-00').title));
+  app.closePanel();app.perform('journal');
+  assert.match(app.node('#dialog-content').innerHTML,/class="selected"[^>]*data-id="next"/);
+});
+
+test('later quest guidance follows field work back to its contact and handles the completed story',()=>{
+  const q=data.quests.find(q=>q.id==='relay-30');
+  const c={...character(),health:100,death:undefined,faction:'relay',level:60,activeQuests:{[q.id]:0},completed:data.quests.filter(q=>q.id!=='relay-30').map(q=>q.id)},app=application(c);
+  app.updateStoryGuide();
+  assert.equal(app.guideRegion(app.nextQuestGuide()),'basin');
+  assert.equal(app.node('#quest-map').hidden,false);
+  c.activeQuests[q.id]=q.objective.count;app.updateStoryGuide();
+  assert.equal(app.guideRegion(app.nextQuestGuide()),'city');
+  assert.equal(app.nextQuestGuide().destination.id,q.giver);
+  assert.match(app.node('#story-instruction').textContent,/Return to/);
+  c.completed.push(q.id);delete c.activeQuests[q.id];app.updateStoryGuide();
+  assert.equal(app.node('#quest-map').hidden,true);
+  assert.match(app.node('#story-instruction').textContent,/Main story complete/);
+  app.perform('journal');assert.match(app.node('#dialog-content').innerHTML,/Main story complete/);
+  assert.equal(app.sent.length,0);
 });
 
 test('a new chapter preserves expanded evidence and summary focus by identity', () => {
@@ -180,6 +255,16 @@ test('a new chapter preserves expanded evidence and summary focus by identity', 
   assert.equal(app.node('#panel-dialog').scrollTop, 300);
 });
 
+test('authoritative milestones announce newly earned frame parts once',()=>{
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:data.quests.slice(0,7).map(q=>q.id)},app=application(c);
+  const saved=structuredClone(c);saved.completed.push(data.quests[7].id);
+  app.onSnapshot({character:saved,serverTime:18000});
+  assert.match(app.node('#toast').textContent,/FRAME PART EARNED · Storm reactor/);
+  assert.equal(app.simulation.character.forge,undefined,'earning a cosmetic does not silently equip it');
+  app.node('#toast').textContent='';app.onSnapshot({character:structuredClone(saved),serverTime:18001});
+  assert.equal(app.node('#toast').textContent,'','repeated snapshots cannot repeat the award');
+});
+
 test('tutorial HUD, journal, selection, and snapshots hand off to the existing story', () => {
   const area=data.world.tutorial;
   const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:[],tutorialStage:'combat',position:[...area.spawn]};
@@ -187,8 +272,9 @@ test('tutorial HUD, journal, selection, and snapshots hand off to the existing s
   app.updateStoryGuide();
   assert.equal(app.node('#campaign-chapter').textContent,'TUTORIAL · 3/4');
   assert.match(app.node('#story-instruction').textContent,/practice target/);
-  assert.equal(app.node('#story-social').hidden,true);
-  app.perform('story');
+  assert.equal(app.node('#story-help').open,true);
+  assert.equal(app.node('#ghostline-status').hidden,true,'Ghostline cannot cover the tutorial');
+  app.perform('journal');
   assert.match(app.node('#dialog-content').innerHTML,/First Steps Courtyard/);
   app.closePanel();app.select(`practice:${area.target}`);app.perform('ability:arc');
   assert.equal(app.sent.at(-1).target,area.target);
@@ -199,9 +285,31 @@ test('tutorial HUD, journal, selection, and snapshots hand off to the existing s
   assert.equal(c.tutorialStage,'combat','the client waits for server confirmation before leaving');
   const saved={...c,position:[...data.world.spawn]};delete saved.tutorialStage;
   app.onSnapshot({character:saved,time:10,worldEvents:[]});app.updateStoryGuide();
-  assert.equal(app.node('#campaign-chapter').textContent,'MAIN STORY · 1/5');
+  assert.equal(app.node('#campaign-chapter').textContent,'MAIN STORY');
+  assert.equal(app.node('#story-help').open,false);
   assert.match(app.node('#story-instruction').textContent,/Iri/);
+  assert.equal(app.node('#ghostline-status').hidden,false,'Ghostline returns after the server ends training');
   assert.equal(app.selectedTarget(),null);
+});
+
+test('tutorial prompts change in both HUD and an open journal without replacing the panel',()=>{
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:[],tutorialStage:'move'};
+  const app=application(c),hint={textContent:''};
+  app.perform('journal');app.prompts('[data-tutorial-hint]',[hint]);
+  const panelHtml=app.node('#dialog-content').innerHTML;app.node('#panel-dialog').scrollTop=150;
+  for(const stage of ['move','interact','combat','exit']){
+    c.tutorialStage=stage;
+    for(const device of ['gamepad','keyboard','touch']){
+      app.setDevice(device);app.updateStoryGuide();
+      const expected=openingGuide(c,data,[],device).hint;
+      assert.equal(app.node('#story-hint').textContent,expected);
+      assert.equal(hint.textContent,expected);
+      assert.equal(app.node('#ghostline-status').hidden,true);
+      assert.equal(app.node('#dialog-content').innerHTML,panelHtml);
+      assert.equal(app.node('#panel-dialog').scrollTop,150);
+    }
+  }
+  assert.equal(app.sent.length,0,'device changes never send progression actions');
 });
 
 test('the first tutorial instruction is narrated after the cinematic finishes', () => {

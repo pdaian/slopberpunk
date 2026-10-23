@@ -231,13 +231,9 @@ export class WebGLUI {
     this.quad(r,rgba(style.backgroundColor,opacity));
     const sides=[['Top',{x:r.x,y:r.y,w:r.w,h:number(style.borderTopWidth)}],['Bottom',{x:r.x,y:r.y+r.h-number(style.borderBottomWidth),w:r.w,h:number(style.borderBottomWidth)}],['Left',{x:r.x,y:r.y,w:number(style.borderLeftWidth),h:r.h}],['Right',{x:r.x+r.w-number(style.borderRightWidth),y:r.y,w:number(style.borderRightWidth),h:r.h}]];
     for(const [side,rect]of sides)if(style['border'+side+'Style']!=='none')this.quad(rect,rgba(style['border'+side+'Color'],opacity));
-    if(style.getPropertyValue('--ui-frame').trim()==='1') {
-      const c=rgba('#91b4bc',opacity*.85);
-      for(const x of [r.x,r.x+r.w-7])for(const y of [r.y,r.y+r.h-2])this.quad({x,y,w:7,h:2},c);
-    }
     if(node===document.activeElement&&style.outlineStyle!=='none')this.line({x:r.x-2,y:r.y-2,w:r.w+4,h:r.h+4},rgba(style.outlineColor,opacity),2);
-    if(node.tagName==='SUMMARY')this.string(node.parentElement.open?'−':'+',r.x,r.y+3,style,rgba(style.color,opacity));
-    if(node.tagName==='LI')this.string(node.parentElement.tagName==='OL'?String([...node.parentElement.children].indexOf(node)+1)+'.':'·',r.x-20,r.y+2,style,rgba(style.color,opacity));
+    if(node.tagName==='SUMMARY')this.string(node.parentElement.open?'↓':'→',r.x,r.y+3,style,rgba(style.color,opacity));
+    if(node.tagName==='LI'&&style.listStyleType!=='none')this.string(node.parentElement.tagName==='OL'?String([...node.parentElement.children].indexOf(node)+1)+'.':'·',r.x-20,r.y+2,style,rgba(style.color,opacity));
     if(/hidden|auto|scroll|clip/.test(style.overflowX)||/hidden|auto|scroll|clip/.test(style.overflowY)) {
       this.clip=intersection(this.clip,{x:r.x+node.clientLeft,y:r.y+node.clientTop,w:node.clientWidth,h:node.clientHeight});
     }
@@ -279,12 +275,16 @@ export class WebGLUI {
     const roots=this.roots();
     for(const [node,layer]of this.layers)if(!roots.includes(node)){for(const batch of layer.batches)gl.deleteBuffer(batch.buffer);this.layers.delete(node);}
     for(const resource of this.resources) {
-      if(!resource.node.isConnected){gl.deleteTexture(resource.texture);this.resources.delete(resource);}
+      if(!resource.node.isConnected){gl.deleteTexture(resource.texture);this.resources.delete(resource);this.images.delete(resource.node);}
       else if(resource.live&&resource.stamp!==this.clock)this.invalidate(resource.node);
     }
     for(const node of roots) {
       let layer=this.layers.get(node);
       if(!layer){layer={dirty:true,batches:[]};this.layers.set(node,layer);}
+      // A sibling can move this panel without mutating it (wrapped names, status
+      // messages, or a newly visible target). Cached geometry must follow layout.
+      const rect=node.getBoundingClientRect(),bounds=[rect.x,rect.y,rect.width,rect.height].join(',');
+      if(layer.bounds!==bounds){layer.bounds=bounds;layer.dirty=true;}
       if(!layer.dirty&&!this.allDirty)continue;
       const previous=layer.batches;
       this.batches=[];this.clip=this.screen;

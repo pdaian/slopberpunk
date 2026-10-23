@@ -16,7 +16,7 @@
     {"id": "legendary", "name": "Legendary", "color": "#facb91"}
   ],
   "items": [
-    {"id": "medkit", "name": "Medkit", "tier": 1, "rarity": "common", "kind": "consumable", "level": 0, "stack": 24, "value": 4, "description": "Restore 65 health. Press H or tap MEDKIT to use one. Medkits have their own inventory space and a wait time between uses."},
+    {"id": "medkit", "name": "Medkit", "tier": 1, "rarity": "common", "kind": "consumable", "level": 0, "stack": 24, "value": 4, "description": "Restore 65 health. Choose MEDKIT to use one. Medkits have their own inventory space and a wait time between uses."},
     {"id": "wire-scrap", "name": "Reclaimed wire", "tier": 1, "rarity": "common", "kind": "material", "level": 0, "stack": 999, "value": 2, "description": "Material for making level 0 equipment and supplies at Patch’s shop. Collected from patrol enemies or by breaking down equipment."},
     {"id": "ceramic", "name": "Ceramic lattice", "tier": 2, "rarity": "common", "kind": "material", "level": 0, "stack": 999, "value": 4, "description": "Material for making level 10 equipment and supplies at Patch’s shop. Reusing these circuits saves mining new ones."},
     {"id": "optic", "name": "Glassroot optic", "tier": 3, "rarity": "uncommon", "kind": "material", "level": 0, "stack": 999, "value": 7, "description": "Material for making level 20 equipment and supplies at Patch’s shop. These lenses were once used to survey occupied homes."},

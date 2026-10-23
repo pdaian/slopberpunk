@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm';
 import { AudioEngine } from '../src/audio.js';
 import { escapeHtml } from '../src/icons.js';
 import { storyDialogue } from '../src/story.js';
+import { inputPrompt, updateInputPrompts } from '../src/input-prompts.js';
 
 const score = JSON.parse(readFileSync(new URL('../data/audio.json', import.meta.url)));
 const voice = (name, lang = 'en-US', localService = true) => ({ name, voiceURI: name, lang, localService });
@@ -269,14 +270,14 @@ function application(audio) {
   const nodes = new Map();
   const node = selector => {
     if (!nodes.has(selector)) nodes.set(selector, {
-      listeners: new Map(), open: false, checked: true, textContent: '', innerHTML: '',
+      listeners: new Map(), open: false, checked: true, textContent: '', innerHTML: '', dataset: {}, querySelectorAll: () => [],
       addEventListener(key, fn) { this.listeners.set(key, fn); }, setAttribute() {},
       showModal() { this.open = true; }, close() { this.open = false; },
     });
     return nodes.get(selector);
   };
   const context = {
-    fixtureAudio: audio, esc: escapeHtml, storyDialogue, setTimeout, clearTimeout,
+    fixtureAudio: audio, esc: escapeHtml, storyDialogue, inputPrompt, updateInputPrompts, setTimeout, clearTimeout,
     document: { querySelector: node, querySelectorAll: () => [], addEventListener() {}, exitPointerLock() {} },
     window: { addEventListener() {} }, matchMedia: () => ({ matches: false }), WorldClock: class {},
   };

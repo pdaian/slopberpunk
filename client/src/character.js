@@ -1,6 +1,8 @@
 // Articulated runner rigs and cached, distance-scaled source meshes. GPL-3.0-or-later.
 import { clamp, color } from './math.js';
 import { box, bevelBox, ellipsoid, transformMesh } from './geometry.js';
+import { appearanceKey, appearanceProblem } from './forge.js';
+import { frameParts } from './frame-parts.js';
 
 function joint(parent, offset, pitch = 0) {
   const c=Math.cos(parent.pitch),s=Math.sin(parent.pitch);
@@ -65,7 +67,7 @@ export function gesturePose(bones, gesture, time) {
 }
 
 export class CharacterMeshes {
-  constructor(models) { this.models=models;this.meshes=new Map();this.motion=new Map(); }
+  constructor(models) { this.models=models;this.meshes=new Map();this.motion=new Map();this.forgeMeshes=new Map(); }
   pose(actor,time) {
     const key=`${actor.model}:${actor.id||actor.name||'preview'}`;
     let state=this.motion.get(key);
@@ -101,11 +103,33 @@ export class CharacterMeshes {
   }
   draw(v,actor,pose,detail) {
     const model=actor.model||'humanoid',tint=color(actor.color||'#81e5ed'),scale=model==='warden'?1.35:1,yaw=actor.yaw||0,cs=Math.cos(yaw),sn=Math.sin(yaw);
-    for(const part of this.parts(model,actor.race,detail)) {
+    const appearance=model==='humanoid'&&this.forge&&actor.forge?.appearance;
+    const custom=appearance&&!appearanceProblem(appearance,this.forge);
+    const width=custom?this.forge.frames.find(f=>f.id===appearance.frame).width:1;
+    for(const part of custom?this.frame(appearance,detail):this.parts(model,actor.race,detail)) {
       const bone=pose[part.joint]||{position:[0,0,0],pitch:0};
-      const [x,y,z]=bone.position,position=[actor.position[0]+(x*cs+z*sn)*scale,actor.position[1]+y*scale,actor.position[2]+(-x*sn+z*cs)*scale];
+      const [bx,y,z]=bone.position,x=bx*width,position=[actor.position[0]+(x*cs+z*sn)*scale,actor.position[1]+y*scale,actor.position[2]+(-x*sn+z*cs)*scale];
       transformMesh(v,part.mesh,position,yaw,bone.pitch,0,actor.ghost||part.color==='accent'?tint:null,actor.ghost?.8:null,scale);
     }
+  }
+  frame(appearance,detail) {
+    const key=appearanceKey(appearance)+':'+Boolean(detail);
+    if(this.forgeMeshes.has(key)){
+      const parts=this.forgeMeshes.get(key);this.forgeMeshes.delete(key);this.forgeMeshes.set(key,parts);return parts;
+    }
+    const palette=Object.fromEntries(['primary','secondary','energy'].map(k=>[k,this.forge.colors.find(c=>c.id===appearance[k]).hex]));
+    const parts=frameParts(this.forge,appearance).map(part=>{
+      const source=[],mesh=[],shade=palette[part.color]||part.color;
+      const shape=detail&&part.shape==='round'?ellipsoid:detail?bevelBox:box;
+      if(shape===bevelBox)shape(source,[0,0,0],part.size,shade,part.emissive||0,0,.045,part.taper||1);
+      else shape(source,[0,0,0],part.size,shade,part.emissive||0);
+      transformMesh(mesh,source,part.center,part.yaw||0,part.pitch||0,part.roll||0);
+      return {...part,mesh:new Float32Array(mesh)};
+    });
+    // Retain both detail levels for 64 nearby runners plus the local rig without
+    // rebuilding every frame in a crowd. Paint combinations still have a fixed bound.
+    if(this.forgeMeshes.size>=144)this.forgeMeshes.delete(this.forgeMeshes.keys().next().value);
+    this.forgeMeshes.set(key,parts);return parts;
   }
   prune(time) { for(const [id,state]of this.motion)if(time-state.time>5)this.motion.delete(id); }
 }

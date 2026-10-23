@@ -91,6 +91,28 @@ test('upper floors stay populated and street scenes return continuously to their
   }
 });
 
+test('street hosts, rooftop neighbors and couriers populate every destination by day and night on both quality settings',()=>{
+  const life=create();
+  for(const b of world.rooftops){
+    const residents=life.blockResidents(b),courier=residents.find(r=>r.id===`roof-courier-${b.id}`);
+    assert.ok(courier);
+    assert.equal(new Set(courier.routine.segments.filter(s=>s.route).map(s=>s.route)).size,b.routes.length);
+    near(courier.routine.segments[0].from[1],0);
+    assert.ok(courier.routine.segments.some(s=>s.from[1]===b.h&&s.activity==='carry'));
+    assert.ok(distance(routineAt(courier.routine,courier.routine.duration-.001).position,routineAt(courier.routine,0).position)<.01);
+    for(const now of [epoch,epoch+12*3600000])for(const quality of [.5,1]){
+      const roofActors=life.update(now,[b.x,b.h,b.z],{quality});
+      assert.ok(roofActors.some(a=>a.id===`roof-host-${b.id}`&&a.position[1]===b.h));
+      assert.ok(roofActors.some(a=>a.id===`roof-neighbor-${b.id}`&&a.position[1]===b.h));
+      assert.ok(roofActors.length<=(quality===.5?30:64));
+      const streetActors=life.update(now,[b.x,0,b.z+b.d/2+4],{quality});
+      const host=streetActors.find(a=>a.id===`street-host-${b.id}`);
+      assert.ok(host&&host.position[1]===0);
+      assert.ok(life.conversation(host,now).personal.includes(b.rooftop.line));
+    }
+  }
+});
+
 test('every street scene has visible props, bounded effects, and a stable reduced-motion pose',()=>{
   for(const n of data.citylife.neighborhoods)for(let i=0;i<n.events.length;i++)for(const quality of [.5,1]){
     const now=epoch+i*180000,index=n.events.indexOf(cityEvent(n,now)),site=data.world.landmarks.find(l=>l.id===n.sites[index]);

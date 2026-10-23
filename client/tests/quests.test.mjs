@@ -125,7 +125,7 @@ test('all sixteen faction and lineage combinations get a complete, saved opening
     c.questStages[guide.quest.id] = { index: 0, progress: 0 };
     guide = openingGuide(c, data);
     assert.equal(guide.destination.id, 'market');
-    assert.match(guide.instruction, /press E/);
+    assert.match(guide.instruction, /use it/);
     for (const id of [`${faction}-00`, `${race}-00`]) {
       c.questStages[id] = { index: 1, progress: 0 };
       const q = data.quests.find(q => q.id === id);

@@ -4,6 +4,7 @@ import { Renderer } from './renderer.js';
 import { WebGLUI } from './webgl-ui.js';
 import { Prediction,availableQuest,experienceFor,stats } from './prediction.js';
 import { Input } from './input.js';
+import { controlLabel, inputText, inputPrompt, updateInputPrompts } from './input-prompts.js';
 import { AudioEngine } from './audio.js';
 import { Connection,api } from './network.js';
 import { icon,escapeHtml as esc } from './icons.js';
@@ -25,20 +26,23 @@ import { validateEconomy, economyTabs, inventoryPanel, craftingPanel, bestiaryPa
 
 import { talentPanel, talentBudget, validateProgression } from './progression.js';
 import { statCaps, statNames } from './item-catalog.js';
+import { validateForge, collection, forgeRank } from './forge.js';
+import { FrameForge } from './forge-ui.js';
 import { validateMorality, decisionPanel, decisionOutcome, moralStandingPanel, moralPrice, vendorPercent, neighborhoodOutcome } from './morality.js';
 
 const $=selector=>document.querySelector(selector);
 let data,world,renderer,interfaceUI,input,audio,cityLife,simulation=null,connection=null,account=null;
 let state='landing',selectedRace='human',selectedFaction='relay',targetKey=null;
 let time=0,lastFrame=0,uiAccumulator=0,yaw=0,pitch=.15,thirdPerson=true,introTime=0,introShot=-1;
-let toastTimer,dialogPage='',journalFilter='story',otherPlayers=[],effects=[],floaters=[],log=[],deleteArmed=null;
-let community,liveChat,myGuild=null,founderOffer=null;
+let toastTimer,dialogPage='',journalFilter='next',otherPlayers=[],effects=[],floaters=[],log=[],deleteArmed=null;
+let community,liveChat,frameForge,myGuild=null,founderOffer=null;
 let sessionReady=Promise.resolve();
 let dungeonPanelKey='';
 let cameraFov=1.04;
 let mapRegion='city';
 let bestiaryQuery={},catalogQueries={inventory:{},crafting:{}},talentBranch='Anchor';
-let storyCue='',currentGuide=null;
+let storyCue='',currentGuide=null,promptDevice='';
+const prompt=(keyboard,gamepad,touch)=>inputText(input?.lastDevice,keyboard,gamepad,touch);
 const exploration=new Map();
 const worldClock=new WorldClock();
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -57,6 +61,7 @@ function panel(title,html,eyebrow='SLOPERBERPUNK / MENU',page=''){
   if(dialogPage!==page)audio?.stopVoice();
   interfaceUI?.closeSelect();
   $('#dialog-title').textContent=title;$('#dialog-eyebrow').textContent=eyebrow;$('#dialog-content').innerHTML=html;dialogPage=page;
+  updateInputPrompts($('#dialog-content'),input?.lastDevice||'keyboard');
   if(!$('#panel-dialog').open)$('#panel-dialog').showModal();
   if(input){input.menu=true;input.clear();}
 }
@@ -65,7 +70,7 @@ function initialUI(){
   $('#faction-options').innerHTML=data.factions.map(f=>`<label class="choice" style="--choice-color:${f.color}"><input type="radio" name="faction" value="${f.id}" ${f.id===selectedFaction?'checked':''}>${icon(f.id)}<strong>${esc(f.shortName||f.name)}</strong></label>`).join('');
   updateChoices();
   const abilityNames={arc:'SHOOT',surge:'STUN',mend:'HEAL',aegis:'SHIELD',lance:'POWER',echo:'BLAST',ghostline:'GHOST',breach:'WEAKEN',siphon:'DRAIN',execute:'FINISH',nova:'WEAKEN+'};
-  $('#hotbar').innerHTML=data.abilities.map(a=>`<button class="ability" data-action="ability:${a.id}" data-tooltip="${esc(a.name)} — ${esc(a.description)} Before bonuses: ${a.cost} energy; ${a.cooldown} seconds between uses." aria-label="${esc(a.name)}: ${esc(a.description)} Before bonuses: ${a.cost} energy; ${a.cooldown} seconds between uses." style="color:${a.color}"><span class="key">${a.key}</span>${icon(a.icon)}<span class="ability-name">${abilityNames[a.id]||esc(a.name)}</span><span class="cooldown-shade" style="transform:scaleY(0)"></span><span class="cooldown-number"></span><span class="locked-level"></span></button>`).join('')+`<button class="ability" data-action="medkit" data-tooltip="Restore health with a medkit [H]" aria-label="Use medkit"><span class="key">H</span>${icon('medkit')}<span class="ability-name">MEDKIT</span><span id="medkit-count" class="locked-level"></span></button>`;
+  $('#hotbar').innerHTML=data.abilities.map(a=>`<button class="ability" data-action="ability:${a.id}" data-tooltip="${esc(a.name)} — ${esc(a.description)} Before bonuses: ${a.cost} energy; ${a.cooldown} seconds between uses." aria-label="${esc(a.name)}: ${esc(a.description)} Before bonuses: ${a.cost} energy; ${a.cooldown} seconds between uses." style="color:${a.color}"><span class="key" data-input-action="ability:${a.id}">${a.key}</span>${icon(a.icon)}<span class="ability-name">${abilityNames[a.id]||esc(a.name)}</span><span class="cooldown-shade" style="transform:scaleY(0)"></span><span class="cooldown-number"></span><span class="locked-level"></span></button>`).join('')+`<button class="ability" data-action="medkit" data-tooltip="Restore health with a medkit" aria-label="Use medkit"><span class="key" data-input-action="medkit">H</span>${icon('medkit')}<span class="ability-name">MEDKIT</span><span id="medkit-count" class="locked-level"></span></button>`;
 }
 function updateFounderOffer(){
   const view=founderOfferView(founderOffer,account);
@@ -85,13 +90,12 @@ function updateChoices(){
   const race=data.races.find(r=>r.id===selectedRace),faction=data.factions.find(f=>f.id===selectedFaction);
   $('#race-description').textContent=`${race.description} ${race.passive.description}`;
   $('#faction-description').textContent=faction.description;
-  $('#preview-lineage').textContent=race.name.toUpperCase();$('#preview-lineage').style.color=race.color;
 }
 function openCreation(){
   if(!account)return showAccount().catch(e=>toast(e.message));
   closePanel();$('#character-error').textContent='';$('#creation-storage').textContent=`Progress saved to account ${account.username}`;
   if(hasFounderHalo(account))$('#creation-storage').textContent+=' · First Signal Halo included.';
-  setState('creation');$('#character-name').focus();
+  setState('creation');frameForge.mountCreation();$('#character-name').focus();
 }
 async function enter(){
   await sessionReady;
@@ -118,7 +122,7 @@ async function startGame(character,newCharacter=false){
   try{await connection.connect();}catch(error){connection.close();connection=null;simulation=null;setState('landing');toast(error.message);return;}
   $('#network-label').textContent='ONLINE';
   if(newCharacter||!character.introSeen){introTime=0;introShot=-1;setState('cinematic');}
-  else{setState('playing');toast('Welcome back. Press J and open Story to see what to do next.');}
+  else{setState('playing');toast('Welcome back. '+prompt('Press J','Press View','Tap QUESTS')+' to see your next step.');}
   updateHUD();
 }
 function onSnapshot(message){
@@ -126,6 +130,13 @@ function onSnapshot(message){
   const questPanelOpen=$('#panel-dialog').open&&(dialogPage==='journal'||dialogPage.startsWith('npc:'));
   const previousQuestPanel=questPanelOpen?questPanelState():null;
   const previousCharacter=simulation.character,previous=previousCharacter.position,server=message.character;
+  const forgeState=c=>JSON.stringify([c.level,c.completed?.length,c.ordersCompleted,c.mobKills,c.dungeonHistory,c.forge]);
+  const forgeChanged=forgeState(previousCharacter)!==forgeState(server);
+  if(forgeChanged){
+    const before=new Set(collection(previousCharacter,data.forge).earned.map(i=>i.id));
+    const unlocked=collection(server,data.forge).earned.filter(i=>!before.has(i.id));
+    if(unlocked.length)toast(`FRAME PART EARNED · ${unlocked[0].name}${unlocked.length>1?` + ${unlocked.length-1} more`:''} · GEAR → FRAME FORGE`);
+  }
   const economyState=c=>JSON.stringify([c.items,c.equipment,Object.keys(c.buffs||{}),c.mobKills,c.medkits,c.gold,c.level,c.talents,talentBudget(c,data.rules),c.workOrder,c.ordersCompleted,c.morality]);
   const economyChanged=['inventory','crafting','talents','orders','shop'].includes(dialogPage)&&economyState(previousCharacter)!==economyState(server);
   const recoveryChanged=isSpirit(previousCharacter)!==isSpirit(server)||(previousCharacter.health>0)!==(server.health>0);
@@ -145,6 +156,7 @@ function onSnapshot(message){
   worldClock.sync(message.serverTime);myGuild=message.guild||null;
   liveChat?.setContext(message.chatContext);
   for(const event of message.social||[])liveChat?.receive(event);
+  if(forgeChanged&&dialogPage==='forge'&&$('#panel-dialog').open&&!frameForge.busy&&!recoveryChanged)frameForge.render();
   if(economyChanged&&!recoveryChanged){
     const scroll=$('#panel-dialog').scrollTop,focus=document.activeElement?.dataset;
     refreshPanel();
@@ -158,7 +170,7 @@ function onSnapshot(message){
     const scroll=$('#panel-dialog').scrollTop,focus=document.activeElement?.dataset;
     const focusedSection=document.activeElement?.tagName==='SUMMARY'?document.activeElement.parentElement?.dataset.storySection:null;
     const expanded=new Map([...document.querySelectorAll('[data-story-section]')].map(e=>[e.dataset.storySection,e.open]));
-    if(dialogPage==='journal')showJournal();else talk(data.npcs.find(n=>n.id===dialogPage.slice(4)),false);
+    if(dialogPage==='journal')showJournal(journalFilter);else talk(data.npcs.find(n=>n.id===dialogPage.slice(4)),false);
     document.querySelectorAll('[data-story-section]').forEach(e=>{
       if(expanded.has(e.dataset.storySection))e.open=expanded.get(e.dataset.storySection);
       if(e.dataset.storySection===focusedSection)e.querySelector('summary')?.focus({preventScroll:true});
@@ -174,7 +186,7 @@ function questPanelState(){
 function finishIntro(){
   if(state!=='cinematic')return;audio.stopVoice();simulation.character.introSeen=true;
   connection?.send({type:'intro_seen'});
-  setState('playing');toast(simulation.character.tutorialStage?'Welcome to the training courtyard. Follow the marker to learn movement, interaction, and shooting.':'Follow the quest marker to your contact. Click them, then press E to talk. Controller: X. Touch: USE.');
+  setState('playing');toast(simulation.character.tutorialStage?'Welcome to the training courtyard. Follow the marker to learn movement, interaction, and shooting.':'Follow the quest marker to your contact. '+prompt('Click them, then press E to talk.','Press Y to select them, then X to talk.','Tap them, then USE to talk.'));
 }
 function act(action){
   if(!simulation)return;
@@ -226,7 +238,7 @@ function perform(action,event){
   if(state!=='playing')return;
   if(action==='chat'||action==='gestures'){closePanel();liveChat.open(liveChat.channel,action==='gestures');return;}
   if(action.startsWith('ability:')){if(!$('#panel-dialog').open&&simulation.character.health>0){const target=selectedTarget();act({type:'ability',id:action.split(':')[1],target:target&&['enemy','practice'].includes(target.kind)?target.object.id:null});}return;}
-  const panels={settings:()=>isSpirit(simulation.character)?showRecoveryMenu():showSettings(),journal:showJournal,story:()=>showJournal('story'),neighborhoods:()=>showJournal('neighborhoods'),talents:showTalents,inventory:showInventory,map:showMap,dungeons:showDungeons,guild:()=>community.open('guild').catch(e=>toast(e.message)),community:()=>community.open().catch(e=>toast(e.message))};if(panels[action])return panels[action]();
+  const panels={settings:()=>isSpirit(simulation.character)?showRecoveryMenu():showSettings(),journal:showJournal,story:()=>showJournal('story'),neighborhoods:()=>showJournal('neighborhoods'),talents:showTalents,inventory:showInventory,forge:()=>frameForge.open(),map:showMap,dungeons:showDungeons,guild:()=>community.open('guild').catch(e=>toast(e.message)),community:()=>community.open().catch(e=>toast(e.message))};if(panels[action])return panels[action]();
   if(action==='camera'){thirdPerson=!thirdPerson;return;}
   if(action==='medkit'){act({type:'medkit'});return;}
   if($('#panel-dialog').open||simulation.character.health<=0&&!isSpirit(simulation.character))return;
@@ -255,7 +267,7 @@ function activateTarget(){
   if(kind==='npc')return talk(object);
   if(kind==='resident')return talkResident(object);
   act({type:kind==='lift'?'lift':'interact',id:object.id});
-  if(object.evidence)panel(object.name,`<div class="npc-quote">${esc(object.evidence)}</div><p class="panel-description">Return to the person who gave you this quest. Press J and open Story to review completed quests.</p><button class="small-button" data-do="journal-filter" data-id="story">OPEN STORY ↗</button>`,'THE LIVING RECORD / FIELD EVIDENCE','street-record');
+  if(object.evidence)panel(object.name,`<div class="npc-quote">${esc(object.evidence)}</div><p class="panel-description">Return to the person who gave you this quest. Open QUESTS → Story to review completed quests.</p><button class="small-button" data-do="journal-filter" data-id="story">OPEN STORY ↗</button>`,'THE LIVING RECORD / FIELD EVIDENCE','street-record');
 }
 
 function showDungeons(){
@@ -278,29 +290,66 @@ function showLineages(){
   panel('Choose a character type.',`<p class="dialog-intro">Your character type gives you a bonus that is always active and a series of quests from Oru. Choose the type you like. Every type can join any faction and use every ability.</p><div class="card-grid">${data.races.map(r=>`<article class="info-card"><span style="color:${r.color}">${icon(r.id)}</span><h3>${esc(r.name)}</h3><p class="quote">${esc(r.tagline)}</p><p>${esc(r.lore)}</p><p class="tag">${esc(r.passive.name.toUpperCase())} / ${esc(r.passive.description)}</p><p class="tag">13 QUESTS · LEVEL 0–60</p></article>`).join('')}</div>`,'CHARACTER TYPES / BACKGROUNDS','lineages');
 }
 function showGuide(){
-  const controls=[['Move','W A S D'],['Look around','HOLD RIGHT MOUSE + DRAG'],['Select a person, enemy, or object','CLICK / TAP'],['Use the selected target','E / RIGHT CLICK'],['Select the next target','TAB'],['Jump','SPACE'],['Sprint','SHIFT'],['Dash forward','Q'],['Use abilities','1–0'],['Create a Ghostline ghost','R'],['Use a medkit','H'],['Quests / talents','J / T'],['Gear / map','I / M'],['Dungeons / find a group','G'],['Social / guild','C / U'],['Chat with nearby players','ENTER'],['Wave and other gestures','B'],['Clear target, then open menu','ESC'],['Switch camera view','V']];
-  panel('How to play.',`<article class="info-card"><h3>Start here</h3><ol><li>New characters start in the First Steps Courtyard. Follow the tutorial markers to move, use a terminal, and shoot a harmless practice target. Use the Commons gate when ready, or use it early to skip training.</li><li>Follow the quest marker to your faction contact. Click them, then press E to talk.</li><li>Choose ACCEPT QUEST. The instructions on the right tell you what to do next.</li><li>Talk to Oru for your second quest. Follow the markers to help restore the kitchen water.</li><li>When the steps are done, return to the person who gave you the quest. Read the choices, then choose an ending to earn XP and gold.</li></ol><p>Lost? Press J and open Story for your next step. Press M for the map. You can complete the main story alone.</p></article><h3>Keyboard and mouse</h3><div class="guide-grid">${controls.map(([a,b])=>`<div class="guide-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><p class="guide-note">Select something before using it. E talks to a person, attacks an enemy, reads a record, or uses a lift. Move closer if it is out of reach. Click empty space or press Esc to clear your selection.</p><details class="info-card"><summary>Controller controls</summary><p>Left stick: move. Right stick: look. A: jump. B: dash. Y: select the next target. X: use the target. RT: shoot. LB: stun shot. RB: heal. LT: shield.</p><p>D-pad up: medkit. D-pad down: map. D-pad left/right: unlocked attacks. Hold the left stick button and press D-pad up/right/down/left for Weaken, Drain health, Finishing shot, and Weaken area. Press the right stick (R3) for Ghostline. View: quests. Menu: settings. In menus, use the D-pad and A; B closes the menu.</p></details><details class="info-card"><summary>Touch controls</summary><p>Move with the pad on the left. Drag the world to look around. Tap a person, enemy, or object to select it, or tap TARGET to select the next one. Tap USE to act on it. Tap an ability at the bottom to use it. Tap CHAT to talk to players.</p></details><div class="card-grid"><article class="info-card"><h3>Fighting and healing</h3><p>Click an enemy, then press 1 to shoot. Press 2 to damage and stun it, 3 to heal yourself and nearby players, or 4 to protect yourself with a shield. H uses a medkit; buy more from Patch.</p><p>Health keeps you alive. Energy powers abilities and refills over time. A countdown on an ability shows how many seconds until you can use it again. Attacks can miss; critical hits deal extra damage. Move out of marked danger areas before they strike.</p><h3>Quests, levels, and talents</h3><p>Quests are jobs. Finish them and defeat enemies to earn experience, called XP. Fill the XP bar to gain a level. Gold buys supplies and upgrades.</p><p>Talents are permanent bonuses you choose with points. Start with six points and earn one more every quarter of a level. Press T to spend them. You can mix all six groups. Each talent lists what you must learn first. Visit Patch to pay for a reset and spend your points again.</p></article><article class="info-card"><h3>Street emergencies</h3><p>Follow the emergency tracker. Select and use both marked controls. Defeat any enemy machines, then stay inside the marked ring until the timer fills. Avoid striped danger areas. Other players can help. If you fail, wait nearby and try again; completed quest steps stay saved.</p><h3>Your choices matter</h3><p>Each quest ends with a permanent choice. Read who benefits, who loses out, and how much gold you receive. Every choice gives the full quest XP. Press J and open Reputation &amp; Choices to see how people feel about you.</p><h3>Playing with others</h3><p>Press Enter to chat. Nearby reaches players within 35 m. Zone reaches players in your area and copy of the world, or just your group inside a dungeon. Press B to wave. Press C for private messages, player groups, guilds, and trading. A party is a group of players; a guild is a lasting player club.</p></article></div><details class="info-card ghostline-guide"><summary>Ghostline: make a ghost that blasts enemies</summary><ol><li>Move at least 12 m over at least 2 seconds.</li><li>Press R (controller: R3; touch: GHOST). A blue ghost repeats up to 6 seconds of your recent movement.</li><li>Touch the moving ghost after its first 0.6 seconds. It blasts visible enemies within 10 m, restores 20 energy, and makes your dash ready.</li></ol><p>If another player touches your ghost first, the blast has 50% more power and both of you get the energy and dash refill. Ghostline costs 30 energy and takes 18 seconds to recharge. You do not need to select an enemy.</p></details><details class="info-card"><summary>Combining attacks</summary><p>Weaken makes an enemy take 20% more damage for 8 seconds. Area blast uses the weakening damage bonus, then ends that effect. Power shot deals 35% extra damage to stunned enemies and ends their stun. Finishing shot deals 60% extra damage to enemies at 30% health or less. Drain health heals you for 40% of the damage it deals.</p><p>Armor reduces damage taken. Armor penetration ignores some enemy armor. Damage returned as health heals you when you attack. Combo bonuses increase the extra damage from attack combinations. A percentage point adds directly to a chance: +3 points changes a 5% critical-hit chance to 8%.</p></details><details class="info-card"><summary>What happens when you die?</summary><p>Outside dungeons, you lose 5% of your gold, rounded up to a maximum of 50. After five seconds, choose BECOME A GHOST. Follow the marker back to your body and get within 12 m with nothing blocking your view. Choose RETURN TO LIFE to recover at 50% health and energy, with no extra cost.</p><p>The graveyard healer offers a shortcut. It costs another 10% of your remaining gold, rounded up to a maximum of 100. You return at 25% health and energy. For 60 seconds while alive and playing, you deal half damage and move 25% slower. As a ghost, you are safe from damage and can use lifts. Esc opens recovery options.</p><p>In a dungeon, another player can revive you. If everyone dies, the current chapter restarts after five seconds.</p></details><p class="guide-note">VOICES turns spoken dialogue on or off. Written dialogue stays visible. Use Settings → TEST VOICE to check speech playback. Some browser voices need an internet connection.</p>`,'HELP / CONTROLS','guide');
+  const controls=[['Move','W A S D'],['Look around','HOLD RIGHT MOUSE + DRAG'],['Select a person, enemy, or object','CLICK'],['Use the selected target','E / RIGHT CLICK'],['Select the next target','TAB'],['Jump','SPACE'],['Sprint','SHIFT'],['Dash forward','Q'],['Use abilities','1–0'],['Create a Ghostline ghost','R'],['Use a medkit','H'],['Quests / talents','J / T'],['Gear / map','I / M'],['Dungeons / find a group','G'],['Social / guild','C / U'],['Chat with nearby players','ENTER'],['Wave and other gestures','B'],['Clear target, then open menu','ESC'],['Switch camera view','V']];
+  panel('How to play.',`<article class="info-card"><h3>Start here</h3><ol><li>New characters start in the First Steps Courtyard. Follow the tutorial markers to move, use a terminal, and shoot a harmless practice target. Use the Commons gate when ready, or use it early to skip training.</li><li>Follow the quest marker to your faction contact. ${inputPrompt("Click them, then press E to talk.","Press Y to select them, then X to talk.","Tap them, then USE to talk.")}</li><li>Choose ACCEPT QUEST. The instructions on the right tell you what to do next.</li><li>Talk to Oru for your second quest. Follow the markers to help restore the kitchen water.</li><li>When the steps are done, return to the person who gave you the quest. Read the choices, then choose an ending to earn XP and gold.</li></ol><p>Lost? ${inputPrompt("Press J for your next step. Press M for the map.","Press View for your next step. Press D-pad down for the map.","Tap QUESTS for your next step. Tap MAP for the map.")} You can complete the main story alone.</p></article><section data-input-device="keyboard"><h3>Keyboard and mouse</h3><div class="guide-grid">${controls.map(([a,b])=>`<div class="guide-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><p class="guide-note">Select something before using it. E talks to a person, attacks an enemy, reads a record, or uses a lift. Move closer if it is out of reach. Click empty space or press Esc to clear your selection.</p></section><section class="info-card" data-input-device="gamepad"><h3>Controller controls</h3><p>Left stick: move. Right stick: look. A: jump. B: dash. Y: select the next target. X: use the target. RT: shoot. LB: stun shot. RB: heal. LT: shield.</p><p>D-pad up: medkit. D-pad down: map. D-pad left/right: unlocked attacks. Hold the left stick button and press D-pad up/right/down/left for Weaken, Drain health, Finishing shot, and Weaken area. Press the right stick (R3) for Ghostline. View: quests. Menu: settings. In menus, use the D-pad and A; B closes the menu.</p></section><section class="info-card" data-input-device="touch"><h3>Touch controls</h3><p>Move with the pad on the left. Drag the world to look around. Tap a person, enemy, or object to select it, or tap TARGET to select the next one. Tap USE to act on it. Tap an ability at the bottom to use it. Tap CHAT to talk to players.</p></section><div class="card-grid"><article class="info-card"><h3>Fighting and healing</h3><p>${inputPrompt("Click an enemy, then press 1 to shoot. Press 2 to damage and stun it, 3 to heal yourself and nearby players, or 4 to protect yourself with a shield. H uses a medkit.","Press Y to select an enemy, then RT to shoot. LB damages and stuns it, RB heals you and nearby players, and LT protects you with a shield. D-pad up uses a medkit.","Tap an enemy, then SHOOT. STUN damages and stuns it, HEAL heals you and nearby players, and SHIELD protects you. Tap MEDKIT to heal.")} Buy more medkits from Patch.</p><p>Health keeps you alive. Energy powers abilities and refills over time. A countdown on an ability shows how many seconds until you can use it again. Attacks can miss; critical hits deal extra damage. Move out of marked danger areas before they strike.</p><h3>Quests, levels, and talents</h3><p>Quests are jobs. Finish them and defeat enemies to earn experience, called XP. Fill the XP bar to gain a level. Gold buys supplies and upgrades.</p><p>Talents are permanent bonuses you choose with points. Start with six points and earn one more every quarter of a level. ${inputPrompt("Press T to spend them.","Choose TALENTS to spend them.","Tap TALENTS to spend them.")} You can mix all six groups. Each talent lists what you must learn first. Visit Patch to pay for a reset and spend your points again.</p></article><article class="info-card"><h3>Street emergencies</h3><p>Follow the emergency tracker. Select and use both marked controls. Defeat any enemy machines, then stay inside the marked ring until the timer fills. Avoid striped danger areas. Other players can help. If you fail, wait nearby and try again; completed quest steps stay saved.</p><h3>Your choices matter</h3><p>Each quest ends with a permanent choice. Read who benefits, who loses out, and how much gold you receive. Every choice gives the full quest XP. ${inputPrompt("Press J","Press View","Tap QUESTS")} and open More → Reputation &amp; Choices to see how people feel about you.</p><h3>Playing with others</h3><p>${inputPrompt("Press Enter to chat.","Choose CHAT to chat.","Tap CHAT to chat.")} Nearby reaches players within 35 m. Zone reaches players in your area and copy of the world, or just your group inside a dungeon. ${inputPrompt("Press B to wave. Press C","Choose CHAT → GESTURES to wave. Choose SOCIAL","Tap CHAT → GESTURES to wave. Tap SOCIAL")} for private messages, player groups, guilds, and trading. A party is a group of players; a guild is a lasting player club.</p></article></div><details class="info-card ghostline-guide"><summary>Ghostline: make a ghost that blasts enemies</summary><ol><li>Move at least 12 m over at least 2 seconds.</li><li>${inputPrompt("Press R.","Press the right stick (R3).","Tap GHOST.")} A blue ghost repeats up to 6 seconds of your recent movement.</li><li>Touch the moving ghost after its first 0.6 seconds. It blasts visible enemies within 10 m, restores 20 energy, and makes your dash ready.</li></ol><p>If another player touches your ghost first, the blast has 50% more power and both of you get the energy and dash refill. Ghostline costs 30 energy and takes 18 seconds to recharge. You do not need to select an enemy.</p></details><details class="info-card"><summary>Combining attacks</summary><p>Weaken makes an enemy take 20% more damage for 8 seconds. Area blast uses the weakening damage bonus, then ends that effect. Power shot deals 35% extra damage to stunned enemies and ends their stun. Finishing shot deals 60% extra damage to enemies at 30% health or less. Drain health heals you for 40% of the damage it deals.</p><p>Armor reduces damage taken. Armor penetration ignores some enemy armor. Damage returned as health heals you when you attack. Combo bonuses increase the extra damage from attack combinations. A percentage point adds directly to a chance: +3 points changes a 5% critical-hit chance to 8%.</p></details><details class="info-card"><summary>What happens when you die?</summary><p>Outside dungeons, you lose 5% of your gold, rounded up to a maximum of 50. After five seconds, choose BECOME A GHOST. Follow the marker back to your body and get within 12 m with nothing blocking your view. Choose RETURN TO LIFE to recover at 50% health and energy, with no extra cost.</p><p>The graveyard healer offers a shortcut. It costs another 10% of your remaining gold, rounded up to a maximum of 100. You return at 25% health and energy. For 60 seconds while alive and playing, you deal half damage and move 25% slower. As a ghost, you are safe from damage and can use lifts. ${inputPrompt("Esc opens recovery options.","Menu opens recovery options.","The menu opens recovery options.")}</p><p>In a dungeon, another player can revive you. If everyone dies, the current chapter restarts after five seconds.</p></details><p class="guide-note">VOICES turns spoken dialogue on or off. Written dialogue stays visible. Use Settings → TEST VOICE to check speech playback. Some browser voices need an internet connection.</p>`,'HELP / CONTROLS','guide');
 }
-function questObjective(q){return objectiveText(questView(q,simulation.character).step,data);}
+function nextQuestGuide(){
+  const c=simulation.character;
+  const opening=openingGuide(c,data,simulation.worldEvents,input.lastDevice);
+  if(opening)return opening;
+  const campaign=campaignLead(c,data,simulation.worldEvents),next=campaign.next;
+  if(!next)return {key:'story-complete',chapter:'Main story complete',instruction:campaign.instruction,hint:'You can find optional quests in the journal.',line:campaign.instruction,speaker:'archivist'};
+  const {quest,view,npc,locked,destination}=next;
+  const instruction=view.accepted&&!view.ready?objectiveText(view.step,data):campaign.instruction;
+  let hint=prompt('Click the marked person or object, then press E.','Press Y to select the marked person or object, then X.','Tap the marked person or object, then USE.');
+  if(locked)hint='Find available quests or take a repeatable job from Patch to earn XP.';
+  else if(view.accepted&&!view.ready){
+    if(view.step.type==='hold')hint=`Stay within ${data.rules.interactionRadius} m of the marker. Your progress is saved.`;
+    else if(view.step.type==='explore')hint='Walk to the marker to complete this step.';
+    else if(view.step.type==='kill')hint=prompt('Click an enemy and press 1 to shoot.','Press Y to select an enemy, then RT to shoot.','Tap an enemy, then SHOOT.');
+  }
+  return {key:`${quest.id}:${locked?'locked':!view.accepted?'offer':view.ready?'return':view.index}`,quest,view,locked,destination:locked?null:destination,chapter:'Main story',instruction,hint,line:`${instruction} ${hint}`,speaker:npc.id};
+}
+function guideInstruction(guide){
+  const view=guide.view;
+  return guide.instruction+(view?.accepted&&!view.ready&&view.step.count>1?` (${view.progress}/${view.step.count}${view.step.type==='hold'?'s':''})`:'');
+}
+function guideRegion(guide){
+  return guide.destination&&Math.max(Math.abs(guide.destination.position[0]),Math.abs(guide.destination.position[2]))>data.world.cityRadius?'basin':'city';
+}
+function nextQuestPanel(guide){
+  const c=simulation.character,view=guide.view,d=guide.destination;
+  const label=guide.tutorial?`TUTORIAL · ${view.index+1} OF ${view.total}`:view?.ready?'READY TO FINISH':view?.accepted&&view.staged?`STEP ${view.index+1} OF ${view.total}`:'NEXT STEP';
+  return `<article class="info-card quest-next"><small class="story-chapter">${label}</small><h3>${esc(guide.quest?.title||guide.chapter)}</h3><p class="quest-objective">${esc(guideInstruction(guide))}</p>${d?`<p class="quest-location">${esc(d.name)} · ${Math.ceil(distance(c.position,d.position))} m${Math.abs(d.position[1]-c.position[1])>5?' · use stairs, ramps, or lifts':''}</p>`:''}<div class="settings-actions">${d?`<button class="button primary" data-do="map-region" data-id="${guideRegion(guide)}">SHOW ON MAP</button>`:guide.locked?'<button class="button primary" data-do="journal-filter" data-id="available">FIND QUESTS</button>':''}<button class="small-button" data-do="close-panel">BACK TO GAME</button></div><details data-story-section="next-help" ${guide.tutorial?'open':''}><summary tabindex="0">Controls &amp; help</summary><p ${guide.tutorial?'data-tutorial-hint':''}>${esc(guide.hint)}</p></details></article>`;
+}
 function questCard(q,c,atNpc=false){
   const view=questView(q,c),{accepted,ready}=view,done=c.completed.includes(q.id),available=availableQuest(q,c);
-  const thread=questThread(q,data);
+  const thread=questThread(q,data),npc=data.npcs.find(n=>n.id===q.giver);
   const steps=view.staged?`<ol class="quest-steps">${q.steps.map((s,i)=>`<li class="${done||ready||accepted&&i<view.index?'complete':accepted&&i===view.index?'current':''}">${esc(s.text)}${s.type==='hold'?` · ${s.count}s`:''}${accepted&&!ready&&i===view.index?` <strong>${view.progress}/${s.count}${s.type==='hold'?'s':''}</strong>`:''}</li>`).join('')}</ol>`:'';
   const rewardXp=done?q.reward.xp:founderXpReward(c,q.reward.xp,data.rules).xp,biome=data.world.biomes.find(b=>b.id===q.biome);
-  return `<article class="quest-row ${!accepted&&!available&&!done?'locked':''}"><span class="quest-level">LV ${q.level}${done?' / COMPLETE':''}</span><h3>${esc(q.title)}</h3>${biome?`<small class="muted">${esc(biome.name)} · ${esc(data.npcs.find(n=>n.id===q.giver).name)}</small>`:""}<p>${esc(done?decisionOutcome(q,c,data):q.briefing)}</p><details class="quest-thread" data-story-section="quest:${q.id}"><summary tabindex="0">STORY CONNECTION · ${esc(thread.title)}</summary><p>${esc(thread.question)}</p></details>${steps||`<div class="quest-objective">${esc(questObjective(q))}${accepted?` · ${view.progress}/${view.step.count}`:''}</div>`}<div class="quest-meta"><span>+${rewardXp} XP${rewardXp>q.reward.xp?' · HALO BONUS INCLUDED':''}</span><span>${q.reward.gold} BASE GOLD · YOUR CHOICE CHANGES THE PAYMENT</span></div><button class="small-button" data-do="quest-voice" data-id="${q.id}">HEAR ${done?'ENDING':'QUEST DETAILS'} ♫</button>${decisionPanel(q,c,data,atNpc&&ready)}${atNpc&&available?`<button class="small-button" data-do="quest-accept" data-id="${q.id}">ACCEPT QUEST ↗</button>`:accepted?`<small class="muted">${ready?'Return to '+esc(data.npcs.find(n=>n.id===q.giver)?.name):'Quest in progress'}</small>`:!done?`<small class="muted">${available?'Available from '+esc(data.npcs.find(n=>n.id===q.giver)?.name):'Requires level '+q.level+(q.requires.length?' and completion of '+q.requires.map(id=>esc(data.quests.find(prior=>prior.id===id)?.title||id)).join(', '):'')+'.'}</small>`:''}</article>`;
+  const status=done?'COMPLETED':ready?'READY TO FINISH':accepted?`IN PROGRESS${view.staged?` · STEP ${view.index+1} OF ${view.total}`:''}`:available?'AVAILABLE':'LOCKED';
+  const objective=done?'':ready?`Talk to ${npc.name} and choose an ending to collect your reward.`:accepted?`${objectiveText(view.step,data)}${view.step.count>1?` (${view.progress}/${view.step.count}${view.step.type==='hold'?'s':''})`:''}`:available?(atNpc?objectiveText(view.step,data):`Talk to ${npc.name} to accept this quest.`):`Requires level ${q.level}${q.requires.length?' and completion of '+q.requires.map(id=>data.quests.find(prior=>prior.id===id)?.title||id).join(', '):''}.`;
+  return `<article class="quest-row"><small class="quest-status">${status} · LEVEL ${q.level}</small><h3>${esc(q.title)}</h3>${biome?`<small class="muted">${esc(biome.name)}</small>`:''}${objective?`<p class="quest-objective">${esc(objective)}</p>`:''}<div class="quest-meta"><span>${rewardXp} XP${rewardXp>q.reward.xp?' · HALO BONUS':''}</span><span>${q.reward.gold} base gold${done?'':' · varies by ending'}</span></div>${atNpc&&available?`<button class="button primary" data-do="quest-accept" data-id="${q.id}">ACCEPT QUEST</button>`:''}${atNpc&&ready?decisionPanel(q,c,data,true):''}<details class="quest-details" data-story-section="quest:${q.id}"><summary tabindex="0">${done?'Read ending':'Quest details &amp; all steps'}</summary><p>${esc(done?decisionOutcome(q,c,data):q.briefing)}</p>${steps}<h4>${esc(thread.title)}</h4><p>${esc(thread.question)}</p><button class="small-button" data-do="quest-voice" data-id="${q.id}">HEAR ${done?'ENDING':'QUEST DETAILS'} ♫</button>${atNpc&&ready?'':decisionPanel(q,c,data)}</details></article>`;
 }
-function showJournal(filter=journalFilter){
-  if(!simulation)return;journalFilter=filter;const c=simulation.character;
+function showJournal(filter='next'){
+  if(!simulation)return;const changedFilter=journalFilter!==filter;journalFilter=filter;const c=simulation.character;
   const applicable=data.quests.filter(q=>(!q.faction||q.faction===c.faction)&&(!q.race||q.race===c.race));
-  const guide=openingGuide(c,data,simulation.worldEvents),lesson=guide?.social;
-  const training=guide?.tutorial?`<article class="info-card"><small>TUTORIAL · ${guide.view.index+1}/${guide.view.total}</small><h3>${esc(guide.chapter)}</h3><p>${esc(guide.instruction)}</p><p>${esc(guide.hint)}</p><button class="small-button" data-do="map-region" data-id="city">LOCATE ON MAP ↗</button></article>`:'';
-  const social=lesson?`<article class="info-card"><small>MEET YOUR NEIGHBORS · OPTIONAL</small><p>${esc(lesson.hint)}</p><button class="small-button" data-do="social-lesson">${esc(lesson.label)}</button></article>`:'';
-  let list=filter==='active'?applicable.filter(q=>c.activeQuests[q.id]!==undefined):filter==='available'?applicable.filter(q=>availableQuest(q,c)):filter==='history'?applicable.filter(q=>c.completed.includes(q.id)):filter==='basin'?applicable.filter(q=>q.biome):applicable.filter(q=>!q.biome&&!q.neighborhood);
-  panel(filter==='story'?data.lore.campaign.title:'Quest journal.',`${training}${social}<div class="tabs">${[['story','STORY'],['morality','REPUTATION & CHOICES'],['active','ACTIVE'],['available','AVAILABLE'],['campaign','MAIN QUESTS'],['neighborhoods','NEIGHBORHOODS'],['basin','BASIN'],['history','COMPLETED']].map(([id,name])=>`<button class="${id===filter?'selected':''}" data-do="journal-filter" data-id="${id}" aria-current="${id===filter?'page':'false'}">${name}</button>`).join('')}</div>${filter==='story'?campaignPanel(c,data,simulation.worldEvents):filter==='morality'?moralStandingPanel(c,data):filter==='neighborhoods'?neighborhoodJournal():list.length?list.map(q=>questCard(q,c)).join(''):'<p class="muted">No quests here yet. Open Story to see what to do next, or visit a local quest contact.</p>'}<p class="panel-description">Quests are jobs that earn experience (XP) and gold. Accept a quest from its contact, follow the steps, then return to that person and choose an ending to collect your reward. Map markers show where to go. Local and Basin quests are open to all characters who meet the level requirement.</p>`,'QUEST JOURNAL / '+c.completed.length+' COMPLETE','journal');
+  const guide=nextQuestGuide(),lesson=guide.social;
+  const active=applicable.filter(q=>c.activeQuests[q.id]!==undefined).sort((a,b)=>Number(questView(b,c).ready)-Number(questView(a,c).ready));
+  const available=applicable.filter(q=>availableQuest(q,c)).sort((a,b)=>a.level-b.level||distance(c.position,data.npcs.find(n=>n.id===a.giver).position)-distance(c.position,data.npcs.find(n=>n.id===b.giver).position));
+  const list=filter==='active'?active:filter==='available'?available:filter==='history'?applicable.filter(q=>c.completed.includes(q.id)):filter==='basin'?applicable.filter(q=>q.biome):applicable.filter(q=>!q.biome&&!q.neighborhood);
+  const tab=([id,name])=>`<button class="${id===filter?'selected':''}" data-do="journal-filter" data-id="${id}" aria-current="${id===filter?'page':'false'}">${name}</button>`;
+  const extra=[['story','STORY'],['history','COMPLETED'],['morality','REPUTATION & CHOICES'],['neighborhoods','NEIGHBORHOODS'],['basin','BASIN'],['campaign','ALL MAIN QUESTS']];
+  const navigation=`<nav class="tabs" aria-label="Quest views">${[['next','NEXT STEP'],['active',`IN PROGRESS (${active.length})`],['available','FIND QUESTS']].map(tab).join('')}</nav>`;
+  const more=`<details class="journal-more" data-story-section="journal-more" ${extra.some(([id])=>id===filter)?'open':''}><summary tabindex="0">More: story, completed quests &amp; choices</summary><div class="tabs">${extra.map(tab).join('')}</div>${lesson?`<details data-story-section="social-lesson"><summary tabindex="0">Meet your neighbors (optional)</summary><p data-social-hint>${esc(lesson.hint)}</p><button class="small-button" data-do="social-lesson" data-social-label>${esc(lesson.label)}</button></details>`:''}</details>`;
+  const content=filter==='next'?nextQuestPanel(guide):filter==='story'?campaignPanel(c,data,simulation.worldEvents):filter==='morality'?moralStandingPanel(c,data):filter==='neighborhoods'?neighborhoodJournal():list.length?list.map(q=>questCard(q,c)).join(''):`<p class="muted">${filter==='active'?'No quests in progress.':filter==='available'?'No new quests available at your level.':'No quests here yet.'}</p><button class="small-button" data-do="journal-filter" data-id="next">SHOW NEXT STEP</button>`;
+  const extraView=extra.some(([id])=>id===filter);
+  panel(filter==='story'?data.lore.campaign.title:'Quests',`${navigation}${extraView?more:''}${content}${extraView?'':more}`,'QUEST JOURNAL','journal');
+  if(changedFilter)$('#panel-dialog').scrollTop=0;
 }
 function neighborhoodJournal(){
   const c=simulation.character;
-  return `<p class="panel-description">Each neighborhood has three quests. Select a resident and press E to talk. Visit the named quest contact to accept work. Completed quests change what residents do and say when you return.</p>${data.citylife.neighborhoods.map(n=>{
+  return `<p class="panel-description">Each neighborhood has three quests. ${inputPrompt("Click a resident and press E to talk.","Press Y to select a resident, then X to talk.","Tap a resident, then USE to talk.")} Visit the named quest contact to accept work. Completed quests change what residents do and say when you return.</p>${data.citylife.neighborhoods.map(n=>{
     const stage=cityStage(n,c.completed),contact=data.npcs.find(p=>p.id===n.contact),quests=data.quests.filter(q=>q.neighborhood===n.id),next=quests.find(q=>!c.completed.includes(q.id))||quests.at(-1),incident=simulation.worldEvents.find(e=>e.neighborhood===n.id&&e.phase!=='idle'),event=incident?{name:incident.name,detail:incidentStatus(incident,data.events.rules,simulation.time)}:cityEvent(n,worldClock.now());
     return `<details class="neighborhood-entry" data-story-section="neighborhood:${n.id}" style="--neighborhood-color:${n.color}" ${world.district(c.position).id===n.id?'open':''}><summary tabindex="0">${esc(n.name)} <small>${n.stages.indexOf(stage)}/3 · ${esc(neighborhoodOutcome(n.id,c,data)?'Choice saved':stage.status)}</small></summary><p>${esc(n.premise)}</p>${neighborhoodOutcome(n.id,c,data)?`<p class="npc-quote">${esc(neighborhoodOutcome(n.id,c,data))}</p>`:''}<p class="neighborhood-now">ON THE STREET · ${esc(event.name)}<br><span ${incident?`data-incident-status="${incident.id}"`:""}>${esc(event.detail)}</span></p><p class="muted">${esc(contact.name)} · ${Math.round(distance(c.position,contact.position))} m · ${contact.position[1]?'24 m skyway · use the Night crew ramp or Transit lift':'Street level'}</p>${questCard(next,c)}<button class="small-button" data-do="map-region" data-id="city">LOCATE ON CITY MAP ↗</button></details>`;
   }).join('')}`;
@@ -340,11 +389,11 @@ function showShop(){
 }
 function showMap(region=mapRegion){
   mapRegion=region;
-  panel('World map.',`<div class="tabs">${[['city','CITY / NEIGHBORHOODS'],['basin','PALE BASIN']].map(([id,name])=>`<button class="${mapRegion===id?'selected':''}" data-do="map-region" data-id="${id}">${name}</button>`).join('')}</div><canvas id="full-map" class="map-view" width="900" height="720" aria-label="Map of Vesper with local quest contacts, objectives, lifts, stairs, ramps, and hills"></canvas><div class="map-legend"><span><i></i> YOU</span><span><i style="background:#e8c983"></i> OBJECTIVES</span><span><i style="background:#7dbfc0"></i> LIFTS</span><span><i style="background:#efb778"></i> QUEST CONTACTS</span><span><i style="background:#ddb27c"></i> STAIRS / RAMPS / HILLS</span></div><p class="panel-description">Quest contacts appear even in places you have not visited. Press J and choose Neighborhoods to see their quests. Last Connection is on a walkway 24 m above the street; use the Night crew ramp or Transit lift. Green door markers show buildings you can enter. Yellow lines show stairs, ramps, and hills. The Pale Basin tab shows the land outside the city.</p>`,'WORLD MAP / '+(mapRegion==='city'?'VESPER':'PALE BASIN'),'map');
+  panel('World map.',`<div class="tabs">${[['city','CITY / NEIGHBORHOODS'],['basin','PALE BASIN']].map(([id,name])=>`<button class="${mapRegion===id?'selected':''}" data-do="map-region" data-id="${id}">${name}</button>`).join('')}</div><canvas id="full-map" class="map-view" width="900" height="720" aria-label="Map of Vesper with local quest contacts, objectives, lifts, stairs, ramps, and hills"></canvas><div class="map-legend"><span><i></i> YOU</span><span><i style="background:#e8c983"></i> OBJECTIVES</span><span><i style="background:#7dbfc0"></i> LIFTS</span><span><i style="background:#efb778"></i> QUEST CONTACTS</span><span><i style="background:#ddb27c"></i> STAIRS / RAMPS / HILLS</span></div><p class="panel-description">Quest contacts appear even in places you have not visited. Open QUESTS → More → Neighborhoods to see their quests. Last Connection is on a walkway 24 m above the street; use the Night crew ramp or Transit lift. Green door markers show buildings you can enter. Yellow lines show stairs, ramps, and hills. The Pale Basin tab shows the land outside the city.</p>`,'WORLD MAP / '+(mapRegion==='city'?'VESPER':'PALE BASIN'),'map');
   drawMap($('#full-map'),true);
 }
 function showSettings(){
-  panel('Settings.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Turn background music and game sounds on or off.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Character voices<small id="voice-status" role="status">${esc(audio.voiceMessage)}</small><small>Local English voices are preferred; other browser voices may use an online speech service. No microphone is needed.</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="test-voice">TEST VOICE ♫</button></div><div class="setting-row"><label for="setting-quality">Graphics quality<small>Choose Low if the game looks choppy or runs slowly.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Light beams<small>Show beams of sunlight and lamplight. Low graphics quality hides the lamp beams.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Camera turn speed</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">View your character from behind<small>Turn off to see through your character’s eyes. Press V to switch.</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">DOWNLOAD CHARACTER FILE</button><button class="small-button" data-do="chat">NEARBY & ZONE CHAT</button><button class="small-button" data-do="gestures">GESTURES</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">Progress saved online · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS','settings');
+  panel('Settings.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Turn background music and game sounds on or off.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Character voices<small id="voice-status" role="status">${esc(audio.voiceMessage)}</small><small>Local English voices are preferred; other browser voices may use an online speech service. No microphone is needed.</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="test-voice">TEST VOICE ♫</button></div><div class="setting-row"><label for="setting-quality">Graphics quality<small>Choose Low if the game looks choppy or runs slowly.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Light beams<small>Show beams of sunlight and lamplight. Low graphics quality hides the lamp beams.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Camera turn speed</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">View your character from behind<small>Turn off to see through your character’s eyes. ${inputPrompt("Press V to switch.","Use this setting to switch views.","Use this setting to switch views.")}</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="forge">FRAME FORGE</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">DOWNLOAD CHARACTER FILE</button><button class="small-button" data-do="chat">NEARBY & ZONE CHAT</button><button class="small-button" data-do="gestures">GESTURES</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">Progress saved online · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS','settings');
   updateVoiceButton();
 }
 async function showAccount(mode='login'){
@@ -372,13 +421,13 @@ function wireEvents(){
   $('#return-graveyard').onclick=()=>act({type:'returnToGraveyard'});
   $('#spirit-healer').onclick=showSpiritHealer;
   $('#repeat-guidance').onclick=()=>{if(currentGuide)replayVoice(currentGuide.line,currentGuide.speaker);};
-  $('#story-social-action').onclick=()=>{const lesson=currentGuide?.social;if(lesson)liveChat.open(lesson.channel,lesson.id==='gesture');};
+  $('#quest-map').onclick=()=>{if(currentGuide?.destination)showMap(guideRegion(currentGuide));};
   $('#voice-toggle').onclick=()=>{audio.narration=!audio.narration;if(audio.narration&&currentGuide)replayVoice(currentGuide.line,currentGuide.speaker);updateVoiceButton();};
   $('#interaction').onclick=()=>perform('interact');
   $('#character-form').addEventListener('change',()=>{selectedRace=$('input[name="race"]:checked').value;selectedFaction=$('input[name="faction"]:checked').value;updateChoices();});
   $('#character-form').addEventListener('submit',async e=>{
     e.preventDefault();audio.unlock().catch(()=>{});const button=e.submitter;button.disabled=true;$('#character-error').textContent='';
-    try{const name=$('#character-name').value.trim();const c=(await api('/characters',{name,race:selectedRace,faction:selectedFaction})).character;await startGame(c,true);}
+    try{const name=$('#character-name').value.trim();const c=(await api('/characters',{name,race:selectedRace,faction:selectedFaction,appearance:frameForge.creationAppearance()})).character;await startGame(c,true);}
     catch(error){$('#character-error').textContent=error.message;$('#character-name').focus();}finally{button.disabled=false;}
   });
   $('#dialog-content').addEventListener('submit',e=>{
@@ -409,6 +458,7 @@ function wireEvents(){
       else if(action==='work-order'){act({type:'workOrder',id,operation:button.dataset.operation});setTimeout(refreshPanel,250);}
       else if(action==='catalog-page'){const view=button.dataset.view;if(view in catalogQueries){catalogQueries[view].page=Number(id);view==='inventory'?showInventory():showCrafting();}else if(view==='bestiary'){bestiaryQuery.page=Number(id);showBestiary();}}
       else if(action==='inventory')showInventory();
+      else if(action==='forge')frameForge.open();
       else if(action==='crafting')showCrafting();
       else if(action==='bestiary')showBestiary();
       else if(action==='auctions')await community.open('auctions');
@@ -439,7 +489,7 @@ function wireEvents(){
       }
       else if(action==='community')await community.open();
       else if(action==='chat'||action==='gestures')perform(action);
-      else if(action==='social-lesson'){const lesson=openingGuide(simulation.character,data,simulation.worldEvents)?.social;if(lesson){closePanel();liveChat.open(lesson.channel,lesson.id==='gesture');}}
+      else if(action==='social-lesson'){const lesson=openingGuide(simulation.character,data,simulation.worldEvents,input.lastDevice)?.social;if(lesson){closePanel();liveChat.open(lesson.channel,lesson.id==='gesture');}}
       else if(action==='dungeons')showDungeons();
       else if(action==='dungeon'){
         act({type:'dungeon',operation:button.dataset.operation,dungeon:button.dataset.dungeon,run:Number(button.dataset.run),chapter:Number(button.dataset.chapter),attempt:Number(button.dataset.attempt),target:button.dataset.target,choice:button.dataset.choice});
@@ -481,22 +531,25 @@ function updateVoiceButton(){
 }
 function updateStoryGuide(){
   const c=simulation.character;
-  currentGuide=c.health>0&&!simulation.inDungeon?openingGuide(c,data,simulation.worldEvents):null;
-  const campaign=campaignLead(c,data,simulation.worldEvents);
-  $('#campaign-chapter').textContent=currentGuide?.tutorial?`TUTORIAL · ${currentGuide.view.index+1}/${currentGuide.view.total}`:`MAIN STORY · ${campaign.complete?'COMPLETE':`${campaign.index+1}/5`}`;
-  $('#campaign-lead').hidden=Boolean(currentGuide);
-  $('#campaign-lead').textContent=campaign.instruction;
+  $('#ghostline-status').hidden=Boolean(c.tutorialStage);
+  currentGuide=c.health>0&&!simulation.inDungeon?nextQuestGuide():null;
   $('#story-guide').hidden=!currentGuide;
-  $('#tracked-quests').hidden=Boolean(currentGuide);
+  const tutorial=String(Boolean(currentGuide?.tutorial));
+  if($('.quest-tracker').dataset.tutorial!==tutorial)$('#story-help').open=tutorial==='true';
+  $('.quest-tracker').dataset.tutorial=tutorial;
+  $('#quest-map').hidden=!currentGuide?.destination;
   if(!currentGuide)return;
-  const g=currentGuide,d=g.destination;
-  $('#story-chapter').textContent=(g.chapter||g.quest?.story?.chapter||'Your first quests')+(g.view.accepted&&!g.view.ready?` · ${g.view.index+1}/${g.view.total}`:'');
-  const instruction=g.instruction+(g.view.step.type==='hold'&&g.view.accepted&&!g.view.ready?` (${g.view.progress}/${g.view.step.count}s)`:'');
+  const g=currentGuide,d=g.destination,view=g.view;
+  for(const node of document.querySelectorAll('[data-tutorial-hint]'))if(g.tutorial)node.textContent=g.hint;
+  for(const node of document.querySelectorAll('[data-social-hint]'))if(g.social)node.textContent=g.social.hint;
+  for(const node of document.querySelectorAll('[data-social-label]'))if(g.social)node.textContent=g.social.label;
+  $('#campaign-chapter').textContent=g.tutorial?`TUTORIAL · ${view.index+1}/${view.total}`:view?.ready?'READY TO FINISH':view?.accepted&&view.staged?`STEP ${view.index+1} OF ${view.total}`:'MAIN STORY';
+  $('#story-chapter').textContent=g.quest?.title||g.chapter;
+  const instruction=guideInstruction(g);
   if($('#story-instruction').textContent!==instruction)$('#story-instruction').textContent=instruction;
-  $('#story-direction').textContent=d?`${bearing(c.position,d.position,yaw)} ${Math.ceil(distance(c.position,d.position))} m · ${d.name}${Math.abs(d.position[1]-c.position[1])>5?' · follow the marked stairs, ramps, or lifts':''}`:'';
+  $('#story-direction').hidden=!d;
+  $('#story-direction').textContent=d?`${bearing(c.position,d.position,yaw)} ${Math.ceil(distance(c.position,d.position))} m · ${d.name}${Math.abs(d.position[1]-c.position[1])>5?' · use stairs, ramps, or lifts':''}`:'';
   $('#story-hint').textContent=g.hint;
-  $('#story-social').hidden=!g.social;
-  if(g.social){$('#story-social-hint').textContent=g.social.hint;$('#story-social-action').textContent=g.social.label;}
   if(state==='playing'&&g.key!==storyCue&&!$('#panel-dialog').open&&!audio.speaking){storyCue=g.key;audio.speak(g.line,g.speaker);}
 }
 function showSpiritHealer(){
@@ -524,7 +577,7 @@ function updateRecoveryUI(){
   $('#recovery-panel').hidden=!spirit;
   if(spirit&&view){
     $('#corpse-direction').textContent=`${bearing(c.position,c.death.corpse,yaw)} YOUR BODY · ${view.distance} m`;
-    $('#recovery-description').textContent=view.canReclaim?'Your body is close enough. Choose RETURN TO LIFE to recover with 50% health and energy. You can also select your body and press E (controller: X; touch: USE).':`Get within ${r.reclaimRadius} m of your body with nothing blocking your view. As a ghost, you cannot take damage and can use lifts. Your body is ${Math.round(c.death.corpse[1])} m above street level. Press M for the map or Esc for recovery options.`;
+    $('#recovery-description').textContent=view.canReclaim?'Your body is close enough. Choose RETURN TO LIFE to recover with 50% health and energy. '+prompt('You can also click your body and press E.','You can also press Y to select your body, then X.','You can also tap your body, then USE.'):`Get within ${r.reclaimRadius} m of your body with nothing blocking your view. As a ghost, you cannot take damage and can use lifts. Your body is ${Math.round(c.death.corpse[1])} m above street level. ${prompt("Press M for the map or Esc for recovery options.","Press D-pad down for the map or Menu for recovery options.","Tap MAP for the map or the menu for recovery options.")}`;
     $('#reclaim-corpse').disabled=!view.canReclaim;
     $('#spirit-healer').hidden=!view.atHealer;
     $('#spirit-healer').textContent=`HEALER · ${view.healerCost} gold + ${r.sicknessSeconds}s WEAKNESS`;
@@ -547,23 +600,23 @@ function updateHUD(){
   $('#gold').textContent=`${c.gold} gold`;$('#medkit-count').textContent=String(c.medkits);
   $('#xp-fill').style.width=`${c.level===60?100:c.xp/experienceFor(c.level,data.rules)*100}%`;$('#xp-text').textContent=c.level===60?'LEVEL 60 / MAX LEVEL':`LEVEL ${c.level} · ${c.xp.toLocaleString('en-US')} / ${experienceFor(c.level,data.rules).toLocaleString('en-US')} XP`;
   $('#founder-xp-status').hidden=!founderBoostActive(c);
-  const district=world.district(c.position),interior=world.interiorAt(c.position),training=!simulation.inDungeon&&world.inTutorial(c.position);
-  $('#zone-name').textContent=training?data.world.tutorial.name.toUpperCase():interior?interior.identity.name.split(' · ')[0]:district.name;
-  $('#zone-subtitle').textContent=training?'SAFE TRAINING AREA · MOVE / USE / SHOOT':interior?`${interior.identity.address} · ${Math.floor(c.position[1]/data.world.interiors.height)===0?'Shop / stairs inside':interior.identity.upper[Math.min(1,Math.floor(c.position[1]/data.world.interiors.height)-1)]}`:district.subtitle;
+  const district=world.district(c.position),interior=world.interiorAt(c.position),rooftop=world.rooftopAt(c.position),floor=interior?Math.max(0,interior.levels.findIndex(y=>y>c.position[1])-1):0,training=!simulation.inDungeon&&world.inTutorial(c.position);
+  $('#zone-name').textContent=training?data.world.tutorial.name.toUpperCase():rooftop?rooftop.rooftop.name:interior?interior.identity.name.split(' · ')[0]:district.name;
+  $('#zone-subtitle').textContent=training?'SAFE TRAINING AREA · MOVE / USE / SHOOT':rooftop?`${rooftop.rooftop.street} · STAIRS BACK TO STREET`:interior?`${interior.identity.address} · ${floor===0?'Shop / stairs inside':interior.identity.upper[floor-1]||'Stairs to '+interior.rooftop.name}`:district.subtitle;
   const neighborhood=cityLife.neighborhoods.get(district.id),street=$('#street-life');
   const incident=simulation.worldEvents.filter(e=>e.phase!=='idle'&&Math.abs(c.position[1]-e.position[1])<6&&distance(c.position,e.position)<data.events.rules.triggerRadius).sort((a,b)=>distance(c.position,a.position)-distance(c.position,b.position))[0];
   street.hidden=training||(!neighborhood&&!incident)||simulation.inDungeon;street.classList.toggle('has-incident',Boolean(incident));
   if(incident){
     const next=incident.controls.filter(s=>!incident.repaired.includes(s.id)).sort((a,b)=>distance(c.position,a.position)-distance(c.position,b.position))[0];
-    street.textContent=`EMERGENCY · ${incident.name}\n${incidentStatus(incident,data.events.rules,simulation.time)}${incident.phase==='active'&&next?`\nE · ${next.name} · ${Math.round(distance(c.position,next.position))} m`:''}`;
+    street.textContent=`EMERGENCY · ${incident.name}\n${incidentStatus(incident,data.events.rules,simulation.time)}${incident.phase==='active'&&next?`\n${prompt("E","X","USE")} · ${next.name} · ${Math.round(distance(c.position,next.position))} m`:''}`;
     street.style.setProperty('--neighborhood-color',incident.color);
-  }else if(neighborhood){const event=cityEvent(neighborhood,worldClock.now());street.textContent=`${neighborhood.name} · ${event.name} · J: Neighborhoods`;street.style.setProperty('--neighborhood-color',neighborhood.color);}
+  }else if(neighborhood){const event=cityEvent(neighborhood,worldClock.now());street.textContent=`${neighborhood.name} · ${event.name} · ${prompt("J","View","QUESTS")}: Neighborhoods`;street.style.setProperty('--neighborhood-color',neighborhood.color);}
   for(const node of document.querySelectorAll("[data-incident-status]")){const event=simulation.worldEvents.find(e=>e.id===node.dataset.incidentStatus);if(event)node.textContent=incidentStatus(event,data.events.rules,simulation.time);}
   const ds=simulation.dungeon,run=ds?.run,definition=run&&data.dungeons.entries.find(d=>d.id===run.dungeon);
   if(simulation.inDungeon){$('#zone-name').textContent=definition.name;$('#zone-subtitle').textContent=definition.chapters[run.chapter].name;}
   $('.quest-tracker').hidden=simulation.inDungeon||c.health<=0;$('.minimap-heading>span').textContent=simulation.inDungeon?'DUNGEON':district.kind?district.name:district.id==='basin'?'PALE BASIN':'VESPER';
   const status=$('#dungeon-status');status.hidden=!run&&!ds?.queue;
-  status.textContent=run?run.phase==='ready'?`GROUP FOUND · ${Math.max(0,Math.ceil(run.deadline-simulation.time))}s · G TO JOIN`:run.phase==='active'?`CHAPTER ${run.chapter+1} · EVIDENCE ${run.evidence.length}/2 · PLAYERS WHO READ EVIDENCE ${run.signed.length}/${run.members.length} · G DETAILS`:`${run.phase==='wipe'?'GROUP REVIVING':run.phase==='complete'?'DUNGEON COMPLETE':run.phase==='decision'?'YOUR CHOICE':'CHAPTER READY'} · G DETAILS`:ds?.queue?`DUNGEON QUEUE · ${ds.queue.waiting}/${ds.queue.required} · G TO VIEW`:'';
+  status.textContent=run?run.phase==='ready'?`GROUP FOUND · ${Math.max(0,Math.ceil(run.deadline-simulation.time))}s · ${prompt("G TO JOIN","MENU → DUNGEONS TO JOIN","DUNGEONS TO JOIN")}`:run.phase==='active'?`CHAPTER ${run.chapter+1} · EVIDENCE ${run.evidence.length}/2 · PLAYERS WHO READ EVIDENCE ${run.signed.length}/${run.members.length} · ${prompt("G DETAILS","MENU → DUNGEONS","DUNGEONS DETAILS")}`:`${run.phase==='wipe'?'GROUP REVIVING':run.phase==='complete'?'DUNGEON COMPLETE':run.phase==='decision'?'YOUR CHOICE':'CHAPTER READY'} · ${prompt("G DETAILS","MENU → DUNGEONS","DUNGEONS DETAILS")}`:ds?.queue?`DUNGEON QUEUE · ${ds.queue.waiting}/${ds.queue.required} · ${prompt("G TO VIEW","MENU → DUNGEONS","DUNGEONS TO VIEW")}`:'';
   const hazard=$('#dungeon-warning'),warning=run?.phase==='active'&&run.nextPulse-simulation.time<=data.dungeons.rules.warningSeconds;
   hazard.hidden=!warning;if(warning)hazard.textContent=`${Math.max(0,Math.ceil(run.nextPulse-simulation.time))}s · ${definition.chapters[run.chapter].warning}`;
   if(dialogPage==='dungeons'){
@@ -577,8 +630,9 @@ function updateHUD(){
     const countdown=$('[data-dungeon-countdown]');if(countdown)countdown.textContent=Math.max(0,Math.ceil(run.deadline-simulation.time));
     for(const node of document.querySelectorAll('[data-dungeon-vitals]')){const member=run?.members.find(m=>m.id===node.dataset.dungeonVitals);if(member)node.textContent=member.health<=0?'DEAD':`${Math.ceil(member.health)}/${Math.ceil(member.maxHealth)} HEALTH`;}
   }
-  $('#role-label').textContent=data.factions.find(f=>f.id===c.faction).name.toUpperCase()+' / PLAYER'+(talentBudget(c,data.rules)>Object.values(c.talents).reduce((sum,n)=>sum+n,0)?' · T: USE TALENT POINTS':'');
-  $('#elevation').textContent=interior?`FLOOR ${Math.min(3,Math.floor(c.position[1]/data.world.interiors.height)+1)} / 3 · ${Math.round(c.position[1])} M`:Math.abs(c.position[1])<.1?'STREET LEVEL':`ELEVATION ${Math.round(c.position[1])} M`;
+  $('#role-label').textContent=data.factions.find(f=>f.id===c.faction).name.toUpperCase()+' / PLAYER'+(talentBudget(c,data.rules)>Object.values(c.talents).reduce((sum,n)=>sum+n,0)?' · '+prompt('T: USE TALENT POINTS','TALENTS: USE POINTS','TALENTS: USE POINTS'):'');
+  const elevatedStreet=world.streetAt(c.position);
+  $('#elevation').textContent=rooftop?`ROOFTOP · ${Math.round(rooftop.h)} M`:interior?`FLOOR ${floor+1} / ${interior.levels.length-1} · ${Math.round(c.position[1])} M`:elevatedStreet?`${elevatedStreet.start[1]===elevatedStreet.end[1]?'UPPER STREET':'STREET INCLINE'} · ${Math.round(c.position[1])} M`:Math.abs(c.position[1])<.1?'STREET LEVEL':`ELEVATION ${Math.round(c.position[1])} M`;
   const target=selectedTarget(),problem=targetProblem(target,c,world);$('#target-frame').hidden=!target;
   if(target){
     const object=target.object,health=Number.isFinite(object.health)&&object.maxHealth>0;
@@ -587,23 +641,18 @@ function updateHUD(){
     if(health){$('#target-health').style.width=`${clamp(object.health/object.maxHealth*100,0,100)}%`;$('#target-health').style.background=target.kind==='enemy'?'#c07871':'#8ce7d0';}
     $('#target-status').textContent=`${Math.ceil(distance(c.position,target.position))} m · ${problem||target.action}`;
   }
-  const tracked=data.quests.filter(q=>c.activeQuests[q.id]!==undefined).slice(0,3);
-  $('#tracked-quests').innerHTML=tracked.length?tracked.map(q=>{
-    const view=questView(q,c),npc=data.npcs.find(n=>n.id===q.giver),dest=questDestination(q,c,data,simulation.worldEvents);
-    return `<div class="tracked-quest"><strong>${esc(q.title)}${view.staged&&!view.ready?` · ${view.index+1}/${view.total}`:''}</strong><span>${view.ready?'↳ Return and choose an ending with '+esc(npc.name):esc(questObjective(q))+' · '+view.progress+'/'+view.step.count+(view.step.type==='hold'?'s':'')}</span>${dest?`<small>◇ ${Math.round(distance(c.position,dest.position))} m / ${esc(dest.name)}</small>`:''}</div>`;
-  }).join(''):`<div class="tracked-quest"><small>Press J → Story to see what to do next.</small></div>`;
   updateStoryGuide();
   $('#interaction').hidden=!target?.action||$('#panel-dialog').open||c.health<=0&&!isSpirit(c);
   $('#interaction').disabled=Boolean(problem);
-  $('#interaction-key').textContent=input.connected?'X':'E';
+  $('#interaction-key').textContent=controlLabel('interact',input.lastDevice);
   if(target)$('#interaction-text').textContent=`${target.action} · ${target.object.name}${problem?' · '+problem:''}`;
   for(const a of data.abilities){const b=$(`[data-action="ability:${a.id}"]`),remaining=Math.max(0,(simulation.cooldowns[a.id]||0)-simulation.time);b.classList.toggle('locked',c.level<a.level);b.querySelector('.cooldown-shade').style.transform=`scaleY(${Math.min(1,remaining/(a.cooldown*(1-s.haste)))})`;b.querySelector('.cooldown-number').textContent=remaining>0?Math.ceil(remaining):'';b.querySelector('.locked-level').textContent=c.level<a.level?'LV '+a.level:'';}
   const ghost=simulation.ghostlines.find(g=>g.owner===c.id&&simulation.time<=g.started+g.path.at(-1).time),charge=simulation.ghostCharge;
-  const ghostCooldown=Math.max(0,(simulation.cooldowns.ghostline||0)-simulation.time),ghostKey=input.connected?'R3':'R',g=data.rules.ghostline,ghostCost=data.abilities.find(a=>a.id==='ghostline').cost*(1-s.efficiency);
+  const ghostCooldown=Math.max(0,(simulation.cooldowns.ghostline||0)-simulation.time),ghostKey=prompt('R','R3','GHOST'),g=data.rules.ghostline,ghostCost=data.abilities.find(a=>a.id==='ghostline').cost*(1-s.efficiency);
   $('#ghostline-status').textContent=c.health<=0?'GHOSTLINE · UNAVAILABLE WHILE DEAD':ghost?'GHOSTLINE ACTIVE · TOUCH YOUR BLUE GHOST TO BLAST ENEMIES':ghostCooldown>0?`GHOSTLINE · RECHARGING ${Math.ceil(ghostCooldown)}s`:c.energy<ghostCost?`GHOSTLINE · NEED ${Math.ceil(ghostCost)} ENERGY`:charge?.ready?`${ghostKey} · GHOSTLINE READY · USE, THEN TOUCH YOUR BLUE GHOST`:`GHOSTLINE · MOVE ${Math.min(g.minDistance,Math.floor(charge?.meters||0))}/${g.minDistance} m · ${Math.min(g.minSeconds,charge?.seconds||0).toFixed(1)}/${g.minSeconds} s`;
   updateRecoveryUI();
   input.menu=inputBlocked();
-  $('#input-label').textContent=input.connected?'Y SELECT · X USE · RT SHOOT':'CLICK TO SELECT · HOLD RIGHT MOUSE TO LOOK · E TO USE';
+  $('#input-label').textContent=prompt('CLICK TO SELECT · HOLD RIGHT MOUSE TO LOOK · E TO USE','Y SELECT · X USE · RT SHOOT','TAP TO SELECT · DRAG TO LOOK · USE');
   drawMap($('#minimap'),false);
   if(dialogPage==='map')drawMap($('#full-map'),true);
 }
@@ -621,7 +670,12 @@ function drawMap(canvas,full){
     for(let x=Math.floor(minX/cell);x<=Math.floor(maxX/cell);x++)for(let z=Math.floor(minZ/cell);z<=Math.floor(maxZ/cell);z++)if(!world.discovered.has(`${x},${z}`)){const [px,py]=p([x*cell,0,z*cell]);ctx.fillRect(px,py,cell*scale+.5,cell*scale+.5);}
     if(!full)for(const b of world.buildings)if(b.interior&&world.isDiscovered([b.x,0,b.z]))for(const side of [-1,1]){const [x,y]=p([b.x,0,b.z+side*b.d/2]);if(x>=0&&x<w&&y>=0&&y<h){ctx.fillStyle='#73f4d1';ctx.fillRect(x-2,y-1,4,2);}}
   }
-  for(const route of data.world.routes||[]){const a=p(route.start),b=p(route.end);ctx.strokeStyle='#ddb27c';ctx.lineWidth=full?2:3;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();if(!full){ctx.font='8px monospace';ctx.fillStyle='#e5c49a';ctx.fillText(`${Math.round(route.end[1])}m`,b[0]+5,b[1]);}}
+  for(const route of data.world.routes||[]){const a=p(route.start),b=p(route.end),street=route.kind==='street';ctx.strokeStyle=street?(Math.max(route.start[1],route.end[1])>=48?'#dab587':'#81c9ca'):'#ddb27c';ctx.lineWidth=street?(full?3:5):(full?2:3);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();if(!full){ctx.font='8px monospace';ctx.fillStyle=ctx.strokeStyle;ctx.fillText(`${Math.round(route.end[1])}m`,b[0]+5,b[1]);}}
+  if(!simulation.inDungeon)for(const b of world.rooftops){
+    if(!world.isDiscovered([b.x,0,b.z]))continue;
+    const [x,y]=p([b.x,0,b.z]);ctx.strokeStyle=b.identity.trim;ctx.lineWidth=2;ctx.strokeRect(x-4,y-4,8,8);
+    ctx.fillStyle=b.identity.trim;ctx.font='9px monospace';ctx.textAlign='center';ctx.fillText(full?`${b.rooftop.name} · ${Math.round(b.h)}m`:`ROOF ${Math.round(b.h)}m`,x,y+15);
+  }
   if(!simulation.inDungeon&&data.world.tutorial){const area=data.world.tutorial,[x,y]=p(area.center);ctx.strokeStyle=area.color;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,area.radius*scale,0,Math.PI*2);ctx.stroke();if(full&&mapRegion==='city'){ctx.fillStyle=area.color;ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('TUTORIAL COURTYARD',x,y-area.radius*scale-8);}}
   for(const lift of data.world.lifts){const [x,y]=p(lift.position);ctx.fillStyle='#77c4cd';ctx.fillRect(x-2,y-2,4,4);}
   if(simulation.inDungeon){const r=data.dungeons.rules,run=simulation.dungeon.run,d=data.dungeons.entries.find(d=>d.id===run.dungeon);const [x,y]=p(r.arena);ctx.strokeStyle='#d3dbba';ctx.strokeRect(x-r.arenaRadius*scale,y-r.arenaRadius*scale,r.arenaRadius*scale*2,r.arenaRadius*scale*2);for(const point of [...d.chapters[run.chapter].evidence.map(e=>dungeonPosition(r,e.position)),r.recoveryPosition]){const [x,y]=p(point);ctx.fillStyle=d.color;ctx.fillRect(x-3,y-3,6,6);}for(const other of otherPlayers){const [x,y]=p(other.position);ctx.fillStyle=other.health>0?'#81dce0':'#ee9b9f';ctx.fillRect(x-2,y-2,4,4);}}
@@ -632,8 +686,7 @@ function drawMap(canvas,full){
   }
   for(const q of data.quests)if(c.activeQuests[q.id]!==undefined){const dest=questDestination(q,c,data,simulation.worldEvents);if(dest){const [x,y]=p(dest.position);ctx.strokeStyle='#e7cb7b';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.stroke();}}
   if(!simulation.inDungeon){
-    const lead=c.health>0?campaignLead(c,data,simulation.worldEvents).next:null;
-    const guide=c.health>0?openingGuide(c,data,simulation.worldEvents)||(!lead?.locked?lead:null):null;
+    const guide=c.health>0?nextQuestGuide():null;
     const markers=c.death?[{name:'YOUR BODY',position:c.death.corpse,color:'#c3e8ff'},...data.world.graveyards.filter(g=>g.id===c.death.graveyard).map(g=>({...g,color:'#91cbdc'}))]:guide?.destination?[{...guide.destination,color:'#f5d38a'}]:[];
     for(const marker of markers){const [mx,my]=p(marker.position),x=clamp(mx,9,w-9),y=clamp(my,20,h-9);ctx.strokeStyle=marker.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+5,y);ctx.lineTo(x,y+6);ctx.lineTo(x-5,y);ctx.closePath();ctx.stroke();if(full){ctx.fillStyle=marker.color;ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText(marker.name,x,y-10);}}
   }
@@ -649,13 +702,13 @@ function updateLabels(){
   if(target&&visibleTargets([target],c,world,renderer).length){const b=targetBounds(target,p=>renderer.project(p));html+=`<div class="target-marker" style="left:${b.left}px;top:${b.top}px;width:${b.right-b.left}px;height:${b.bottom-b.top}px;border-color:${target.kind==='enemy'?'#efbd7d':'#8ce7d0'}"></div>`;}
   const waypoint=c.death?{name:'YOUR BODY',position:c.death.corpse}:currentGuide?.destination;
   if(waypoint&&!simulation.inDungeon){const p=renderer.project([waypoint.position[0],waypoint.position[1]+3.5,waypoint.position[2]]);if(p&&p[2]<=1)html+=`<div class="world-label story-waypoint" style="left:${p[0]}px;top:${p[1]}px">◇ ${esc(waypoint.name)}<small>${Math.ceil(distance(c.position,waypoint.position))} m${c.death?' · RETURN TO LIFE':currentGuide?.tutorial?' · TUTORIAL':' · STORY'}</small></div>`;}
-  if(isSpirit(c)){const g=data.world.graveyards.find(g=>g.id===c.death.graveyard),p=g&&renderer.project([g.position[0],g.position[1]+3.5,g.position[2]]);if(p&&p[2]<=1)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px;color:#bce8fa">GRAVEYARD HEALER<small>${esc(g.name)} · SELECT, THEN E (CONTROLLER: X · TOUCH: USE)</small></div>`;}
-  if(simulation.inDungeon){const run=simulation.dungeon.run,d=data.dungeons.entries.find(d=>d.id===run.dungeon),r=data.dungeons.rules;for(const e of [...d.chapters[run.chapter].evidence.map(e=>({...e,position:dungeonPosition(r,e.position)})),{name:'HEAL HERE · SELECT, THEN E',position:r.recoveryPosition}]){const p=renderer.project([e.position[0],e.position[1]+3,e.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(e.name)}</div>`;}for(const other of otherPlayers.filter(p=>p.health<=0)){const p=renderer.project([other.position[0],other.position[1]+1,other.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(other.name)}<small>DEAD · SELECT, THEN E TO REVIVE</small></div>`;}}
+  if(isSpirit(c)){const g=data.world.graveyards.find(g=>g.id===c.death.graveyard),p=g&&renderer.project([g.position[0],g.position[1]+3.5,g.position[2]]);if(p&&p[2]<=1)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px;color:#bce8fa">GRAVEYARD HEALER<small>${esc(g.name)} · SELECT, THEN ${prompt('E','X','USE')}</small></div>`;}
+  if(simulation.inDungeon){const run=simulation.dungeon.run,d=data.dungeons.entries.find(d=>d.id===run.dungeon),r=data.dungeons.rules;for(const e of [...d.chapters[run.chapter].evidence.map(e=>({...e,position:dungeonPosition(r,e.position)})),{name:`HEAL HERE · SELECT, THEN ${prompt('E','X','USE')}`,position:r.recoveryPosition}]){const p=renderer.project([e.position[0],e.position[1]+3,e.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(e.name)}</div>`;}for(const other of otherPlayers.filter(p=>p.health<=0)){const p=renderer.project([other.position[0],other.position[1]+1,other.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(other.name)}<small>DEAD · SELECT, THEN ${prompt('E','X','USE')} TO REVIVE</small></div>`;}}
   for(const npc of data.npcs){if(distance(c.position,npc.position)>75||!world.lineOfSight(c.position,npc.position))continue;const p=renderer.project([npc.position[0],npc.position[1]+3,npc.position[2]]);if(!p||p[2]>1)continue;const has=data.quests.some(q=>q.giver===npc.id&&(availableQuest(q,c)||c.activeQuests[q.id]>=q.objective.count));html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px;color:${npc.color}">${has?'<span class="quest-mark">!</span>':''}${esc(npc.name)}<small>${esc(npc.title)}</small></div>`;}
   if(!simulation.inDungeon){
     const shops=world.buildings.map(b=>({b,door:[b.x,0,b.z+(c.position[2]<b.z?-1:1)*(b.d/2+.9)]})).filter(({door})=>distance(c.position,door)<38).sort((a,b)=>distance(c.position,a.door)-distance(c.position,b.door)).slice(0,2);
-    for(const {b,door}of shops){if(!world.lineOfSight(c.position,door))continue;const p=renderer.project([door[0],4.9,door[2]]);if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:${b.identity.trim}">${esc(b.identity.name)}<small>${b.interior?'OPEN · 3 FLOORS · STAIRS INSIDE':'SERVICE BUILDING · NO PUBLIC ENTRY'}</small></div>`;}
-    for(const route of data.world.routes||[]){const end=distance(c.position,route.start)<distance(c.position,route.end)?route.start:route.end;if(distance(c.position,end)>30||!world.lineOfSight(c.position,end))continue;const p=renderer.project([end[0],end[1]+2.5,end[2]]);if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:#ddb27c">${esc(route.name)}<small>${Math.round(route.start[1])} M ↔ ${Math.round(route.end[1])} M · WALK TO CLIMB</small></div>`;}
+    for(const {b,door}of shops){if(!world.lineOfSight(c.position,door))continue;const p=renderer.project([door[0],4.9,door[2]]);if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:${b.identity.trim}">${esc(b.rooftop?.street||b.identity.name)}<small>${b.rooftop?`${esc(b.rooftop.name)} · ${Math.round(b.h)} M · STAIRS INSIDE`:b.interior?'OPEN · 3 FLOORS · STAIRS INSIDE':'SERVICE BUILDING · NO PUBLIC ENTRY'}</small></div>`;}
+    for(const route of data.world.routes||[]){const end=distance(c.position,route.start)<distance(c.position,route.end)?route.start:route.end;if(distance(c.position,end)>30||!world.lineOfSight(c.position,end))continue;const p=renderer.project([end[0],end[1]+2.5,end[2]]),level=route.start[1]===route.end[1];if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:#ddb27c">${esc(route.name)}<small>${level?`${Math.round(end[1])} M · ${route.kind==='street'?'UPPER STREET':'LOOKOUT'}`:`${Math.round(route.start[1])} M ↔ ${Math.round(route.end[1])} M · WALK TO CLIMB`}</small></div>`;}
     const overheard=!$('#panel-dialog').open&&cityLife.overheard(c.position,worldClock.now());
     const resident=target?.kind==='resident'?target.object:null;
     for(const actor of [overheard,resident].filter((a,i,all)=>a&&all.findIndex(b=>b?.id===a.id)===i)){
@@ -672,11 +725,11 @@ function updateLabels(){
     for(const site of data.world.landmarks.filter(l=>l.neighborhood||Object.values(data.world.tutorial||{}).includes(l.id))){
       if(distance(c.position,site.position)>32||!world.lineOfSight(c.position,site.position))continue;
       const p=renderer.project([site.position[0],site.position[1]+4.6,site.position[2]]);
-      if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:${site.color}">${esc(site.name)}<small>${site.kind==='practice'?'PRACTICE · SELECT, THEN SHOOT':site.kind==='training-pad'?'WALK ONTO THIS MARKER':site.id===data.world.tutorial?.exit?'LEAVE TRAINING · SELECT, THEN USE':site.id===data.world.tutorial?.terminal?'TRAINING · SELECT, THEN USE':'READ RECORD · SELECT, THEN E'}</small></div>`;
+      if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:${site.color}">${esc(site.name)}<small>${site.kind==='practice'?'PRACTICE · SELECT, THEN SHOOT':site.kind==='training-pad'?'WALK ONTO THIS MARKER':site.id===data.world.tutorial?.exit?'LEAVE TRAINING · SELECT, THEN USE':site.id===data.world.tutorial?.terminal?'TRAINING · SELECT, THEN USE':`READ RECORD · SELECT, THEN ${prompt('E','X','USE')}`}</small></div>`;
     }
   }
   for(const e of simulation.enemies){if(e.health<=0||distance(c.position,e.position)>80||!world.lineOfSight(c.position,e.position))continue;const p=renderer.project([e.position[0],e.position[1]+3.4,e.position[2]]);if(!p||p[2]>1)continue;html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px;color:${targetKey===`enemy:${e.id}`?'#f1d0a4':'#d4b7a0'}">${esc(e.name)} <small>LV ${e.level}</small><div class="enemy-bar"><i style="width:${e.health/e.maxHealth*100}%"></i></div></div>`;}
-  for(const other of otherPlayers){if(other.health<=0||distance(c.position,other.position)>80||!world.lineOfSight(c.position,other.position))continue;const p=renderer.project([other.position[0],other.position[1]+2.8,other.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(other.name)}${other.guild?`<small>〈${esc(other.guild.name)}〉</small>`:''}</div>`;}
+  for(const other of otherPlayers){if(other.health<=0||distance(c.position,other.position)>80||!world.lineOfSight(c.position,other.position))continue;const p=renderer.project([other.position[0],other.position[1]+2.8,other.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(other.name)}${other.forge?.score?`<small>${esc(forgeRank(other.forge.score,data.forge).name)} · ${other.forge.score}</small>`:''}${other.guild?`<small>〈${esc(other.guild.name)}〉</small>`:''}</div>`;}
   for(const ghost of simulation.ghostlines){if(simulation.time>ghost.started+ghost.path.at(-1).time)continue;const position=ghostPosition(ghost,simulation.time);if(distance(c.position,position)>80)continue;const p=renderer.project([position[0],position[1]+3.2,position[2]]);if(p)html+=`<div class="world-label ghostline-label" style="left:${p[0]}px;top:${p[1]}px">${esc(ghost.name)} · GHOSTLINE<small>${simulation.time<ghost.started+data.rules.ghostline.armSeconds?'GETTING READY':'TOUCH TO BLAST ENEMIES'}</small></div>`;}
   for(const f of floaters){const age=time-f.time,p=renderer.project([f.position[0],f.position[1]+3+age*2,f.position[2]]);if(p)html+=`<div class="float-number ${f.critical?'critical':''}" style="left:${p[0]}px;top:${p[1]}px;color:${f.color};opacity:${1-age/f.duration}">${esc(f.text)}</div>`;}
   html+=liveChat.feed.labels(c,otherPlayers,world,renderer,worldClock.now());
@@ -693,11 +746,17 @@ function gameCamera(dt){
 }
 function frame(timestamp){
   const dt=Math.min((timestamp-lastFrame)/1000||.016,.05);lastFrame=timestamp;time+=dt;
-  const controls=input.sample(dt);let actors=data.npcs.map(n=>({...n,model:'humanoid',yaw:Math.atan2(-n.position[0],32-n.position[2])})),camera;
+  const controls=input.sample(dt);
+  if(promptDevice!==input.lastDevice){
+    promptDevice=input.lastDevice;updateInputPrompts($('#interface-source'),promptDevice);
+    if(currentGuide?.tutorial){audio.stopVoice();storyCue='';}
+    if(state==='playing')updateHUD();
+  }
+  let actors=data.npcs.map(n=>({...n,model:'humanoid',yaw:Math.atan2(-n.position[0],32-n.position[2])})),camera;
   if(state==='landing'){
     const orbit=reducedMotion?0:Math.sin(time*.018)*6;camera={eye:[58+orbit,40,58],target:[-55,28,-130],fov:.95};
   }else if(state==='creation'){
-    camera={eye:[3,2.4,38.5],target:[-3,1.2,32],fov:.62};actors=[{position:[0,0,32],model:'humanoid',race:selectedRace,yaw:Math.PI*.2+(reducedMotion?0:Math.sin(time*.2)*.15),color:data.races.find(r=>r.id===selectedRace).color,founderHalo:account?.founderHalo}];
+    camera={eye:[3,2.4,38.5],target:[-3,1.2,32],fov:.62};actors=[];
   }else if(state==='cinematic'){
     connection?.update(dt,{forward:0,strafe:0,yaw,jump:false,dash:false,sprint:false});
     introTime+=dt;const index=data.intro.shots.findIndex(s=>introTime>=s.start&&introTime<s.end),shot=data.intro.shots[Math.max(0,index)];
@@ -710,7 +769,7 @@ function frame(timestamp){
     controls.yaw=yaw;simulation.tick(dt,controls);connection?.update(dt,controls);camera=gameCamera(dt);
     if(!simulation.inDungeon)world.reveal(simulation.character.position);
     if(thirdPerson){const c=simulation.character;actors.push({...c,ghost:isSpirit(c),guild:myGuild,model:'humanoid',velocity:simulation.velocity,grounded:simulation.grounded,yaw:yaw+Math.PI,color:isSpirit(c)?'#bce8fa':data.races.find(r=>r.id===c.race).color});}
-    if(simulation.character.death){const c=simulation.character,g=data.world.graveyards.find(g=>g.id===c.death.graveyard);actors.push({id:'fallen-body',model:'humanoid',race:c.race,position:c.death.corpse,corpse:true,color:'#9cb0bf'});if(isSpirit(c)&&g)actors.push({id:'spirit-keeper',model:'humanoid',position:g.position,ghost:true,color:'#bce8fa'});}
+    if(simulation.character.death){const c=simulation.character,g=data.world.graveyards.find(g=>g.id===c.death.graveyard);actors.push({id:'fallen-body',model:'humanoid',race:c.race,forge:c.forge,position:c.death.corpse,corpse:true,color:'#9cb0bf'});if(isSpirit(c)&&g)actors.push({id:'spirit-keeper',model:'humanoid',position:g.position,ghost:true,color:'#bce8fa'});}
     actors.push(...simulation.enemies,...otherPlayers.filter(p=>p.id!==simulation.character.id).map(p=>({...p,model:'humanoid',color:p.ghost?'#bce8fa':data.races.find(r=>r.id===p.race)?.color||'#c7ed99'})));
   }
   if(!camera)camera={eye:[135,81,165],target:[-45,36,-95]};
@@ -719,10 +778,10 @@ function frame(timestamp){
   else if(state!=='creation')actors.push(...cityLife.update(worldClock.now(),state==='playing'?simulation.character.position:[camera.target[0],0,camera.target[2]],{enemies:state==='playing'?simulation.enemies:[],incidents:state==='playing'?simulation.worldEvents:[],completed:state==='playing'?simulation.character.completed:[],morality:state==='playing'?simulation.character.morality:null,quality:renderer.quality,focus:dialogPage.startsWith('resident:')?dialogPage.slice(9):null}));
   if(state==='playing'){uiAccumulator+=dt;if(uiAccumulator>.1){uiAccumulator=0;updateHUD();}}
   effects=effects.filter(e=>time-e.time<e.duration);floaters=floaters.filter(f=>time-f.time<f.duration);
-  renderer.render(camera,actors,effects,time,worldClock.now(),state==='playing'?simulation.ghostlines:[],simulation?.time||0,state==='playing'&&simulation?.inDungeon?{catalog:data.dungeons,run:simulation.dungeon.run}:null,state==='playing'&&!simulation.inDungeon?{events:simulation.worldEvents,rules:data.events.rules}:null);updateLabels();interfaceUI.render(timestamp);requestAnimationFrame(frame);
+  renderer.render(camera,actors,effects,time,worldClock.now(),state==='playing'?simulation.ghostlines:[],simulation?.time||0,state==='playing'&&simulation?.inDungeon?{catalog:data.dungeons,run:simulation.dungeon.run}:null,state==='playing'&&!simulation.inDungeon?{events:simulation.worldEvents,rules:data.events.rules}:null);updateLabels();frameForge.draw(timestamp);interfaceUI.render(timestamp);requestAnimationFrame(frame);
 }
 async function boot(){
-  const names=['rules','world','races','factions','quests','talents','abilities','enemies','npcs','intro','audio','lore','dungeons','citylife','events','economy','morality'];
+  const names=['rules','world','races','factions','quests','talents','abilities','enemies','npcs','intro','audio','lore','dungeons','citylife','events','economy','morality','forge'];
   const manifest=await fetch('/data/manifest.json').then(r=>r.json());
   if(manifest.format!=='sloperberpunk-content-manifest'||manifest.version!==2||[...names,'models'].some(name=>manifest.files?.[name]!==1))throw new Error('Unsupported content schema version.');
   const values=await Promise.all(names.map(async name=>{const response=await fetch(`/data/${name}.json`);if(!response.ok)throw new Error(`Could not load ${name}.`);return response.json();}));data=Object.fromEntries(names.map((n,i)=>[n,values[i]]));
@@ -731,10 +790,13 @@ async function boot(){
   validateProgression(data);
   validateStory(data);
   validateMorality(data);
+  validateForge(data.forge);
   const models=await fetch('/assets/models.json').then(r=>r.json());world=new World(data.world);validateWorldEvents(data.events,data,world);validateCityLife(data.citylife,data,world);cityLife=new CityLife(world,data.citylife,data);renderer=new Renderer($('#world'),world,models,cityLife);renderer.reducedMotion=reducedMotion;audio=new AudioEngine(data.audio);
   audio.onVoiceStatus=status=>{updateVoiceButton();if(['blocked','unavailable','error'].includes(status))toast(audio.voiceMessage);};
   audio.onCaption=caption=>{$('#voice-caption').hidden=!caption||state!=='playing'||$('#panel-dialog').open;if(caption){$('#voice-speaker').textContent=caption.speaker;$('#voice-line').textContent=caption.text;}};
   community=new Community({character:()=>simulation?.character,online:()=>Boolean(connection?.open),showPanel:panel,isOpen:()=>dialogPage==='community'&&$('#panel-dialog').open,toast,races:data.races,data,now:()=>worldClock.now()});
+  renderer.characters.forge=data.forge;
+  frameForge=new FrameForge({catalog:data.forge,models,character:()=>simulation?.character,players:()=>otherPlayers,creationCharacter:()=>({race:selectedRace,founderHalo:account?.founderHalo}),showPanel:panel,isOpen:()=>dialogPage==='forge'&&$('#panel-dialog').open,community,toast,reducedMotion});
   input=new Input($('#world'),perform,(dx,dy)=>{yaw-=dx;pitch=clamp(pitch+dy,-.45,1.05);});
   liveChat=new LiveSocial({root:$('#live-chat'),character:()=>simulation?.character,send:message=>Boolean(connection?.send(message)),onMode:()=>{input.menu=inputBlocked();input.clear();},toast,community:()=>community.open().catch(e=>toast(e.message)),now:()=>worldClock.now()});
   initialUI();wireEvents();interfaceUI=new WebGLUI($('#interface'),$('#interface-source'));$('#loading').hidden=true;setState('landing');requestAnimationFrame(frame);

@@ -54,6 +54,7 @@ export function validateCityLife(content, data, world) {
   for (const role of Object.values(content.roles)) {
     if (!CITY_ACTIVITIES.includes(role.activity) || (role.nightActivity && !CITY_ACTIVITIES.includes(role.nightActivity)) || !role.title || !role.work || !role.rest || !role.line) fail('resident role');
   }
+  for(const b of world.rooftops)if(!content.roles[b.rooftop.role]||!CITY_ACTIVITIES.includes(b.rooftop.activity)||!b.rooftop.line)fail(`rooftop residents in ${b.id}`);
   for (const n of content.neighborhoods) {
     if (ids.has(n.id) || !data.world.districts.some(d => d.id === n.id)) fail('district');
     ids.add(n.id);
@@ -117,7 +118,7 @@ export class CityLife {
     }
     this.travellers=(world.data.routes||[]).filter(r=>r.kind!=='hill'||r.start[1]!==r.end[1]).map((route,i)=>{
       const resident=this.resident(`route-${route.id}`,`${content.names.first[i%content.names.first.length]} ${content.names.last[(i+4)%content.names.last.length]}`,'courier',world.district(route.start).id,3300+i*53,createRoutine([{...stop(route.start,'carry',8),route},{...stop(route.end,'work',16),route}],1.35));
-      resident.personal=`I carry supplies along ${route.name.toLowerCase()}. The handrails help when the steps are wet.`;return resident;
+      resident.personal=`I carry supplies along ${route.name.toLowerCase()}. ${route.kind==='street'?'The marked edge lanes keep us clear of the freight route.':'The handrails help when the steps are wet.'}`;return resident;
     });
   }
   resident(id, name, role, neighborhood, seed, routine, local = false) {
@@ -149,6 +150,25 @@ export class CityLife {
       residents.push(this.resident(`tenant-${b.id}`,`${first[(b.seed+5)%first.length]} ${last[(b.seed+3)%last.length]}`,'neighbor',n,b.seed+167,createRoutine([at([b.x-1,h*2,b.z-2],'work',27),at([b.x-1,h*2,b.z+2],'talk',20)],1.2)));
     }
     for(const resident of residents){resident.building=b.identity;resident.personal=b.identity.purpose;}
+    if(b.rooftop){
+      const at=(position,activity='walk',seconds=0,route,yaw=0)=>({position,activity,seconds,route,yaw});
+      const add=(id,role,stops)=>{
+        const index=residents.length,resident=this.resident(`${id}-${b.id}`,`${first[(b.seed+index*3)%first.length]} ${last[(b.seed+index*7)%last.length]}`,role,n,b.seed+index*173,createRoutine(stops,1.3));
+        resident.building=b.identity;resident.personal=b.rooftop.line;residents.push(resident);
+      };
+      const front=b.z+b.d/2+2.8,roofCenter=[b.x,b.h,b.z];
+      add('street-host',b.rooftop.role,[at([b.x-6,0,front],'duty',35,undefined,Math.PI),at([b.x+6,0,front],'talk',20,undefined,Math.PI)]);
+      add('street-visitor','customer',[at([b.x+6,0,front+1.5],'talk',23,undefined,Math.PI),at([b.x-6,0,front+1.5],b.rooftop.activity,18,undefined,Math.PI)]);
+      add('roof-host',b.rooftop.role,[at([b.x-6,b.h,b.z+2.5],'duty',32),at([b.x+6,b.h,b.z+2.5],'duty',24)]);
+      add('roof-neighbor','neighbor',[at([b.x-6,b.h,b.z-2.5],b.rooftop.activity,25,undefined,Math.PI),at([b.x+6,b.h,b.z-2.5],'talk',28,undefined,Math.PI)]);
+      const stops=[at([b.x,0,front],'carry',8),at([b.x,0,b.routes[0].start[2]])];
+      for(const route of b.routes)stops.push(at(route.start,'walk',0,route),at(route.end));
+      const lastRoute=b.routes.at(-1);
+      stops.push(at([b.x,b.h,lastRoute.end[2]]),at(roofCenter,'carry',12),at([b.x,b.h,lastRoute.end[2]]));
+      for(const route of [...b.routes].reverse())stops.push(at(route.end,'walk',0,route),at(route.start));
+      stops.push(at([b.x,0,b.routes[0].start[2]]));
+      add('roof-courier','courier',stops);
+    }
     this.blocks.set(b, residents);
     return residents;
   }
@@ -176,9 +196,9 @@ export class CityLife {
     const candidates = this.locals.filter(r => distance(origin, this.world.data.districts.find(d => d.id === r.neighborhood).center) < radius + 50);
     candidates.push(...this.travellers.filter(r=>r.routine.segments.some(s=>distance(origin,s.from)<radius+50)));
     const spacing = this.world.data.buildingGrid.spacing, cx = Math.floor(origin[0] / spacing), cz = Math.floor(origin[2] / spacing), used = new Set();
-    if (origin[1] < 60) for (let x = cx - 2; x <= cx + 2; x++) for (let z = cz - 2; z <= cz + 2; z++) {
+    for (let x = cx - 2; x <= cx + 2; x++) for (let z = cz - 2; z <= cz + 2; z++) {
       const b = this.world.cells.get(`${x},${z}`);
-      if (b && Math.hypot(b.x - origin[0], b.z - origin[2]) < radius + 40) {
+      if (b && (origin[1] < 60 || b.rooftop) && Math.hypot(b.x - origin[0], b.z - origin[2]) < radius + 40) {
         used.add(b);candidates.push(...this.blockResidents(b));
       }
     }

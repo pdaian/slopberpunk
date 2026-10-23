@@ -42,7 +42,7 @@ export function campaignView(c, data, events = []) {
 
 export function campaignLead(c, data, events = []) {
   const state = campaignView(c, data, events), next = state.next;
-  if (!next) return { ...state, instruction: 'Main story complete. Press J and open Story to read the ending. Nella and Oru have your report at the kitchen.' };
+  if (!next) return { ...state, instruction: 'Main story complete. Open QUESTS → Story to read the ending. Nella and Oru have your report at the kitchen.' };
   const { quest: q, view, npc, locked } = next;
   const instruction = locked ? `Continue at level ${q.level}: ${q.title}. Earn XP from available quests, enemies, or Patch’s repeatable jobs to reach that level.`
     : !view.accepted ? `Talk to ${npc.name} and accept “${q.title}”.`

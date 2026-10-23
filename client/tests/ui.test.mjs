@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { glyphs, pixelGlyph, GlyphAtlas } from '../src/pixel-font.js';
 import { WebGLUI, rgba, intersection, clippedQuad, wrapLines } from '../src/webgl-ui.js';
 import { Input } from '../src/input.js';
+import { controlLabel, inputPrompt, updateInputPrompts } from '../src/input-prompts.js';
 import { Community } from '../src/social.js';
 const economyData={economy:JSON.parse(readFileSync(new URL('../data/economy.json',import.meta.url),'utf8'))};
 
@@ -89,9 +90,10 @@ function renderer(t) {
     drawArrays:(_,__,count)=>{assert.equal(count%6,0);calls.draws.push(current);},
     getUniformLocation:()=>0,
   },{get:(object,key)=>key in object?object[key]:(()=>{})});
-  const ui=Object.create(WebGLUI.prototype),background={id:'hud-frame',tagName:'DIV'},modal={id:'panel-dialog',tagName:'DIALOG',open:true};
+  const bounds=()=>({x:20,y:20,width:100,height:50});
+  const ui=Object.create(WebGLUI.prototype),background={id:'hud-frame',tagName:'DIV',getBoundingClientRect:bounds},modal={id:'panel-dialog',tagName:'DIALOG',open:true,getBoundingClientRect:bounds};
   let roots=[background,modal];
-  Object.assign(ui,{gl,canvas:{},fontTexture:{},program:{},atlas:{dirty:false},layers:new Map(),resources:new Set(),attributes:[0,1,2],allDirty:true,roots:()=>roots});
+  Object.assign(ui,{gl,canvas:{},fontTexture:{},program:{},atlas:{dirty:false},layers:new Map(),resources:new Set(),images:new WeakMap(),attributes:[0,1,2],allDirty:true,roots:()=>roots});
   ui.fontPages=[{atlas:ui.atlas,texture:ui.fontTexture}];
   ui.element=()=>ui.quad({x:20,y:20,w:100,h:50},[1,1,1,1]);
   return {ui,calls,background,modal,setRoots:r=>roots=r};
@@ -126,13 +128,49 @@ test('UI painter emits finite triangle data and rejects fully clipped widgets',t
   assert.deepEqual(ui.batches[0].vertices.slice(0,4),[10,10,1/3,1/3]);
 });
 
+test('a fitting-bay canvas gets a fresh texture after closing and reopening its panel',t=>{
+  const {ui,calls}=renderer(t),canvas={tagName:'CANVAS',isConnected:true,width:300,height:400};
+  ui.texture=()=>({});ui.render(0);
+  const first=ui.asset(canvas,{w:300,h:400},{});assert.ok(first);assert.equal(ui.resources.size,1);
+  canvas.isConnected=false;ui.render(100);assert.equal(calls.textures,1);assert.equal(ui.resources.size,0);assert.equal(ui.images.has(canvas),false);
+  canvas.isConnected=true;const next=ui.asset(canvas,{w:300,h:400},{});
+  assert.ok(next);assert.notStrictEqual(next,first);assert.equal(ui.resources.size,1);
+});
+
+test('cached HUD panels follow layout changes without a mutation on the moved panel',t=>{
+  const {ui,calls,background,setRoots}=renderer(t);
+  setRoots([background]);
+  ui.element=node=>ui.quad({x:node.getBoundingClientRect().x,y:node.getBoundingClientRect().y,w:100,h:50},[1,1,1,1]);
+  ui.render(0);const uploads=calls.uploads;
+  background.getBoundingClientRect=()=>({x:20,y:180,width:100,height:50});
+  ui.render(16);
+  assert.equal(calls.uploads,uploads+1);
+  assert.equal(ui.layers.get(background).batches[0].buffer.data[1],180,'text and backgrounds move with the semantic controls');
+  ui.render(32);assert.equal(calls.uploads,uploads+1,'stable layouts still reuse geometry');
+});
+
+test('panel decoration and list markers do not add stray dashes or bullets',t=>{
+  const style={display:'block',visibility:'visible',opacity:'1',backgroundColor:'transparent',color:'#ffffff',fontSize:'16px',outlineStyle:'none',listStyleType:'none',borderTopStyle:'none',borderBottomStyle:'none',borderLeftStyle:'none',borderRightStyle:'none',getPropertyValue:()=> '1'};
+  globals(t,{document:{activeElement:null},getComputedStyle:()=>style});
+  const ui=Object.create(WebGLUI.prototype),marks=[],quads=[];
+  Object.assign(ui,{clip:{x:0,y:0,w:400,h:300},quad:(r,color)=>{if(color[3])quads.push(r);},string:text=>marks.push(text)});
+  const node={nodeType:1,tagName:'DIV',classList:{contains:()=>false},getBoundingClientRect:()=>({x:30,y:20,width:180,height:60}),childNodes:[]};
+  ui.element(node);assert.equal(quads.length,0,'plain panels do not paint corner strokes');
+  node.tagName='SUMMARY';node.parentElement={open:false};ui.element(node);
+  node.parentElement.open=true;ui.element(node);
+  assert.deepEqual(marks,['→','↓'],'disclosures show direction instead of a minus sign');
+  node.tagName='LI';node.parentElement={tagName:'UL'};ui.element(node);
+  assert.equal(marks.length,2,'unstyled lists must remain unmarked');
+  style.listStyleType='disc';ui.element(node);assert.equal(marks.at(-1),'·');
+});
+
 function keyboard(t) {
-  const listeners=new Map(),actions=[];
-  globals(t,{window:{addEventListener:(name,fn)=>listeners.set(name,fn)},document:{addEventListener(){},querySelector:()=>null},navigator:{getGamepads:()=>[]}});
+  const listeners=new Map(),documentEvents=new Map(),actions=[];
+  globals(t,{window:{addEventListener:(name,fn)=>listeners.set(name,fn)},document:{addEventListener:(name,fn)=>documentEvents.set(name,fn),querySelector:()=>null},navigator:{getGamepads:()=>[]}});
   const input=new Input({addEventListener(){}},a=>actions.push(a),()=>{});
   input.active=true;
-  const key=(code,extra={})=>{const e={code,target:{tagName:'BUTTON'},preventDefault(){this.prevented=true;},...extra};listeners.get('keydown')(e);return e;};
-  return {input,actions,key,listeners};
+  const key=(code,extra={})=>{const e={code,target:{tagName:'BUTTON'},preventDefault(){this.prevented=true;},...extra};documentEvents.get('keydown')(e);listeners.get('keydown')(e);return e;};
+  return {input,actions,key,listeners,documentEvents};
 }
 
 test('menu Tab/Space/arrows remain native and never cast, move, use medkits or cycle enemies',t=>{
@@ -191,6 +229,7 @@ function pointer(t) {
   const input=new Input(canvas,(action,event)=>actions.push({action,event}),(x,y)=>looks.push([x,y]));input.active=true;input.menu=false;
   const emit=(name,extra={})=>{
     const event={pointerId:1,pointerType:'mouse',button:0,buttons:1,clientX:100,clientY:100,target:canvas,...extra};
+    documentEvents.get(name)?.(event);
     (name==='pointerdown'||name==='dblclick'||name==='lostpointercapture'?canvasEvents:windowEvents).get(name)?.(event);
   };
   return {input,emit,actions,looks,captures,documentEvents};
@@ -239,6 +278,71 @@ test('cancellation, focus loss, menus, and unrelated pointers cannot leave dragg
   emit('pointerdown');emit('pointerup',{target:{tagName:'BUTTON'}});assert.equal(actions.length,0);
   emit('pointerdown',{clientX:799});emit('pointerup',{clientX:801});assert.equal(actions.length,0);
   emit('pointerdown',{pointerType:'touch'});emit('lostpointercapture');assert.equal(input.drag,null);
+});
+
+test('connected controllers, held buttons and released controls do not steal keyboard prompts',t=>{
+  const {input,key,actions}=keyboard(t),buttons=Array.from({length:16},()=>({pressed:false}));
+  const pad={id:'Standard',index:0,mapping:'standard',axes:[0,0,0,0],buttons};
+  navigator.getGamepads=()=>[pad];input.menu=false;
+  input.sample(.016);assert.equal(input.connected,'Standard');assert.equal(input.lastDevice,'keyboard');
+  buttons[7].pressed=true;input.sample(.016);assert.equal(input.lastDevice,'gamepad');assert.equal(actions.at(-1),'ability:arc');
+  key('KeyW');assert.equal(input.lastDevice,'keyboard');
+  assert.equal(input.sample(.016).forward,1);assert.equal(input.lastDevice,'keyboard','held trigger is not new activity');
+  buttons[7].pressed=false;input.sample(.016);assert.equal(input.lastDevice,'keyboard');
+  buttons[2].pressed=true;input.sample(.016);assert.equal(input.lastDevice,'gamepad');
+  key('KeyW',{repeat:true});assert.equal(input.lastDevice,'gamepad','keyboard autorepeat is not a new device choice');
+  input.menu=true;key('Tab');assert.equal(input.lastDevice,'keyboard','native menu navigation counts');
+  buttons[2].pressed=false;buttons[7].pressed=true;input.sample(.016);assert.equal(input.lastDevice,'gamepad');
+  key('KeyA',{target:{tagName:'INPUT'}});assert.equal(input.lastDevice,'keyboard','text entry counts');
+});
+
+test('sticks require deliberate activity, tolerate drift and jitter, and detect slow movement',t=>{
+  const {input,key}=keyboard(t),pad={id:'Standard',index:0,mapping:'standard',axes:[0,0,0,0],buttons:[]};
+  navigator.getGamepads=()=>[pad];
+  for(const value of [.05,-.08,.16,.19,0]){pad.axes[0]=value;input.sample(.016);assert.equal(input.lastDevice,'keyboard');}
+  for(let value=0;value<=.5;value+=.01){pad.axes[0]=value;input.sample(.016);}
+  assert.equal(input.lastDevice,'gamepad','slow movement accumulates beyond the activity threshold');
+  pad.axes[0]=.8;input.sample(.016);key('Tab');
+  for(const value of [.8,.81,.79,.82,.8,0]){pad.axes[0]=value;input.sample(.016);assert.equal(input.lastDevice,'keyboard');}
+  pad.axes[2]=-.7;input.sample(.016);assert.equal(input.lastDevice,'gamepad','looking counts as controller use');
+  navigator.getGamepads=()=>[];input.sample(.016);assert.equal(input.lastDevice,'keyboard');
+  pad.axes=[0,0,0,0];navigator.getGamepads=()=>[pad];input.sample(.016);assert.equal(input.lastDevice,'keyboard','reconnecting an idle pad does not change prompts');
+  pad.axes[2]=-.7;input.sample(.016);assert.equal(input.lastDevice,'gamepad','reconnect clears the activity baseline');
+});
+
+test('pointer activity on HUDs and menus switches devices without reacting to jitter or synthetic keys',t=>{
+  const {input,key,documentEvents}=keyboard(t);
+  const emit=(name,extra={})=>documentEvents.get(name)({pointerType:'mouse',clientX:100,clientY:100,...extra});
+  input.lastDevice='gamepad';
+  emit('pointermove');emit('pointermove',{clientX:101});assert.equal(input.lastDevice,'gamepad');
+  emit('pointermove',{clientX:104});assert.equal(input.lastDevice,'keyboard');
+  input.lastDevice='gamepad';emit('pointerdown',{target:{tagName:'BUTTON'}});assert.equal(input.lastDevice,'keyboard');
+  input.lastDevice='gamepad';emit('wheel',{deltaY:30});assert.equal(input.lastDevice,'keyboard');
+  input.lastDevice='gamepad';emit('wheel',{deltaY:0});assert.equal(input.lastDevice,'gamepad');
+  key('Escape',{isTrusted:false});assert.equal(input.lastDevice,'gamepad','controller-generated Escape must keep controller prompts');
+  emit('pointerdown',{pointerType:'touch'});assert.equal(input.lastDevice,'touch');
+  input.sample(.016);assert.equal(input.lastDevice,'touch','no controller must not force touch back to keyboard');
+  key('KeyA',{isComposing:true,target:{tagName:'INPUT'}});assert.equal(input.lastDevice,'keyboard');
+});
+
+test('prompt badges match ability bindings and update existing nodes without losing focus',()=>{
+  const abilities=JSON.parse(readFileSync(new URL('../data/abilities.json',import.meta.url)));
+  const pads={arc:'RT',surge:'LB',mend:'RB',aegis:'LT',lance:'←',echo:'→',ghostline:'R3',breach:'L3+↑',siphon:'L3+→',execute:'L3+↓',nova:'L3+←'};
+  for(const ability of abilities){
+    assert.equal(controlLabel(`ability:${ability.id}`),ability.key);
+    assert.equal(controlLabel(`ability:${ability.id}`,'gamepad'),pads[ability.id]);
+    assert.equal(controlLabel(`ability:${ability.id}`,'touch'),'');
+  }
+  const hint={dataset:{inputKeyboard:'Press E',inputGamepad:'Press X',inputTouch:'Tap USE'},textContent:''};
+  const badge={dataset:{inputAction:'journal'},textContent:''},unbound={dataset:{inputAction:'inventory'},textContent:''};
+  const sections=['keyboard','gamepad','touch'].map(inputDevice=>({dataset:{inputDevice},hidden:false}));
+  const root={dataset:{},querySelectorAll:selector=>({'[data-input-keyboard]':[hint],'[data-input-action]':[badge,unbound],'[data-input-device]':sections})[selector]};
+  updateInputPrompts(root,'gamepad');assert.equal(hint.textContent,'Press X');assert.equal(badge.textContent,'View');assert.equal(unbound.hidden,true);
+  assert.deepEqual(sections.map(n=>n.hidden),[true,false,true]);
+  updateInputPrompts(root,'touch');assert.equal(hint.textContent,'Tap USE');assert.equal(badge.hidden,true);
+  updateInputPrompts(root,'keyboard');assert.equal(hint.textContent,'Press E');assert.equal(badge.textContent,'J');assert.equal(unbound.hidden,false);
+  assert.match(inputPrompt('Use "E" & read','Press <X>','Tap USE'),/data-input-keyboard="Use &quot;E&quot; &amp; read"/);
+  assert.doesNotMatch(inputPrompt('Use "E" & read','Press <X>','Tap USE'),/<X>/);
 });
 
 function form(action,values) {

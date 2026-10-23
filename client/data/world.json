@@ -31,6 +31,13 @@
   "cellSize": 80,
   "plazaRadius": 65,
   "buildingGrid": { "min": -13, "max": 13, "spacing": 80, "widthMin": 29, "widthMax": 48, "heightMin": 24, "heightMax": 146, "excludeCenter": 90 },
+  "rooftops": [
+    {"cell": [1, -1], "kind": "market", "street": "Lantern Food Row", "name": "Lantern Supper Roof", "role": "cook", "activity": "eat", "line": "The stalls share their last pot upstairs. Follow the lit stairs to the lanterns; bring your bowl back down when you leave."},
+    {"cell": [3, -5], "kind": "archive", "street": "Loose Leaf Arcade", "name": "Glass Observatory", "role": "archivist", "activity": "work", "line": "Browse the paper copies outside, then take the stairs to the roof. We compare the sky with the archive's weather records up there."},
+    {"cell": [-3, -3], "kind": "furnace", "street": "Three Bolt Repair Yard", "name": "Copper Relay Roof", "role": "technician", "activity": "repair", "line": "Repaired couplings leave from the street bench. The stairs lead to our roof relay and the crew's cooling fans."},
+    {"cell": [-3, 1], "kind": "quiet", "street": "Seed Exchange Court", "name": "Willow Roof Garden", "role": "gardener", "activity": "tend", "line": "Take a cutting from the court and carry water up the stairs. The roof beds and rain collectors belong to everyone on this block."},
+    {"cell": [5, 3], "kind": "skybridge", "street": "Night Shift Stop", "name": "Last Light Lookout", "role": "commuter", "activity": "wait", "line": "Parcels wait under the street shelter. Take the marked stairs to the roof for a seat, a hot drink, and a view of the late connections."}
+  ],
   "interiors": {
     "height": 6.4, "wall": 0.8, "doorWidth": 5, "doorHeight": 4.2,
     "upperRooms": [{"name": "SHARED ROOM", "furniture": [{"kind": "table", "center": [-6, 0.6, 0], "size": [4, 1.2, 4]}, {"kind": "bench", "center": [-6, 0.45, -3.5], "size": [4, 0.9, 1.2]}, {"kind": "bench", "center": [-6, 0.45, 3.5], "size": [4, 0.9, 1.2]}, {"kind": "cabinet", "center": [7, 1.5, 0], "size": [2, 3, 4]}]}, {"name": "UPSTAIRS WORKROOM", "furniture": [{"kind": "table", "center": [-6, 0.6, -3], "size": [4, 1.2, 3]}, {"kind": "table", "center": [6, 0.6, 3], "size": [4, 1.2, 3]}, {"kind": "cabinet", "center": [7, 1.5, -5], "size": [2, 3, 2]}, {"kind": "bench", "center": [-6, 0.45, 5], "size": [4, 0.9, 1.2]}]}],
@@ -463,6 +470,18 @@
     }
   },
   "routes": [
+    {"id":"lantern-street-north","name":"Lantern upper street","kind":"street","start":[-168,12,-240],"end":[168,12,-240],"width":16},
+    {"id":"lantern-street-south","name":"Commons upper street","kind":"street","start":[-168,12,160],"end":[168,12,160],"width":16},
+    {"id":"lantern-street-west","name":"Potters upper street","kind":"street","start":[-160,12,-232],"end":[-160,12,152],"width":16},
+    {"id":"lantern-street-east","name":"Carriers upper street","kind":"street","start":[160,12,-232],"end":[160,12,152],"width":16},
+    {"id":"lantern-street-ascent","name":"Lantern street approach","kind":"street","start":[-80,0,-320],"end":[-80,12,-248],"width":14},
+    {"id":"commons-street-ascent","name":"Commons street approach","kind":"street","start":[80,0,232],"end":[80,12,168],"width":14},
+    {"id":"lantern-west-link","name":"Potters skyway incline","kind":"street","start":[-168,12,0],"end":[-314,24,0],"width":14},
+    {"id":"lantern-east-link","name":"Carriers skyway incline","kind":"street","start":[168,12,0],"end":[314,24,0],"width":14},
+    {"id":"crown-street-north","name":"Crown archive street","kind":"street","start":[-280,48,-80],"end":[334,48,-80],"width":16},
+    {"id":"crown-street-south","name":"Crown night street","kind":"street","start":[-328,48,320],"end":[280,48,320],"width":16},
+    {"id":"crown-street-west","name":"Crown copper street","kind":"street","start":[-320,48,-56],"end":[-320,48,312],"width":16},
+    {"id":"crown-street-east","name":"Crown transit street","kind":"street","start":[328,48,-72],"end":[328,48,296],"width":12},
     {"id":"east-crest","name":"East embankment lookout","kind":"hill","start":[1120,16,-304],"end":[1120,16,-288],"width":14},
     {"id":"fen-crest","name":"Fen levee lookout","kind":"hill","start":[1440,12,552],"end":[1440,12,568],"width":18},
     {

@@ -49,14 +49,40 @@ test('every faction and lineage gets saved, ordered guidance without changing ca
       assert.equal(guide.view.index,index);
       assert.equal(guide.view.total,4);
       assert.equal(guide.destination.id,destinations[index]);
-      assert.match(guide.hint,/Controller|controller/);
-      assert.match(guide.hint,/Touch|touch/);
+      assert.doesNotMatch(guide.hint,/controller|stick|touch|tap/i);
       assert.match(guide.hint,/leave training at any time/);
     }
     assert.deepEqual(c.completed,[]);assert.deepEqual(c.activeQuests,{});
     delete c.tutorialStage;
     assert.equal(openingGuide(c,data).quest.id,`${faction.id}-00`,'older and finished characters continue the existing opening');
   }
+});
+
+test('all tutorial stages and spoken instructions show only the active device controls',()=>{
+  const expected={keyboard:[/WASD/,/press E/,/press 1/,/Press J/],gamepad:[/left stick/,/then X/,/then RT/,/Press View/],touch:[/touch pad/,/then USE/,/then SHOOT/,/Tap QUESTS/]};
+  const forbidden={keyboard:/stick|\btap\b|\bRT\b|Press View/i,gamepad:/WASD|mouse|\bclick\b|\btap\b|press [EJM1]\b/i,touch:/WASD|mouse|\bclick\b|\bRT\b|press [EJM1]\b/i};
+  const c=character(),saved=structuredClone(c);
+  for(const [device,patterns]of Object.entries(expected))for(const [index,stage]of ['move','interact','combat','exit'].entries()){
+    const guide=openingGuide({...c,tutorialStage:stage},data,[],device);
+    assert.match(guide.hint,patterns[index]);assert.match(guide.line,patterns[index]);
+    assert.doesNotMatch(guide.hint,forbidden[device]);assert.doesNotMatch(guide.line,forbidden[device]);
+    assert.match(guide.hint,/leave training at any time/);
+  }
+  assert.deepEqual(c,saved,'changing prompt devices must not alter saved progress');
+});
+
+test('opening quest and optional social lessons retain the same device after training',()=>{
+  const c=character();delete c.tutorialStage;
+  for(const device of ['keyboard','gamepad','touch']){
+    let guide=openingGuide(c,data,[],device);
+    assert.match(guide.hint,device==='keyboard'?/press E/:device==='gamepad'?/then X/:/then USE/);
+    assert.match(guide.social.hint,device==='keyboard'?/Press B/:device==='gamepad'?/Choose TRY A WAVE/:/Tap TRY A WAVE/);
+    c.socialTutorial={gesture:true};guide=openingGuide(c,data,[],device);
+    assert.match(guide.social.hint,device==='keyboard'?/Press Enter/:device==='gamepad'?/Choose SAY HELLO/:/Tap SAY HELLO/);
+    if(device!=='keyboard')assert.doesNotMatch(guide.hint+' '+guide.social.hint+' '+guide.social.label,/press [EJMH]|ENTER| · B/i);
+    delete c.socialTutorial;
+  }
+  for(const q of data.quests)for(const step of q.steps||[])assert.doesNotMatch(step.text+' '+(step.voice||''),/press E\b/i,'authored objectives and narration must not override the active device hints');
 });
 
 test('movement prediction never completes a tutorial or grants rewards before the server confirms it',()=>{

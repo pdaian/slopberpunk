@@ -44,7 +44,7 @@ export function itemLabel(data, item) {
   return `<strong style="color:${esc(r.color)}">${esc(item.name)}</strong><small class="item-meta">Tier ${item.tier} · ${esc(r.name)} · ${esc(item.slot || item.kind)} · Level ${item.level}+</small>`;
 }
 export function economyTabs(selected) {
-  return `<nav class="tabs" aria-label="Equipment and trading">${[['inventory','GEAR & BONUSES'],['crafting','CRAFTING'],['orders','WORK ORDERS'],['bestiary','ENEMIES & LOOT'],['auctions','AUCTION HOUSE']].map(([id,name]) => `<button class="${selected === id ? 'selected' : ''}" data-do="${id}" aria-current="${selected === id ? 'page' : 'false'}">${name}</button>`).join('')}</nav>`;
+  return `<nav class="tabs" aria-label="Equipment and trading">${[['inventory','GEAR & BONUSES'],['forge','FRAME FORGE'],['crafting','CRAFTING'],['orders','WORK ORDERS'],['bestiary','ENEMIES & LOOT'],['auctions','AUCTION HOUSE']].map(([id,name]) => `<button class="${selected === id ? 'selected' : ''}" data-do="${id}" aria-current="${selected === id ? 'page' : 'false'}">${name}</button>`).join('')}</nav>`;
 }
 export function workOrdersPanel(c,data) {
   const nearby=nearPatch(data,c)&&c.health>0;

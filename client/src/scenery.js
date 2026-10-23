@@ -6,6 +6,20 @@ import { cityEvent } from './citylife.js';
 
 export function routeGeometry(v, route, accent='#8bc6bb') {
   const {start,end,width}=route,length=Math.hypot(end[0]-start[0],end[2]-start[2]),yaw=Math.atan2(end[0]-start[0],end[2]-start[2]);
+  if(route.kind==='street'){
+    slope(v,start,end,width,'#303b49');
+    const rise=end[1]-start[1],pitch=-Math.atan2(rise,length),span=Math.hypot(length,rise),paint=[];
+    const color=Math.max(start[1],end[1])>=48?'#dab587':'#81c9ca';
+    // Flush markings leave junctions open; broad edge lanes serve as sidewalks.
+    for(const side of [-1,1]){
+      pane(paint,[side*(width/2-1.15),.012,0],[2.3,0,span],'#536270',0,2);
+      pane(paint,[side*(width/2-.2),.02,0],[.16,0,span],color,.65,2);
+      pane(paint,[side*(width/2-2.5),.02,0],[.12,0,span],color,.15,2);
+    }
+    for(let d=4;d<length-4;d+=12)pane(paint,[0,.02,(d/length-.5)*span],[.18,0,Math.min(4,length-4-d)*span/length],'#dbcaa0',.15,2);
+    transformMesh(v,paint,start.map((n,i)=>(n+end[i])/2),yaw,pitch);
+    return;
+  }
   const material=route.indoor?'#65707a':route.kind==='hill'?'#56664b':'#59636b';
   if(route.kind==='stairs'){
     for(let i=0;i<route.steps;i++){
@@ -80,7 +94,8 @@ export function buildingLights(b) {
     color:b.interior?.color||style.neon,radius:14,direction:2,size:3.5,strength:.7});
   lights.push({kind:'sign',position:[b.x+side*(b.w/2+1.34),b.h*.58,b.z],
     color:style.neon,radius:17,direction:side,size:3,strength:.8});
-  lights.push({kind:'beacon',position:[b.x,b.h+[14.6,5.4,9.2,2.8][style.roof],b.z],
+  if(b.rooftop)for(const side of [-1,1])lights.push({kind:'roof',position:[b.x,b.h+3.5,b.z+side*(b.d/2-1.5)],color:style.neon,radius:16,direction:0,size:2.5,strength:.8});
+  else lights.push({kind:'beacon',position:[b.x,b.h+[14.6,5.4,9.2,2.8][style.roof],b.z],
     color:b.seed%2?'#ff7967':'#a4e4ef',radius:5,direction:0,size:1.8,strength:.65});
   return lights;
 }
@@ -90,7 +105,7 @@ export function buildingExterior(v,b,data,lights=null) {
   for(const solid of b.solids)if(['wall','upper','window'].includes(solid.kind))box(v,solid.center,solid.size,solid.kind==='window'?'#263a48':concrete,solid.kind==='window'?.04:0);
   const roof=b.solids.filter(s=>s.kind==='upper').at(-1)?.size||[b.w,0,b.d];
   const split=b.interior?data.interiors.height*3+(b.h-data.interiors.height*3)*.55:b.h;
-  box(v,[b.x,b.h-.15,b.z],[roof[0]+.6,.3,roof[2]+.6],'#182232');
+  if(!b.rooftop)box(v,[b.x,b.h-.15,b.z],[roof[0]+.6,.3,roof[2]+.6],'#182232');
   for(const side of [-1,1]) {
     box(v,[b.x+side*(b.w/2-.15),split/2,b.z+b.d/2+.07],[.3,split,.14],'#657080');
     if(style.pattern!==3)box(v,[b.x,b.h+.15,b.z+side*roof[2]/2],[roof[0]*(style.pattern===1?.6:1),.15,.25],style.secondary,.7);
@@ -135,7 +150,8 @@ export function buildingExterior(v,b,data,lights=null) {
   bevelBox(v,[b.x+side*(b.w/2+.65),b.h*.58,b.z],[1.2,Math.min(32,b.h*.4),3.5],'#111b29');
   const length=Math.min(29,b.h*.35),segments=style.pattern===0?1:style.pattern===1?5:3;
   for(let i=0;i<segments;i++)box(v,[b.x+side*(b.w/2+1.28),b.h*.58+(i-(segments-1)/2)*length/segments,b.z],[.06,length/segments-.25,style.pattern===2?2.5:.6],i%2?style.secondary:neon,.95);
-  if(style.roof===0){
+  if(b.rooftop)rooftopGeometry(v,b);
+  else if(style.roof===0){
     bevelBox(v,[b.x,b.h+3,b.z],[b.w*.46,6,b.d*.48],'#465060',0,0,.7);
     box(v,[b.x,b.h+10,b.z],[.3,9,.3],'#88969e');
   }else if(style.roof===1){
@@ -162,7 +178,7 @@ export function buildingExterior(v,b,data,lights=null) {
     for(const i of [-1,1])box(v,[b.x+i*b.w*.35,split*.5,front+.4],[.6,split,1.1],'#52667b');
   }else if(district==='furnace'){
     for(const side of [-1,1])box(v,[b.x+side*(b.w/2+1),split/2,b.z],[.8,split,1.1],'#94745d');
-    ellipsoid(v,[b.x+b.w*.2,b.h+2.3,b.z],[5,4.6,5],'#7e7770',0,0,8);
+    if(!b.rooftop)ellipsoid(v,[b.x+b.w*.2,b.h+2.3,b.z],[5,4.6,5],'#7e7770',0,0,8);
   }else if(district==='quiet'){
     for(const y of [7.4,13.8])for(const side of [-1,1]){box(v,[b.x+side*b.w*.3,y,front+.6],[5,.7,1.3],'#8a8271');for(let i=0;i<3;i++)ellipsoid(v,[b.x+side*b.w*.3-1.5+i*1.5,y+.7,front+.6],[1.8,1.5,1.5],'#739267',2,0,6);}
   }else{
@@ -171,16 +187,16 @@ export function buildingExterior(v,b,data,lights=null) {
 }
 
 export function buildingInterior(v,b,data) {
-  const room=b.interior,h=data.interiors.height,accent=room.color;
+  const room=b.interior,h=data.interiors.height,accent=room.color,levels=b.levels.slice(0,-1);
   box(v,[b.x,.025,b.z],[b.w-.8,.05,b.d-.8],'#424452',.08);
-  for(const solid of b.solids.filter(s=>s.kind==='floor'))box(v,solid.center,solid.size,'#535963');
-  pane(v,[b.x,h*3-.005,b.z],[b.w-1.6,0,b.d-1.6],'#697078',.12,3);
-  for(let floor=0;floor<3;floor++)for(const side of [-1,1]){
-    const y=floor*h;
+  for(const solid of b.solids.filter(s=>s.kind==='floor'&&(!b.rooftop||s.center[1]+s.size[1]/2<b.h-.01)))box(v,solid.center,solid.size,'#535963');
+  if(!b.rooftop)pane(v,[b.x,h*3-.005,b.z],[b.w-1.6,0,b.d-1.6],'#697078',.12,3);
+  for(const [floor,y]of levels.entries())for(const side of [-1,1]){
+    const ceiling=b.levels[floor+1];
     box(v,[b.x+side*(b.w/2-.86),y+2.4,b.z],[.08,2.5,b.d-1.6],'#384151',.12);
     box(v,[b.x+side*(b.w/2-.92),y+.18,b.z],[.05,.16,b.d-1.8],accent,.65);
     for(const z of [-b.d*.28,0,b.d*.28]){
-      box(v,[b.x+side*b.w*.26,y+h-.6,b.z+z],[3,.1,.8],'#f4d5b2',.8);
+      box(v,[b.x+side*b.w*.26,ceiling-.6,b.z+z],[3,.1,.8],'#f4d5b2',.8);
       box(v,[b.x+side*b.w*.26,y+.065,b.z+z],[3,.015,2.8],'#706052',.12);
     }
   }
@@ -215,10 +231,81 @@ export function buildingInterior(v,b,data) {
     pane(v,[b.x+side*(b.w/2-.91),3.9,b.z],[0,1.4,3.2],accent,.4,side>0?1:0);
   }
   for(const route of b.routes)routeGeometry(v,route,accent);
-  for(let floor=0;floor<3;floor++){
-    const text=floor?`${floor+1} ${b.identity.upper[floor-1]}`:'1 SHOP / STAIRS INSIDE';
-    lettering(v,text,[b.x-5,floor*h+3.5,b.z-b.d/2+.82],accent,.075);
+  for(const [floor,y]of levels.entries()){
+    const text=floor?`${floor+1} ${b.identity.upper[floor-1]||'ROOF STAIRS'}`:'1 SHOP / STAIRS INSIDE';
+    lettering(v,text,[b.x-5,y+3.5,b.z-b.d/2+.82],accent,.075);
+    if(b.rooftop)lettering(v,'ROOF UP / STREET DOWN',[b.x-5,y+2.8,b.z-b.d/2+.83],b.identity.trim,.06);
   }
+}
+
+// Featured roofs use the same slab openings, parapets and fixture boxes as movement.
+export function rooftopGeometry(v,b) {
+  const {x,z,h}=b,accent=b.identity.trim,kind=b.rooftop.kind;
+  for(const s of b.solids){
+    if(s.kind==='floor'&&Math.abs(s.center[1]+s.size[1]/2-h)<.01)box(v,s.center,s.size,kind==='quiet'?'#617360':'#515967');
+    if(s.kind==='parapet'){box(v,s.center,s.size,'#687782');box(v,[s.center[0],h+.94,s.center[2]],[s.size[0],.08,s.size[2]],accent,.55);}
+    if(s.kind!=='roof-fixture')continue;
+    const [px,,pz]=s.center;
+    bevelBox(v,s.center,s.size,{market:'#8e6b57',archive:'#53647c',furnace:'#756257',quiet:'#82775c',skybridge:'#4e6975'}[kind],0,0,.12);
+    if(kind==='market'){
+      box(v,[px,h+1.23,pz],[3.2,.06,3.2],'#b69377');
+      for(let i=-1;i<=1;i++)ellipsoid(v,[px+i*.8,h+1.38,pz],[.55,.2,.55],'#e0ceb0',0,0,6);
+      ellipsoid(v,[px,h+3.4,pz],[.9,1.2,.9],accent,.85,0,8);
+      box(v,[px,h+4.1,pz],[.04,.6,.04],'#8a8881');
+    }else if(kind==='archive'){
+      if(pz<z){
+        ellipsoid(v,[px,h+2,pz],[2.7,1.5,2.7],'#a4bbc5',0,0,10);
+        box(v,[px,h+3.3,pz],[.16,2,.16],accent,.4);
+        for(const side of [-1,1])box(v,[px+side*.85,h+2.7,pz],[.12,1.3,.12],accent,.65);
+      }else for(let i=0;i<4;i++){box(v,[px-1+i*.65,h+1.35,pz],[.45,.3,.9],i%2?'#a99ac0':'#d3bd94');}
+    }else if(kind==='furnace'){
+      for(let i=-2;i<=2;i++)box(v,[px+i*.5,h+1.4,pz],[.16,.4,2.6],'#a5a5a0');
+      if(pz<z){box(v,[px,h+3.3,pz],[.22,4.2,.22],'#a9b7bb');for(let i=0;i<3;i++)box(v,[px,h+3+i*.7,pz],[3-i*.6,.12,.12],accent,.35);}
+    }else if(kind==='quiet'){
+      box(v,[px,h+1.23,pz],[2.75,.08,2.75],'#394c3c');
+      for(let i=-1;i<=1;i++)ellipsoid(v,[px+i*.75,h+1.9,pz],[.85,1.4,1.8],i%2?'#80a878':'#b4c987',0,0,6);
+      if(pz<z){box(v,[px,h+3.8,pz],[3.3,.12,.12],'#b2b99e');for(const side of [-1,1])box(v,[px+side*1.45,h+2.55,pz],[.08,2.7,.08],'#b2b99e');}
+    }else{
+      for(let i=-1;i<=1;i++)box(v,[px+i*.85,h+1.28,pz],[.75,.15,2.7],'#93a6b1');
+      if(pz<z){box(v,[px,h+2.6,pz],[2.6,2,.2],'#263c50');for(let i=0;i<4;i++)pane(v,[px,h+2+i*.35,pz+.11],[2.2,.12,0],accent,.65,4);}
+    }
+  }
+  if(kind==='market')for(const side of [-1,1])box(v,[x,h+4.4,z+side*5],[16,.05,.05],'#8d9286');
+  for(const light of buildingLights(b).filter(l=>l.kind==='roof')){
+    box(v,[light.position[0],h+1.7,light.position[2]],[.12,3.4,.12],'#7b8c91');
+    box(v,light.position,[2,.16,.6],light.color,.9);
+  }
+  lettering(v,'STAIRS TO STREET',[x-3,h+.65,z-b.d/2+.18],accent,.06);
+  lettering(v,b.rooftop.name,[x-b.rooftop.name.length*.18,h+.65,z+b.d/2+.18],accent,.06);
+}
+
+export function streetDestination(v,b) {
+  const {x,z}=b,front=z+b.d/2,kind=b.rooftop.kind,accent=b.identity.trim;
+  // Stalls hug the facade. Both doorways, sidewalk loops and stair approaches stay open.
+  for(const solid of b.solids.filter(s=>s.kind==='street-fixture')){
+    const [px,,pz]=solid.center;
+    box(v,solid.center,solid.size,'#635e5c');
+    if(kind==='market'){
+      box(v,[px,4,pz],[4,.18,2.6],px>x?'#a37567':'#827591');
+      for(let i=-1;i<=1;i++)ellipsoid(v,[px+i*.8,1.4,pz],[.55,.4,.55],i%2?'#e5b468':'#b8cc8b',0,0,6);
+    }else if(kind==='archive'){
+      for(let i=0;i<5;i++)box(v,[px-1+i*.5,1.65,pz],[.3,.9,.7],i%2?'#ae9cc4':'#c8b38a');
+      box(v,[px,2.2,pz],[3.2,.12,1.6],'#627586');
+    }else if(kind==='furnace'){
+      for(let i=-1;i<=1;i++)bevelBox(v,[px+i*.8,1.4,pz],[.55,.4,.7],'#b29d83');
+      box(v,[px,2.2,pz-.6],[3,.15,.12],accent,.35);
+    }else if(kind==='quiet'){
+      for(let i=-1;i<=1;i++){box(v,[px+i*.8,1.35,pz],[.6,.3,.7],'#9c8569');ellipsoid(v,[px+i*.8,1.8,pz],[.6,.9,.6],'#b5ce91',0,0,6);}
+    }else{
+      box(v,[px,4,pz],[4,.18,2.6],'#4f7081');
+      pane(v,[px,2.4,front+.15],[3,1.2,0],accent,.45,4);
+      for(let i=-1;i<=1;i++)box(v,[px+i*.8,1.45,pz],[.6,.5,.65],'#b49c7b');
+    }
+    for(let i=0;i<3;i++)box(v,[px-1+i,.025,front+4.5],[.5,.04,.6],accent,.25);
+  }
+  box(v,[x,6.2,front+.3],[b.w-2,.9,.15],'#23333e');
+  lettering(v,b.rooftop.street,[x-b.rooftop.street.length*.18,6.45,front+.4],accent,.06);
+  lettering(v,'ROOF / STAIRS INSIDE',[x-3.4,3.85,front+.15],accent,.06);
 }
 
 export function streetDetails(v,b) {
@@ -250,6 +337,7 @@ export function streetDetails(v,b) {
     box(v,[b.x+b.w*.3,2.5,front+.16],[2.6,2.9,.18],'#323c46');
     for(let i=0;i<7;i++)pane(v,[b.x+b.w*.3,1.3+i*.35,front+.26],[2.5,.07,0],'#737b7d',0,4);
   }
+  if(b.rooftop)streetDestination(v,b);
 }
 
 // Small, open street workspaces sit behind the existing interaction terminals.

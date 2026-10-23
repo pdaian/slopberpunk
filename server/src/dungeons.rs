@@ -227,7 +227,7 @@ impl Catalog {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub(super) struct History {
-    clears: u64,
+    pub(super) clears: u64,
     ending: String,
 }
 #[derive(Clone)]
