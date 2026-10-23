@@ -187,7 +187,7 @@ pub(super) fn validate(data: &Content) -> io::Result<()> {
     }
     for a in &data.abilities {
         if a.level > data.r("levelCap") as u32
-            || !["damage", "stun", "heal", "shield", "area", "ghostline"].contains(&a.kind.as_str())
+            || !["damage", "stun", "heal", "shield", "area"].contains(&a.kind.as_str())
             || !["", "expose", "siphon", "execute"].contains(&a.effect.as_str())
             || [a.cost, a.power, a.range]
                 .iter()

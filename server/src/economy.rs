@@ -755,8 +755,6 @@ mod tests {
             input: Movement::default(),
             last_input: 0.0,
             velocity: [0.0; 3],
-            previous_position: [0.0; 3],
-            ghost_trail: GhostTrail::default(),
             grounded: true,
             coyote: 0.0,
             jump_buffer: 0.0,
@@ -894,7 +892,6 @@ mod tests {
                 time,
                 &mut seed,
                 [0.0; 3],
-                1.0,
             );
             before - e.health
         }
@@ -1127,19 +1124,16 @@ mod tests {
         let data = content();
         let mut p = player(&data);
         let mut enemy = enemy();
+        enemy.health = 1.0;
         p.c.level = 10;
         let ability = data.abilities.iter().find(|a| a.id == "arc").unwrap();
         let mut seed = 1000;
-        damage_enemy(
-            &mut p, &mut enemy, ability, &data, 0.0, &mut seed, [0.0; 3], 100.0,
-        );
+        damage_enemy(&mut p, &mut enemy, ability, &data, 0.0, &mut seed, [0.0; 3]);
         assert_eq!(p.c.mob_kills["drone"], 1);
         assert!((1..=3).contains(&count(&p.c, "ceramic")));
         assert_eq!(count(&p.c, "wire-scrap"), 0);
         let before = serde_json::to_value(&p.c).unwrap();
-        damage_enemy(
-            &mut p, &mut enemy, ability, &data, 0.0, &mut seed, [0.0; 3], 100.0,
-        );
+        damage_enemy(&mut p, &mut enemy, ability, &data, 0.0, &mut seed, [0.0; 3]);
         assert_eq!(serde_json::to_value(&p.c).unwrap(), before);
         enemy.event = Some("incident".into());
         loot(&mut p, &enemy, &data, &mut seed);

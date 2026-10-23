@@ -62,7 +62,7 @@ cargo test
 cargo build --release
 ```
 
-The Rust suites cover configuration, static HTTP delivery and security, content, authoritative gameplay, dungeons, Ghostline, founder rewards, community transactions, persistence, and signed exports. The HTTP tests call the real Axum routes in memory without opening listeners. Cargo creates its normal dependency cache and target directory; database tests use temporary fixtures. These commands were not run for this task because generated files were prohibited. Formatting and source checks do not establish Rust type correctness, linking, live HTTP/WebSocket behavior, or measured capacity. The device acceptance procedure is in [COMPATIBILITY.md](COMPATIBILITY.md).
+The Rust suites cover configuration, static HTTP delivery and security, content, authoritative gameplay, dungeons, founder rewards, community transactions, persistence, and signed exports. The HTTP tests call the real Axum routes in memory without opening listeners. Cargo creates its normal dependency cache and target directory; database tests use temporary fixtures. These commands were not run for this task because generated files were prohibited. Formatting and source checks do not establish Rust type correctness, linking, live HTTP/WebSocket behavior, or measured capacity. The device acceptance procedure is in [COMPATIBILITY.md](COMPATIBILITY.md).
 
 ## Online acceptance and capacity
 

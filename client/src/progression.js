@@ -32,7 +32,7 @@ export function validateProgression(data) {
     for(const req of t.requires) { const parent=data.talents.find(n=>n.id===req.id); if(!parent||parent.branch!==t.branch||parent.row>=t.row||parent.level>t.level||!Number.isInteger(req.rank)||req.rank<1||req.rank>parent.maxRank)fail(); }
   }
   if(new Set(data.abilities.map(a=>a.id)).size!==data.abilities.length||new Set(data.abilities.map(a=>a.key)).size!==data.abilities.length)fail();
-  for(const a of data.abilities)if(!Number.isInteger(a.level)||a.level<0||a.level>r.levelCap||!['damage','stun','heal','shield','area','ghostline'].includes(a.kind)||!['','expose','siphon','execute'].includes(a.effect||'')||['cost','power','range'].some(k=>!Number.isFinite(a[k])||a[k]<0)||!Number.isFinite(a.cooldown)||a.cooldown<=0)fail();
+  for(const a of data.abilities)if(!Number.isInteger(a.level)||a.level<0||a.level>r.levelCap||!['damage','stun','heal','shield','area'].includes(a.kind)||!['','expose','siphon','execute'].includes(a.effect||'')||['cost','power','range'].some(k=>!Number.isFinite(a[k])||a[k]<0)||!Number.isFinite(a.cooldown)||a.cooldown<=0)fail();
 }
 export function talentPanel(c,data,branch='Anchor',nearby=false) {
   const branches=[...new Set(data.talents.map(t=>t.branch))], nodes=data.talents.filter(t=>t.branch===branch), points=talentBudget(c,data.rules)-spentTalents(c);

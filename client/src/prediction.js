@@ -27,7 +27,7 @@ export function availableQuest(q,c) {
 export class Prediction {
   constructor(data,world,character,emit=()=>{}) {
     this.data=data;this.world=world;this.character=character;this.emit=emit;this.time=0;
-    this.dungeonState=null;this.enemies=[];this.worldEvents=[];this.ghostlines=[];this.ghostCharge={seconds:0,meters:0,ready:false};
+    this.dungeonState=null;this.enemies=[];this.worldEvents=[];
     this.elevator=null;
     this.velocity=[0,0,0];this.grounded=true;this.coyote=0;this.jumpBuffer=0;this.dash=0;this.dashReady=0;this.cooldowns={};this.shield=0;
   }

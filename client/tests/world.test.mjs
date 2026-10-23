@@ -8,8 +8,9 @@ import { CharacterMeshes, motionPose } from '../src/character.js';
 import { box, bevelBox, ellipsoid, slope, transformMesh } from '../src/geometry.js';
 import { Renderer } from '../src/renderer.js';
 import { CityLife } from '../src/citylife.js';
-import { rooftopGeometry, streetDestination, routeGeometry } from '../src/scenery.js';
+import { rooftopGeometry, streetDestination, routeGeometry, buildingExterior, buildingAds, buildingLights } from '../src/scenery.js';
 import { rideDuration, ridePosition } from '../src/elevators.js';
+import { daylight, DAY_MS } from '../src/clock.js';
 
 const read=name=>JSON.parse(readFileSync(new URL(`../data/${name}.json`,import.meta.url)));
 const data=Object.fromEntries(['world','rules','races','talents','dungeons','citylife'].map(name=>[name,read(name)]));
@@ -17,6 +18,57 @@ const models=JSON.parse(readFileSync(new URL('../assets/models.json',import.meta
 const world=new World(data.world),rooms=world.buildings.filter(b=>b.interior);
 const player=position=>new Prediction(data,world,{position:[...position],yaw:0,race:'human',level:0,talents:{},health:120});
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
+
+test('occupied windows switch off by day and fade continuously through dawn and dusk',()=>{
+  const at=hour=>daylight(Date.UTC(2026,0,1)+hour*3600000);
+  assert.equal(at(0).windows,1);assert.equal(at(12).windows,0);
+  assert.ok(at(6).windows>0&&at(6).windows<1);
+  near(at(6).windows,at(18).windows);
+  let previous=at(0).windows;
+  for(let minute=1;minute<=1440;minute++){
+    const light=at(minute/60);
+    assert.ok(light.windows>=0&&light.windows<=1);
+    if(light.label==='DAY')assert.equal(light.windows,0);
+    assert.ok(Math.abs(light.windows-previous)<.04,'window lighting must not pop between frames');
+    previous=light.windows;
+  }
+  assert.equal(daylight(-DAY_MS/2).windows,0);
+});
+
+test('district ads stay separate from occupied glazing and use matching outward fixtures',()=>{
+  const messages=new Set(),shapes=new Set();
+  for(const district of data.world.districts.slice(0,-1)){
+    const b=world.buildings.find(b=>b.identity.district===district.id&&b.h>70),mesh=[],glints=[];
+    buildingExterior(mesh,b,data.world,glints);
+    assert.ok(mesh.every(Number.isFinite));
+    assert.ok(mesh.some((value,i)=>i%10===9&&value>=4&&value<5),'occupied glazing must carry its daylight material');
+    assert.ok(mesh.some((value,i)=>i%10===9&&value>.8&&value<1),'neon must retain independent emission');
+    const ads=buildingAds(b),fixtures=buildingLights(b).filter(l=>l.kind==='advert');
+    assert.deepEqual(fixtures,ads);
+    for(const ad of ads){
+      messages.add(ad.message);shapes.add(ad.variant);
+      assert.ok(ad.position[1]-ad.height/2>4.2,'advert must leave street doors open');
+      assert.ok((ad.position[2]-b.z)*ad.direction>0,'advert must face out from its facade');
+    }
+    assert.ok(glints.every(l=>l.kind==='window'&&l.radius===0));
+  }
+  assert.ok(messages.size>=8);assert.equal(shapes.size,3);
+});
+
+test('daytime glow sprites exclude windows while retaining neon and vendor lights',()=>{
+  let points;
+  const gl=new Proxy({bufferData:(_,data)=>{points=[...data];}},{get:(o,k)=>k in o?o[k]:(()=>{})});
+  const fixtures=['window','advert','stall'].map((kind,i)=>({kind,position:[i,3,0],rgb:[1,.5,.25],size:2,strength:.8}));
+  const renderer={gl,nearLights:fixtures,quality:1,attributes:[],glowAttributes:[],glowLocations:{},eye:[0,2,10]};
+  for(const hour of [12,0,6]){
+    const light=daylight(Date.UTC(2026,0,1,hour));
+    Renderer.prototype.drawGlows.call(renderer,light.light,()=>true,540,0,light.windows);
+    assert.equal(points.length/8,hour===12?2:3);
+    const offset=hour===12?0:8;
+    near(points[offset],1);near(points[offset+7],.8);near(points[offset+15],.8);
+    if(hour!==12)near(points[7],.8*light.windows);
+  }
+});
 
 test('interiors preserve the original deterministic city footprint',()=>{
   const legacy=new World({...data.world,interiors:undefined});
@@ -348,6 +400,7 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
     const residents=life.update(epoch,[0,0,32],{completed:data.citylife.neighborhoods.flatMap(n=>n.stages.slice(1).map(s=>s.quest))});
     assert.ok(residents.length>8);
     renderer.render(camera,residents,[],10,epoch);
+    assert.equal(uniforms.get('uWindowLight'),0);
     assert.ok(renderer.details.size>0&&renderer.details.size<40);assert.ok(calls>0);assert.ok(depthWrite);
     assert.equal(renderer.lightLimit,2,'fit fixture lighting within the WebGL 1 minimum uniform budget');
     assert.equal(uniforms.get('uLightPosition').length,8);
@@ -355,6 +408,7 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
     renderer.quality=.5;renderer.reducedMotion=true;
     renderer.render(camera,residents,[],11,Date.UTC(2026,0,1,0));
     assert.equal(uniforms.get('uDay'),0);assert.equal(uniforms.get('uTime'),0);assert.ok(depthWrite);
+    assert.equal(uniforms.get('uWindowLight'),1,'reduced motion must still update window occupancy lighting');
     for(const height of [12,24,48])for(const quality of [.5,1]){
       const block=life.streetBlocks.find(b=>b.position[1]===height),[x,y,z]=block.position;
       renderer.quality=quality;
@@ -378,7 +432,7 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
         const from=[...e.position],to=[e.position[0],b.h,e.position[2]],ride={id:e.id,from,to,started:0,duration:rideDuration(from,to)};
         for(const time of [0,ride.duration/2,ride.duration]){
           const p=ridePosition(ride,time);
-          renderer.render({eye:[p[0],p[1]+1.8,p[2]],target:[p[0],p[1]+1.8,p[2]+8]},[],[],time,epoch,[],time,null,null,ride);
+          renderer.render({eye:[p[0],p[1]+1.8,p[2]],target:[p[0],p[1]+1.8,p[2]+8]},[],[],time,epoch,time,null,null,ride);
           assert.ok(depthWrite,'ride rendering must restore depth writes');
         }
       }

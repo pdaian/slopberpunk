@@ -304,11 +304,9 @@ fn danger(r: &Rules, c: &Chapter, pulse: u64, p: Vec3) -> bool {
 }
 fn relocate(p: &mut Player, where_to: Vec3, data: &Content) {
     p.c.position = where_to;
-    p.previous_position = where_to;
     p.c.yaw = 0.0;
     p.input = Movement::default();
     p.velocity = [0.0; 3];
-    p.ghost_trail.clear();
     p.grounded = true;
     p.jump_buffer = 0.0;
     p.coyote = 0.0;
@@ -363,7 +361,6 @@ impl Shard {
         let Some(p) = self.players.remove(&id) else {
             return;
         };
-        self.ghostlines.remove(&id);
         let (reply, accepted) = oneshot::channel();
         let command = Command::Transfer {
             player: Box::new(p),
@@ -426,8 +423,6 @@ impl Shard {
         };
         p.velocity = [0.0; 3];
         p.dash = 0.0;
-        p.previous_position = p.c.position;
-        p.ghost_trail.clear();
         let id = p.c.id.clone();
         self.players.insert(id.clone(), *p);
         self.dungeon_action(&id, &request);
@@ -476,7 +471,6 @@ impl Shard {
         }
     }
     fn return_runner(&mut self, id: &str, message: &str) {
-        self.ghostlines.remove(id);
         if let Some(p) = self.players.get_mut(id) {
             let destination = p.c.dungeon_return.take().unwrap_or(self.content.map.spawn);
             p.instance = None;
@@ -677,7 +671,6 @@ impl Shard {
                 run.ready.clear();
                 run.deadline = 0.0;
                 for t in &run.tickets {
-                    self.ghostlines.remove(&t.id);
                     if let Some(p) = self.players.get_mut(&t.id) {
                         elevators::cancel(p);
                         p.instance = Some(run.id);
@@ -760,12 +753,10 @@ impl Shard {
                     other.c.revision += 1;
                     other.velocity = [0.0; 3];
                     other.dash = 0.0;
-                    other.previous_position = other.c.position;
                     other.input = Movement {
                         yaw: other.c.yaw,
                         ..Movement::default()
                     };
-                    other.ghost_trail.clear();
                     notice(other, "Another player brought you back to life.");
                 }
                 run.revives.insert(id.to_owned(), count - 1);
@@ -873,7 +864,6 @@ impl Shard {
             }
             if run.phase == Phase::Wipe && self.time >= run.deadline {
                 for t in &run.tickets {
-                    self.ghostlines.remove(&t.id);
                     if let Some(p) = self.players.get_mut(&t.id) {
                         relocate(p, position(&rules, [0.0, 0.0, 14.0]), &self.content);
                     }
@@ -893,9 +883,6 @@ impl Shard {
                     run.phase = Phase::Wipe;
                     run.deadline = self.time + self.content.rule("player", "respawnSeconds");
                     self.enemies.retain(|e| e.instance != Some(key));
-                    for t in &run.tickets {
-                        self.ghostlines.remove(&t.id);
-                    }
                 } else {
                     if self.time >= run.next_pulse {
                         for t in &run.tickets {
@@ -943,13 +930,11 @@ impl Shard {
                     {
                         self.enemies.retain(|e| e.instance != Some(key));
                         for t in &run.tickets {
-                            self.ghostlines.remove(&t.id);
                             if let Some(p) = self.players.get_mut(&t.id) {
                                 let s = Stats::new(&p.c, &self.content);
                                 p.c.health = s.health;
                                 p.c.energy = s.energy;
                                 p.dead_at = 0.0;
-                                p.ghost_trail.clear();
                                 notice(p, "Chapter complete. Read the discovery in Dungeons [G].");
                             }
                         }
@@ -1006,13 +991,11 @@ mod tests {
                 live_social: live_social::Session::default(),
                 instance: None,
                 owner: "account".into(),
-                previous_position: c.position,
                 c,
                 output,
                 input: Movement::default(),
                 last_input: 0.0,
                 velocity: [0.0; 3],
-                ghost_trail: GhostTrail::default(),
                 grounded: true,
                 coyote: 0.0,
                 jump_buffer: 0.0,
@@ -1154,7 +1137,7 @@ mod tests {
         }
     }
     #[test]
-    fn instance_isolation_covers_snapshots_attacks_area_healing_and_ghost_contacts() {
+    fn instance_isolation_covers_snapshots_attacks_area_and_healing() {
         let mut s = shard();
         let a = crew(&mut s, "borrowed-ferry", 2, "alpha");
         let b = crew(&mut s, "borrowed-ferry", 2, "beta");
@@ -1197,27 +1180,6 @@ mod tests {
                 .iter()
                 .filter(|e| e.instance == kb)
                 .all(|e| e.health == e.max_health)
-        );
-        // Record an echo for A, place only a B runner at its crossing point.
-        let data = s.content.clone();
-        let p = s.players.get_mut(&a[0]).unwrap();
-        for i in 0..=30 {
-            p.ghost_trail
-                .record(i as f64 * 0.1, [2000.0, 0.0, 15.0 - i as f64], 46.0, &data);
-        }
-        let ghost = p.ghost_trail.release(&p.c, 3.0, &data).unwrap();
-        for id in &a {
-            s.players.get_mut(id).unwrap().c.position = [2025.0, 0.0, 25.0];
-            s.players.get_mut(id).unwrap().previous_position = [2025.0, 0.0, 25.0];
-        }
-        for id in &b {
-            s.players.get_mut(id).unwrap().c.position = [2000.0, 0.0, 5.0];
-            s.players.get_mut(id).unwrap().previous_position = [2000.0, 0.0, 5.0];
-        }
-        assert!(
-            ghost
-                .contact(4.0, 0.05, &s.players, &s.world, &s.content)
-                .is_none()
         );
         let (tx, mut rx) = mpsc::channel(4);
         s.players.get_mut(&a[0]).unwrap().output = tx;

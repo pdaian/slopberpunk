@@ -35,7 +35,7 @@ export class Input {
       if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&this.active)e.preventDefault();
       if(!this.keys.has(e.code))this.edges.add(e.code);this.keys.add(e.code);
       if(e.repeat)return;
-      const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',Digit7:'ability:breach',Digit8:'ability:siphon',Digit9:'ability:execute',Digit0:'ability:nova',KeyR:'ability:ghostline',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyU:'guild',KeyG:'dungeons',KeyH:'medkit',KeyV:'camera',Enter:'chat',KeyB:'gestures'};
+      const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',Digit7:'ability:breach',Digit8:'ability:siphon',Digit9:'ability:execute',Digit0:'ability:nova',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyU:'guild',KeyG:'dungeons',KeyH:'medkit',KeyV:'camera',Enter:'chat',KeyB:'gestures'};
       if(e.code==='Enter')e.preventDefault();
       if(bindings[e.code]&&this.active)this.onAction(bindings[e.code]);
     });
@@ -154,7 +154,7 @@ export class Input {
       }else{
         forward-=axes[1];strafe+=axes[0];this.onLook(axes[2]*dt*2.3,axes[3]*dt*1.8);
         jump ||=edge(0);dash ||=edge(1);sprint ||=pressed[10];
-        const actions={2:'interact',3:'target',4:'ability:surge',5:'ability:mend',6:'ability:aegis',7:'ability:arc',8:'journal',9:'settings',11:'ability:ghostline',12:'medkit',13:'map',14:'ability:lance',15:'ability:echo'};
+        const actions={2:'interact',3:'target',4:'ability:surge',5:'ability:mend',6:'ability:aegis',7:'ability:arc',8:'journal',9:'settings',12:'medkit',13:'map',14:'ability:lance',15:'ability:echo'};
         const alternate={12:'ability:breach',15:'ability:siphon',13:'ability:execute',14:'ability:nova'};
         for(const [i,action]of Object.entries(actions))if(edge(Number(i)))this.onAction(pressed[10]&&alternate[i]?alternate[i]:action);
       }

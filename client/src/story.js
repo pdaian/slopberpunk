@@ -1,7 +1,7 @@
 // The Living Record is a reading of saved contracts, never a second progression system.
 // GPL-3.0-or-later.
 import { escapeHtml as esc } from './icons.js';
-import { questView, questDestination, objectiveText, openingGuide } from './quests.js';
+import { questView, questDestination, questGuide, questProgressText, placeInfo, openingGuide } from './quests.js';
 import { decisionOutcome, moralRecord, moralNpcDialogue, moralClosing } from './morality.js';
 
 const resolve = (id, c) => id.replace('{faction}', c.faction).replace('{race}', c.race);
@@ -43,11 +43,8 @@ export function campaignView(c, data, events = []) {
 export function campaignLead(c, data, events = []) {
   const state = campaignView(c, data, events), next = state.next;
   if (!next) return { ...state, instruction: 'Main story complete. Open QUESTS → Story to read the ending. Nella and Oru have your report at the kitchen.' };
-  const { quest: q, view, npc, locked } = next;
-  const instruction = locked ? `Continue at level ${q.level}: ${q.title}. Earn XP from available quests, enemies, or Patch’s repeatable jobs to reach that level.`
-    : !view.accepted ? `Talk to ${npc.name} and accept “${q.title}”.`
-    : view.ready ? `Return to ${npc.name}. Choose an ending for “${q.title}” to collect your reward.`
-    : `${q.title} · ${objectiveText(view.step, data)} (${view.progress}/${view.step.count}${view.step.type === 'hold' ? 's' : ''})`;
+  const guide = questGuide(next.quest, c, data, events), progress = questProgressText(guide.view);
+  const instruction = guide.instruction + (progress ? ` (${progress})` : '');
   return { ...state, instruction };
 }
 
@@ -68,7 +65,7 @@ export function campaignPanel(c, data, events = []) {
     const history = c.dungeonHistory[d.id], ending = d.decision.choices.find(choice => choice.id === history.ending);
     return `<article class="info-card"><h3>${esc(d.name)}</h3><p>${esc(d.record)}</p><p class="npc-quote">${esc(ending?.ending || d.decision.deferred)}</p></article>`;
   }).join('');
-  return `<p class="dialog-intro">${esc(story.premise)}</p><article class="info-card"><small class="story-chapter">${complete ? 'MAIN STORY COMPLETE' : `CHAPTER ${index + 1} / ${state.chapters.length}`} · ${esc(chapter.title)}</small><p>${esc(state.instruction)}</p>${next && !next.locked && next.destination ? `<button class="small-button" data-do="map-region" data-id="${next.region}">SHOW NEXT DESTINATION ↗</button>` : next ? `<button class="small-button" data-do="journal-filter" data-id="${next.locked ? 'available' : 'active'}">${next.locked ? 'AVAILABLE QUESTS' : 'ACTIVE QUESTS'} ↗</button>` : ''}</article>${complete ? `<p class="npc-quote">${esc(moralClosing(c,data) || story.ending)}</p>` : ''}<h3>Your investigation</h3>${chapters}<h3>Local stories</h3><p>The kitchen quests are part of the main story. Other local quests and all dungeons are optional. You can finish the main story alone.</p>${places}<h3>Dungeon stories</h3>${expeditions || '<p class="muted">Complete a dungeon to save its story and your group’s latest ending here.</p>'}<button class="small-button" data-do="dungeons">OPEN DUNGEONS ↗</button><p class="panel-description">This page shows your character’s completed quests and dungeon endings. Street emergencies can happen again, but completed quest steps stay saved.</p>`;
+  return `<p class="dialog-intro">${esc(story.premise)}</p><article class="info-card"><small class="story-chapter">${complete ? 'MAIN STORY COMPLETE' : `CHAPTER ${index + 1} / ${state.chapters.length}`} · ${esc(chapter.title)}</small><p>${esc(state.instruction)}</p>${next && !next.locked && next.destination ? `<p class="quest-location">${esc(placeInfo(next.destination,data).description)} ${next.destination.position[1]>5?esc(placeInfo(next.destination,data).access):''}</p><button class="small-button" data-do="quest-map" data-id="${next.quest.id}">VIEW QUEST AREA ↗</button>` : next ? `<button class="small-button" data-do="journal-filter" data-id="${next.locked ? 'available' : 'active'}">${next.locked ? 'AVAILABLE QUESTS' : 'ACTIVE QUESTS'} ↗</button>` : ''}</article>${complete ? `<p class="npc-quote">${esc(moralClosing(c,data) || story.ending)}</p>` : ''}<h3>Your investigation</h3>${chapters}<h3>Local stories</h3><p>The kitchen quests are part of the main story. Other local quests and all dungeons are optional. You can finish the main story alone.</p>${places}<h3>Dungeon stories</h3>${expeditions || '<p class="muted">Complete a dungeon to save its story and your group’s latest ending here.</p>'}<button class="small-button" data-do="dungeons">OPEN DUNGEONS ↗</button><p class="panel-description">This page shows your character’s completed quests and dungeon endings. Street emergencies can happen again, but completed quest steps stay saved.</p>`;
 }
 
 export function storyDialogue(npc, c, data) {

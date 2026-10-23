@@ -1,6 +1,5 @@
 // Original line-art symbols. GPL-3.0-or-later.
 const paths={
-  ghostline:'<path d="M3 25c0-14 26-14 26 0M3 7c0 14 26 14 26 0"/><path d="m16 10 6 6-6 6-6-6zM16 2v5m0 18v5"/>',
   bolt:'<path d="M18 3 5 18h9l-2 11 15-17h-10z"/>',
   pulse:'<path d="M2 17h6l4-11 6 21 5-13h7"/><path d="M5 7V4h3m16 0h3v3M5 25v3h3m16 0h3v-3"/>',
   cross:'<path d="M12 4h8v8h8v8h-8v8h-8v-8H4v-8h8z"/>',

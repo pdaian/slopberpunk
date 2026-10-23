@@ -47,7 +47,7 @@ test('all sixteen origins can finish the story through reachable contracts witho
       assert.ok(!q.faction || q.faction === c.faction);
       assert.ok(!q.race || q.race === c.race);
       const guide = openingGuide(c, data);
-      if (guide) assert.equal(q.id, guide.quest.id, 'journal and opening marker agree');
+      if (guide) assert.equal(q.id, guide.quest.id, 'journal and opening guidance agree');
       c.level = Math.max(c.level, q.level);
       c.activeQuests[q.id] = 0;
       assert.equal(campaignView(c, data).next.quest.id, openingGuide(c, data)?.quest.id || q.id);
@@ -71,10 +71,10 @@ test('level gaps name the next lead without sending players to a locked objectiv
   assert.equal(lead.next.locked, true);
   assert.match(lead.instruction, /level 2/);
   assert.match(campaignPanel(c, data), /AVAILABLE QUESTS/);
-  assert.doesNotMatch(campaignPanel(c, data), /SHOW NEXT DESTINATION/);
+  assert.doesNotMatch(campaignPanel(c, data), /VIEW QUEST AREA/);
   c.level = 2;
   assert.equal(campaignLead(c, data).next.locked, false);
-  assert.match(campaignPanel(c, data), /SHOW NEXT DESTINATION/);
+  assert.match(campaignPanel(c, data), /VIEW QUEST AREA/);
 });
 
 test('intermediate contracts leave field notes before a chapter’s milestone reports', () => {
@@ -106,7 +106,8 @@ test('current field destinations select the basin map even for faction contracts
   c.completed = data.quests.filter(q => q.faction === c.faction || q.race === c.race || q.neighborhood === 'market').map(q => q.id).filter(id => id !== 'relay-30');
   c.activeQuests['relay-30'] = 0;
   assert.equal(campaignView(c, data).next.region, 'basin');
-  assert.match(campaignPanel(c, data), /data-do="map-region" data-id="basin"/);
+  assert.match(campaignPanel(c, data), /data-do="quest-map" data-id="relay-30"/);
+  assert.match(campaignPanel(c, data), /Mourning Fen, east of Vesper/);
   c.activeQuests['relay-30'] = 1;
   assert.equal(campaignView(c, data).next.region, 'city', 'turn in at the Commons contact');
 });

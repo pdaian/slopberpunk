@@ -20,12 +20,12 @@ The default listener is `0.0.0.0:8080`. Use `HOST=127.0.0.1` for local-only acce
 
 ## Playing
 
-New characters start in the First Steps Courtyard. Follow the markers to learn movement, interaction, and combat, then use the Commons gate to enter the city. The gate also lets you skip training. The journal and map track your next objective.
+New characters start in the First Steps Courtyard. Walk to the cyan square, try the training terminal, and shoot the practice target, then use the Commons gate to enter the city. The gate also lets you skip training. The journal gives each quest a next action, place description, and full route through its final handover. Choose **FOLLOW QUEST** to follow any story, or **VIEW AREA** for a local map with named places and descriptions. Vesper and Pale Basin overviews help you find other neighborhoods. Quest guidance uses these descriptions instead of floating beacons or objective pins.
 
 - Explore city streets, building interiors, rooftops, and four surrounding biomes.
 - Ride velvet-lined Art Deco observation elevators to the Gilded Hour hotel lounge, Maison Nocturne tasting terrace, Verdigris Winter Garden, and Blue Hour jazz club. Gold squares on the city map mark their street entrances. Step inside and press **E** (controller **X** or touch **USE**) anywhere in the cabin to ride; use it again after arrival to return. A brief tutorial appears on your first entry, with no confirmation menu. All four venues are free to explore.
 - Choose from four factions and four lineages. Their campaigns, neighborhood stories, and basin quests total 203 contracts, with saved choices and reputation.
-- Build around combat abilities, talents, equipment, and crafting. Ghostline replays your recent movement as an echo that you or another player can cross to trigger a shockwave.
+- Build around combat abilities, talents, equipment, and crafting.
 - Join six expeditions with fixed crew sizes of 1, 2, 3, 4, 6, or 8 players.
 - Chat, form parties and guilds, trade at the auction house, and customize cosmetic armor in the Frame Forge.
 
@@ -39,7 +39,7 @@ New characters start in the First Steps Courtyard. Follow the markers to learn m
 | Attack, talk, inspect, or use selected target | E; right click selects and acts |
 | Shoot / stun / heal / shield | 1 / 2 / 3 / 4 |
 | Additional attacks | 5–9 / 0 |
-| Ghostline / medkit | R / H |
+| Medkit | H |
 | Journal / map | J / M |
 | Talents / gear and crafting | T / I |
 | Chat / gestures | Enter / B |

@@ -3,8 +3,8 @@
 import { escapeHtml } from './icons.js';
 
 const bindings = {
-  keyboard: { arc:'1',surge:'2',mend:'3',aegis:'4',lance:'5',echo:'6',breach:'7',siphon:'8',execute:'9',nova:'0',ghostline:'R',interact:'E',target:'Tab',jump:'Space',dash:'Q',sprint:'Shift',medkit:'H',journal:'J',talents:'T',inventory:'I',map:'M',community:'C',guild:'U',dungeons:'G',chat:'Enter',gestures:'B',settings:'Esc',escape:'Esc',camera:'V' },
-  gamepad: { arc:'RT',surge:'LB',mend:'RB',aegis:'LT',lance:'←',echo:'→',breach:'L3+↑',siphon:'L3+→',execute:'L3+↓',nova:'L3+←',ghostline:'R3',interact:'X',target:'Y',jump:'A',dash:'B',sprint:'L3',medkit:'↑',journal:'View',map:'↓',settings:'Menu',escape:'B' },
+  keyboard: { arc:'1',surge:'2',mend:'3',aegis:'4',lance:'5',echo:'6',breach:'7',siphon:'8',execute:'9',nova:'0',interact:'E',target:'Tab',jump:'Space',dash:'Q',sprint:'Shift',medkit:'H',journal:'J',talents:'T',inventory:'I',map:'M',community:'C',guild:'U',dungeons:'G',chat:'Enter',gestures:'B',settings:'Esc',escape:'Esc',camera:'V' },
+  gamepad: { arc:'RT',surge:'LB',mend:'RB',aegis:'LT',lance:'←',echo:'→',breach:'L3+↑',siphon:'L3+→',execute:'L3+↓',nova:'L3+←',interact:'X',target:'Y',jump:'A',dash:'B',sprint:'L3',medkit:'↑',journal:'View',map:'↓',settings:'Menu',escape:'B' },
   touch: { interact:'USE',target:'TARGET',jump:'JUMP',dash:'DASH' },
 };
 

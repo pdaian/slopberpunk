@@ -37,7 +37,7 @@ This grants that browser read-only access to device metadata. It adapts [Microso
 
 ## Controls and browser features
 
-The complete bindings are in the [README controls table](../README.md#controls). On the Deck, left/right stick move/look, **A/B** jump/dash, **Y** cycles visible characters and objects, **X** acts on the selected target, and left-stick press sprints. **Right-stick press (R3)** casts Ghostline after you have moved at least 12 m over 2 seconds; cross the cyan runner to braid. **R2/L1/R1/L2** use arc/surge/heal/shield; D-pad left/right use the remaining abilities and D-pad up uses a medkit. **View** opens the journal, D-pad down opens the map, and **Menu** opens Settings.
+The complete bindings are in the [README controls table](../README.md#controls). On the Deck, left/right stick move/look, **A/B** jump/dash, **Y** cycles visible characters and objects, **X** acts on the selected target, and left-stick press sprints. **R2/L1/R1/L2** use arc/surge/heal/shield; D-pad left/right use the remaining abilities and D-pad up uses a medkit. **View** opens the journal, D-pad down opens the map, and **Menu** opens Settings.
 
 In menus, use the D-pad to focus controls and **A** to activate them, or use the trackpad/touchscreen. Keep the mouse option available for text fields, dropdowns, scrolling, and browser download dialogs. Focus a text field and press **Steam + X** for the on-screen keyboard. **Settings → Controls** lists the bindings; open Community from Settings and use the HUD buttons for talents and gear. Valve documents the keyboard and per-game layouts in its [input guide](https://help.steampowered.com/en/faqs/view/69E3-14AF-9764-4C28).
 

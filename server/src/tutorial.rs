@@ -113,7 +113,6 @@ pub(super) fn interact(p: &mut Player, data: &Content, id: &str) -> bool {
     if id == area.exit {
         if p.c.tutorial_stage.take().is_some() {
             p.c.position = data.map.spawn;
-            p.previous_position = p.c.position;
             p.velocity = [0.0; 3];
             p.input = Movement {
                 yaw: p.c.yaw,
@@ -123,16 +122,15 @@ pub(super) fn interact(p: &mut Player, data: &Content, id: &str) -> bool {
             p.jump_buffer = 0.0;
             p.coyote = 0.0;
             p.grounded = true;
-            p.ghost_trail.clear();
             p.dirty = true;
             notice(
                 p,
-                "Welcome to the Commons. Follow the marker to your faction contact and help reopen Nella’s kitchen.",
+                "Welcome to the Commons. Your faction contact waits beside the exchange. Open Quests for directions.",
             );
         } else {
             notice(
                 p,
-                "Your training is finished. Follow the story marker or open J → Story for your next quest.",
+                "Your training is finished. Open Quests → Next step to find your first contact.",
             );
         }
     } else if id == area.terminal {
@@ -146,13 +144,13 @@ pub(super) fn interact(p: &mut Player, data: &Content, id: &str) -> bool {
         } else {
             notice(
                 p,
-                "Select objects before using them. Follow your training marker; the Commons gate lets you leave at any time.",
+                "Select objects before using them. The training terminal is on the west side; the Commons gate lets you leave at any time.",
             );
         }
     } else if id == area.beacon {
         notice(
             p,
-            "Walk onto the movement marker. Use WASD, the controller’s left stick, or the touch pad.",
+            "Walk onto the cyan square in the courtyard. Use WASD, the controller’s left stick, or the touch pad.",
         );
     } else if id == area.target {
         notice(
@@ -252,13 +250,11 @@ mod tests {
                 live_social: live_social::Session::default(),
                 instance: None,
                 owner: "account".into(),
-                previous_position: c.position,
                 c,
                 output,
                 input: Movement::default(),
                 last_input: 0.0,
                 velocity: [0.0; 3],
-                ghost_trail: GhostTrail::default(),
                 grounded: true,
                 coyote: 0.0,
                 jump_buffer: 0.0,
@@ -367,7 +363,7 @@ mod tests {
     }
 
     #[test]
-    fn unstuck_preserves_character_and_instance_while_clearing_motion_and_ghosts() {
+    fn unstuck_preserves_character_and_instance_while_clearing_motion() {
         for (stage, instance) in [(Some(Stage::Combat), None), (None, None), (None, Some(7))] {
             let mut s = fixture();
             let (output, mut messages) = mpsc::channel(16);
@@ -394,18 +390,6 @@ mod tests {
             p.coyote = 0.1;
             p.cooldowns.insert("arc".into(), 20.0);
             p.dash_ready = 15.0;
-            for i in 0..=20 {
-                p.ghost_trail.record(
-                    f64::from(i) * 0.1,
-                    [f64::from(i), 0.0, 0.0],
-                    20.0,
-                    &s.content,
-                );
-            }
-            s.ghostlines.insert(
-                "new".into(),
-                p.ghost_trail.release(&p.c, s.time, &s.content).unwrap(),
-            );
             let mut expected = serde_json::to_value(&p.c).unwrap();
             let destination = if instance.is_some() {
                 let [x, y, z] = s.content.dungeons.rules.arena;
@@ -424,7 +408,6 @@ mod tests {
             let p = &s.players["new"];
             assert_eq!(serde_json::to_value(&p.c).unwrap(), expected);
             assert_eq!(p.instance, instance);
-            assert_eq!(p.previous_position, destination);
             assert!(
                 !s.world
                     .collides(destination, s.content.rule("movement", "radius"))
@@ -436,8 +419,6 @@ mod tests {
             assert!(!p.input.jump && !p.input.dash && !p.input.sprint);
             assert_eq!((p.dash, p.jump_buffer, p.coyote), (0.0, 0.0, 0.0));
             assert!(p.grounded && p.dirty);
-            assert!(!p.ghost_trail.charge(&s.content).ready);
-            assert!(!s.ghostlines.contains_key("new"));
             assert_eq!(p.cooldowns["arc"], 20.0);
             assert_eq!(p.dash_ready, 15.0);
             assert_eq!(p.cooldowns["unstuck"], 40.0);

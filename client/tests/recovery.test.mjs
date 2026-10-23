@@ -11,7 +11,8 @@ import { runInNewContext } from 'node:vm';
 import { distance, mix3, clamp } from '../src/math.js';
 import { escapeHtml, icon } from '../src/icons.js';
 import { formatGold } from '../src/currency.js';
-import { openingGuide, questView, questDestination, objectiveText } from '../src/quests.js';
+import { openingGuide, questView, questGuide, placeInfo, questProgressText, followedQuest, objectiveText } from '../src/quests.js';
+import { localMapPlaces, mapLabelLayout } from '../src/map.js';
 import { worldEventViews } from '../src/events.js';
 import { dungeonPosition } from '../src/dungeons.js';
 import { collectTargets, targetProblem, elevatorTarget, targetBounds, visibleTargets, pickTarget, cycleTarget } from '../src/targeting.js';
@@ -113,7 +114,9 @@ test('fallen-body geometry remains finite at both quality levels', () => {
 
 // Exercise application wiring in memory; this is not a browser/WebGL acceptance test.
 function application(c) {
-  const nodes = new Map(), promptNodes = new Map(), sent = [], spoken = [];
+  const nodes = new Map(), promptNodes = new Map(), sent = [], spoken = [], drawing = [];
+  const canvasContext = Object.fromEntries(['fillRect','strokeRect','beginPath','arc','fill','stroke','moveTo','lineTo','closePath','fillText','save','translate','rotate','restore'].map(name => [name, (...args) => drawing.push([name, ...args])]));
+  canvasContext.measureText = text => ({ width: text.length * 7.2 });
   let sectionReads = [];
   const node = selector => {
     if (!nodes.has(selector)) {
@@ -121,6 +124,7 @@ function application(c) {
       nodes.set(selector, { hidden: true, open: false, textContent: '', innerHTML: '', scrollTop: 0, dataset: {}, querySelectorAll: () => [],
         classList: { toggle: (key, on) => on ? classes.add(key) : classes.delete(key), remove: key => classes.delete(key) },
         focus() {}, showModal() { this.open = true; }, close() { this.open = false; }, setAttribute() {},
+        width: 900, height: 720, getContext: () => canvasContext,
         listeners: {}, addEventListener(type, listener) { (this.listeners[type] ||= []).push(listener); },
       });
     }
@@ -132,15 +136,15 @@ function application(c) {
     window: { addEventListener() {} },
     setTimeout() {}, clearTimeout() {},
     matchMedia: () => ({ matches: true }), WorldClock: class { now() { return 18000; } sync() {} },
-    distance, mix3, clamp, isSpirit, recoveryView, bearing, openingGuide, questView, questDestination, objectiveText,
+    distance, mix3, clamp, isSpirit, recoveryView, bearing, openingGuide, questView, questGuide, placeInfo, questProgressText, followedQuest, objectiveText, localMapPlaces, mapLabelLayout,
     storyDialogue, questThread, campaignLead, campaignPanel, controlLabel, inputText, inputPrompt, updateInputPrompts,
     founderXpReward, decisionPanel, decisionOutcome, moralPrice, vendorPercent, collection, forgeRank, formatGold, icon,
     worldEventViews, collectTargets, targetProblem, elevatorTarget, targetBounds, visibleTargets, pickTarget, cycleTarget, availableQuest, esc: escapeHtml,
   };
   let source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8').replace(/^import .*;$/gm, '');
   source = source.slice(0, source.lastIndexOf('boot().catch'));
-  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;renderer={quality:1,volumetric:true};audio={stopVoice(){},effect(){},speak(...args){spoken.push(args);}};input={lastDevice:'keyboard',clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map()};state='playing';globalThis.harness={inputBlocked,wireEvents,connection,setChat(value){liveChat=value;},setScreen(value){state=value;},setDevice(value){input.lastDevice=value;},menu(){return input.menu;},perform,showJournal,showShop,showGuide,onEvent,questCard,nextQuestGuide,guideRegion,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
-  return { ...context.harness, node, sent, spoken, simulation, prompts(selector,values){promptNodes.set(selector,values);}, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
+  runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;renderer={quality:1,volumetric:true};audio={stopVoice(){},effect(){},speak(...args){spoken.push(args);}};input={lastDevice:'keyboard',clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map(),overheard(){return null;}};state='playing';globalThis.harness={inputBlocked,wireEvents,connection,setChat(value){liveChat=value;},setScreen(value){state=value;},setDevice(value){input.lastDevice=value;},menu(){return input.menu;},perform,showJournal,showShop,showGuide,onEvent,questCard,nextQuestGuide,showMap,drawMap,updateLabels,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
+  return { ...context.harness, node, sent, spoken, drawing, simulation, prompts(selector,values){promptNodes.set(selector,values);}, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
 }
 
 test('chat focus and death independently keep gameplay input blocked across panel closing', () => {
@@ -251,7 +255,7 @@ test('quest cards expose acceptance and final choices only at the correct stage 
   assert.deepEqual(c,before);
   c.activeQuests[q.id]=0;c.questStages={[q.id]:{index:1,progress:0}};
   const active=app.questCard(q,c,true);
-  assert.ok(active.slice(0,active.indexOf('<details')).includes(escapeHtml(q.steps[1].text)));
+  assert.ok(active.slice(0,active.indexOf('<details')).includes(escapeHtml(questGuide(q,c,data).instruction)));
   assert.doesNotMatch(active,/data-do="quest-accept"|data-do="quest-complete"/);
   c.activeQuests[q.id]=q.objective.count;c.questStages[q.id].index=q.steps.length;
   const ready=app.questCard(q,c,true);
@@ -298,10 +302,10 @@ test('later quest guidance follows field work back to its contact and handles th
   const q=data.quests.find(q=>q.id==='relay-30');
   const c={...character(),health:100,death:undefined,faction:'relay',level:60,activeQuests:{[q.id]:0},completed:data.quests.filter(q=>q.id!=='relay-30').map(q=>q.id)},app=application(c);
   app.updateStoryGuide();
-  assert.equal(app.guideRegion(app.nextQuestGuide()),'basin');
+  assert.equal(placeInfo(app.nextQuestGuide().destination,data).region,'basin');
   assert.equal(app.node('#quest-map').hidden,false);
   c.activeQuests[q.id]=q.objective.count;app.updateStoryGuide();
-  assert.equal(app.guideRegion(app.nextQuestGuide()),'city');
+  assert.equal(placeInfo(app.nextQuestGuide().destination,data).region,'city');
   assert.equal(app.nextQuestGuide().destination.id,q.giver);
   assert.match(app.node('#story-instruction').textContent,/Return to/);
   c.completed.push(q.id);delete c.activeQuests[q.id];app.updateStoryGuide();
@@ -309,6 +313,73 @@ test('later quest guidance follows field work back to its contact and handles th
   assert.match(app.node('#story-instruction').textContent,/Main story complete/);
   app.perform('journal');assert.match(app.node('#dialog-content').innerHTML,/Main story complete/);
   assert.equal(app.sent.length,0);
+});
+
+test('following a neighborhood story drives the tracker and map through its handover',async()=>{
+  const q=data.quests.find(q=>q.id==='neighborhood-archive-00');
+  const c={...character(),health:100,death:undefined,faction:'relay',level:60,activeQuests:{[q.id]:0},questStages:{[q.id]:{index:0,progress:0}},completed:[]},app=application(c);
+  app.wireEvents();
+  const click=app.node('#dialog-content').listeners.click[0];
+  await click({target:{closest:()=>({dataset:{do:'quest-follow',id:q.id}})}});
+  assert.equal(app.nextQuestGuide().quest.id,q.id);
+  assert.match(app.node('#story-direction').textContent,/Elin.*Public memory archive/);
+  app.showMap();
+  assert.match(app.node('#dialog-content').innerHTML,/CURRENT QUEST/);
+  assert.ok(app.node('#dialog-content').innerHTML.includes(escapeHtml(q.title)));
+  assert.ok(app.drawing.some(call=>call[0]==='fillText'&&call[1]==='Unsorted witness shelf'));
+  const saved=structuredClone(c);saved.activeQuests[q.id]=q.objective.count;saved.questStages[q.id].index=q.steps.length;
+  app.onSnapshot({character:saved,time:10,worldEvents:[]});
+  assert.match(app.node('#dialog-content').innerHTML,/READY TO FINISH/);
+  assert.match(app.node('#dialog-content').innerHTML,/Return to Elin Voss/);
+  const completed=structuredClone(saved);completed.completed.push(q.id);delete completed.activeQuests[q.id];delete completed.questStages[q.id];
+  app.onSnapshot({character:completed,time:11,worldEvents:[]});
+  assert.equal(app.nextQuestGuide().quest.id,'neighborhood-archive-01');
+  assert.ok(app.node('#dialog-content').innerHTML.includes(escapeHtml(data.quests.find(q=>q.id==='neighborhood-archive-01').title)));
+  await click({target:{closest:()=>({dataset:{do:'quest-follow',id:''}})}});
+  assert.equal(app.nextQuestGuide().quest.id,'relay-00');
+  assert.equal(app.sent.length,0,'tracking and map navigation never mutate server progress');
+});
+
+test('a quest map shows the selected quest independently of the tracker and updates after each step',()=>{
+  const q=data.quests.find(q=>q.id==='neighborhood-skybridge-02');
+  const c={...character(),health:100,death:undefined,faction:'relay',level:60,activeQuests:{[q.id]:0},questStages:{[q.id]:{index:0,progress:0}},completed:[]},app=application(c);
+  app.showMap('local',q.id);
+  let html=app.node('#dialog-content').innerHTML;
+  assert.ok(html.includes(escapeHtml(q.title)));
+  assert.match(html,/Transit lift.*Night crew ramp/);
+  assert.equal(app.nextQuestGuide().quest.id,'relay-00');
+  const saved=structuredClone(c);saved.questStages[q.id]={index:1,progress:4};
+  app.onSnapshot({character:saved,time:10,worldEvents:[]});
+  html=app.node('#dialog-content').innerHTML;
+  assert.match(html,/Stay near Service-pass counter/);
+  assert.match(html,/4\/10 seconds/);
+  assert.doesNotMatch(html,/OBJECTIVES|QUEST CONTACTS|SHOW ON MAP/);
+});
+
+test('map labels and world names do not become quest pins or exclamation marks',()=>{
+  const c={...character(),health:100,death:undefined,position:[0,0,0],faction:'relay',activeQuests:{},completed:[]},app=application(c);
+  app.showMap('city');
+  const before=JSON.stringify(app.drawing);app.drawing.length=0;
+  c.activeQuests['relay-00']=0;c.activeQuests['human-00']=1;
+  app.drawMap(app.node('#full-map'),true);
+  assert.equal(JSON.stringify(app.drawing),before,'accepting quests adds no objective shapes or coordinates to the map');
+  app.setRenderer({project:p=>[450+p[0],360+p[2],.5]});
+  app.setChat({expanded:false,feed:{labels:()=>''}});
+  app.updateLabels();
+  assert.match(app.node('#world-labels').innerHTML,/Iri Vale/);
+  assert.doesNotMatch(app.node('#world-labels').innerHTML,/quest-mark|story-waypoint|◇/);
+});
+
+test('open quest help switches input devices without losing the current panel',()=>{
+  const q=data.quests.find(q=>q.id==='relay-00');
+  const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{[q.id]:0},completed:['human-00']},app=application(c);
+  app.showJournal('active');
+  const hint={dataset:{questHint:q.id},textContent:''};app.prompts('[data-quest-hint]',[hint]);
+  const html=app.node('#dialog-content').innerHTML;
+  for(const [device,pattern]of [['keyboard',/press E/],['gamepad',/then X/],['touch',/then USE/]]){
+    app.setDevice(device);app.updateStoryGuide();assert.match(hint.textContent,pattern);
+    assert.equal(app.node('#dialog-content').innerHTML,html);
+  }
 });
 
 test('a new chapter preserves expanded evidence and summary focus by identity', () => {
@@ -347,7 +418,6 @@ test('tutorial HUD, journal, selection, and snapshots hand off to the existing s
   assert.equal(app.node('#campaign-chapter').textContent,'TUTORIAL · 3/4');
   assert.match(app.node('#story-instruction').textContent,/practice target/);
   assert.equal(app.node('#story-help').open,true);
-  assert.equal(app.node('#ghostline-status').hidden,true,'Ghostline cannot cover the tutorial');
   app.perform('journal');
   assert.match(app.node('#dialog-content').innerHTML,/First Steps Courtyard/);
   app.closePanel();app.select(`practice:${area.target}`);app.perform('ability:arc');
@@ -362,7 +432,6 @@ test('tutorial HUD, journal, selection, and snapshots hand off to the existing s
   assert.equal(app.node('#campaign-chapter').textContent,'MAIN STORY');
   assert.equal(app.node('#story-help').open,false);
   assert.match(app.node('#story-instruction').textContent,/Iri/);
-  assert.equal(app.node('#ghostline-status').hidden,false,'Ghostline returns after the server ends training');
   assert.equal(app.selectedTarget(),null);
 });
 
@@ -378,7 +447,6 @@ test('tutorial prompts change in both HUD and an open journal without replacing 
       const expected=openingGuide(c,data,[],device).hint;
       assert.equal(app.node('#story-hint').textContent,expected);
       assert.equal(hint.textContent,expected);
-      assert.equal(app.node('#ghostline-status').hidden,true);
       assert.equal(app.node('#dialog-content').innerHTML,panelHtml);
       assert.equal(app.node('#panel-dialog').scrollTop,150);
     }
@@ -393,7 +461,7 @@ test('the first tutorial instruction is narrated after the cinematic finishes', 
   assert.equal(app.spoken.length,0);
   app.setScreen('playing');app.updateStoryGuide();app.updateStoryGuide();
   assert.equal(app.spoken.length,1);
-  assert.match(app.spoken[0][0],/movement marker/);
+  assert.match(app.spoken[0][0],/cyan square/);
 });
 
 test('application enables spirit recovery, body interaction, and a controller-accessible recovery menu', () => {

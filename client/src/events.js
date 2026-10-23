@@ -48,7 +48,7 @@ export function incidentStatus(event, rules, time) {
   if (event.phase === 'failed') return `Service interrupted · retry in ${seconds}s`;
   if (event.phase === 'idle') return 'Go closer to start this emergency';
   if (event.repaired.length < event.controls.length) return `Repair both controls · ${event.repaired.length}/${event.controls.length} · ${seconds}s left`;
-  return `Stay inside the marked ring (${rules.radius} m)${event.enemy ? ' · defeat enemy machines' : ' · avoid striped danger areas'} · ${Math.floor(event.hold)}/${rules.holdSeconds}s · ${seconds}s left`;
+  return `Stay near ${event.controls.find(s => s.id === event.anchor).name} (${rules.radius} m)${event.enemy ? ' · defeat enemy machines' : ' · avoid striped danger areas'} · ${Math.floor(event.hold)}/${rules.holdSeconds}s · ${seconds}s left`;
 }
 
 export function incidentTargets(events) {
@@ -67,14 +67,11 @@ export function incidentGeometry(vertices, events, rules, eye, time, reducedMoti
   for (const e of events) {
     if (e.phase === 'idle' || distance(eye, e.position) > 220) continue;
     const color = e.phase === 'recovery' ? '#9be7a1' : e.phase === 'failed' ? '#e98b7b' : e.color;
-    const [x, y, z] = e.position;
     ring(e.position, rules.radius, color);
-    // A fixed beacon stays readable with reduced motion; no flashing is required.
-    box(vertices, [x, y + 4, z], [.14, 8, .14], color, .9);
+    // Status lights stay on the control panels; only gameplay areas need rings.
     for (const site of e.controls) {
       const repaired = e.repaired.includes(site.id), p = site.position;
-      box(vertices, [p[0], p[1] + 3.8, p[2]], [.8, .8, .8], repaired ? '#9be7a1' : color, .8, reducedMotion ? 0 : time * .5);
-      if (!repaired && e.phase === 'active') ring(p, 2, color, .16);
+      box(vertices, [p[0], p[1] + 2.2, p[2] + .67], [.35, .12, .06], repaired ? '#9be7a1' : color, .8);
     }
     if (e.hazard && e.hazard.hitsAt >= time) {
       const h = e.hazard;

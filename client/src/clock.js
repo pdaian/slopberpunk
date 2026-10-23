@@ -16,7 +16,9 @@ export function daylight(epoch) {
   const angle = (phase - .25) * Math.PI * 2;
   const altitude = Math.sin(angle), light = Math.max(0, Math.min(1, (altitude + .12) / .45));
   const dawn = Math.max(0, 1 - Math.abs(altitude) / .25);
-  return { phase, light, dawn, sun: [Math.cos(angle), altitude, .25],
+  const twilight = Math.max(0, Math.min(1, (light - .08) / .42));
+  const windows = 1 - twilight * twilight * (3 - 2 * twilight);
+  return { phase, light, dawn, windows, sun: [Math.cos(angle), altitude, .25],
     fog: [.025 + light * .23 + dawn * .05, .035 + light * .28, .065 + light * .335],
     label: light < .1 ? 'NIGHT' : dawn > .25 ? (phase < .5 ? 'DAWN' : 'DUSK') : 'DAY' };
 }

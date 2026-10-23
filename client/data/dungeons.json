@@ -920,7 +920,7 @@
         "composition": "Eight arbitrary builds, including eight copies of one build. Four enemies per chapter split pressure. Every player has their own recovery cooldown and revive allowance; no simultaneous eight-person plate timing.",
         "artDirection": "Pale green gantries and eight dock ribs around a grounded vessel silhouette. Reuse existing models while emphasizing civic scale through spacing.",
         "audioDirection": "Future score should leave the victory cadence unresolved into ordinary maintenance sounds. Present the epilogue in full text regardless of narration settings.",
-        "acceptance": "All endings end exclusive emergency power and preserve clinics. No choice gives the party ownership of the city. Verify that all eight players receive equal base rewards exactly once and that four isolated encounters cannot share healing, enemies, or Ghostlines."
+        "acceptance": "All endings end exclusive emergency power and preserve clinics. No choice gives the party ownership of the city. Verify that all eight players receive equal base rewards exactly once and that four isolated encounters cannot share healing or enemies."
       }
     }
   ]

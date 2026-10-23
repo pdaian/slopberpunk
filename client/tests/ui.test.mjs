@@ -270,6 +270,18 @@ test('gameplay bindings, guild shortcut, Escape, text entry and composition do n
   const count=actions.length;key('Escape',{defaultPrevented:true});assert.equal(actions.length,count);
 });
 
+test('R and right-stick click are unassigned during gameplay',t=>{
+  const {input,actions,key}=keyboard(t),pad=standardPad();input.menu=false;
+  navigator.getGamepads=()=>[pad];
+  key('KeyR');pad.buttons[11].pressed=true;
+  for(let i=0;i<3;i++)assert.deepEqual(input.sample(.016),{forward:0,strafe:0,jump:false,dash:false,sprint:false});
+  assert.deepEqual(actions,[]);
+  pad.buttons[11].pressed=false;input.sample(.016);pad.buttons[11].pressed=true;input.sample(.016);
+  assert.deepEqual(actions,[],'pressing the stick again must remain unassigned');
+  key('KeyH');pad.buttons[7].pressed=true;input.sample(.016);
+  assert.deepEqual(actions,['medkit','ability:arc']);
+});
+
 test('chat and gestures open without submitting a focused HUD button or firing gameplay keys',t=>{
   const {input,actions,key}=keyboard(t);input.menu=false;
   assert.equal(key('Enter').prevented,true);key('KeyB');assert.deepEqual(actions,['chat','gestures']);
@@ -592,7 +604,7 @@ test('pointer activity on HUDs and menus switches devices without reacting to ji
 
 test('prompt badges match ability bindings and update existing nodes without losing focus',()=>{
   const abilities=JSON.parse(readFileSync(new URL('../data/abilities.json',import.meta.url)));
-  const pads={arc:'RT',surge:'LB',mend:'RB',aegis:'LT',lance:'←',echo:'→',ghostline:'R3',breach:'L3+↑',siphon:'L3+→',execute:'L3+↓',nova:'L3+←'};
+  const pads={arc:'RT',surge:'LB',mend:'RB',aegis:'LT',lance:'←',echo:'→',breach:'L3+↑',siphon:'L3+→',execute:'L3+↓',nova:'L3+←'};
   for(const ability of abilities){
     assert.equal(controlLabel(`ability:${ability.id}`),ability.key);
     assert.equal(controlLabel(`ability:${ability.id}`,'gamepad'),pads[ability.id]);

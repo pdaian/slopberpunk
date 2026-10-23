@@ -142,7 +142,8 @@ dialog::backdrop { background: #030910c7; }
 .quest-status { display: block; color: var(--green); margin-bottom: 10px; }
 .quest-meta { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; font-size: 14px; color: var(--orange); }
 .quest-row .quest-objective, .quest-next .quest-objective { font-size: 18px; color: var(--ink); }
-.quest-next .quest-location { color: var(--orange); }
+.quest-next .quest-location, .quest-row .quest-location, .map-context .quest-location { color: var(--orange); }
+.quest-help { padding-left: 12px; border-left: 2px solid var(--cyan); }
 .quest-row button { margin-top: 10px; }
 .quest-details { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
 .quest-details summary { font-size: 14px; }
@@ -162,6 +163,11 @@ dialog::backdrop { background: #030910c7; }
 .map-legend { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; margin-top: 12px; }
 .map-legend span { display: flex; gap: 8px; align-items: center; }
 .map-legend i { display: inline-block; width: 8px; height: 8px; background: var(--green); }
+.map-context .quest-objective { color: var(--ink); font-size: 18px; }
+.map-directory { margin-top: 24px; }
+.map-place { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.map-place h3 { margin: 0 0 8px; font-size: 18px; }
+.map-place p { margin: 0 0 12px; color: var(--muted); font-size: 16px; }
 .founder-item { display: flex; align-items: center; gap: 20px; padding: 18px; margin: 20px 0; background: #241f32; border-left: 2px solid #d4a4d0; }
 .founder-item img { width: 120px; height: auto; }
 .founder-item p, .founder-item .tag { font-size: 14px; }
@@ -379,7 +385,7 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 #story-chapter { display: block; margin-top: 8px; font-size: 16px; color: var(--orange); }
 .story-chapter { display: block; color: var(--orange); font-size: 14px; }
 #story-instruction { font-size: 16px; margin: 10px 0; }
-#story-direction { display: block; font-size: 14px; color: #efce91; }
+#story-direction { display: block; font-size: 14px; font-weight: normal; line-height: 1.5; color: #efce91; }
 #story-help { margin-top: 14px; font-size: 14px; }
 #story-hint { font-size: 14px; color: var(--muted); margin: 10px 0; }
 #repeat-guidance { font-size: 14px; padding: 8px; }
@@ -387,13 +393,11 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 #world-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .world-label { position: absolute; transform: translate(-50%,-100%); text-align: center; white-space: nowrap; font-size: 14px; background: #09141cb0; padding: 2px 5px; }
 .world-label small { display: block; color: #bdcdd4; font-size: 12px; margin-top: 3px; }
-.world-label .quest-mark { display: block; font-size: 28px; color: var(--orange); }
 .world-label .enemy-bar { height: 4px; width: 64px; background: #482b2e; margin: 6px auto 0; }
 .world-label .enemy-bar i { height: 100%; display: block; background: #c7857d; }
 .float-number { position: absolute; font-size: 28px; transform: translate(-50%,-50%); }
 .float-number.critical { font-size: 36px; color: #f0d797 !important; }
-.story-waypoint { color: #f2d39a; border: 1px solid #ab9468; padding: 7px 10px; }
-.ghostline-label { color: var(--cyan); }
+.recovery-waypoint { color: #c3e8ff; border: 1px solid #91cbdc; padding: 7px 10px; }
 .street-speech { display: block; width: 270px; max-width: 65vw; white-space: normal; text-align: left; font-size: 14px; padding: 10px; margin-top: 6px; color: #dbe9e7; background: #10212bf5; border-left: 2px solid var(--cyan); }
 .street-site { font-size: 12px; max-width: 210px; white-space: normal; }
 .street-site small { font-size: 12px; }
@@ -401,7 +405,6 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
 .incident-label small { white-space: normal; }
 #interaction { position: absolute; bottom: 242px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 10px 16px; font-size: 16px; background: #10222df5; border-color: #85aaa8; }
 .bottom-hud { position: absolute; bottom: 66px; left: 50%; transform: translateX(-50%); width: 548px; }
-.ghostline-status { margin: 0 0 8px; padding: 6px 10px; border-left: 2px solid var(--cyan); color: var(--cyan); background: #101e2aeb; font-size: 12px; min-height: 30px; }
 .hotbar-top { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-bottom: 7px; }
 #gold { color: var(--orange); font-size: 16px; }
 .hotbar { display: flex; gap: 5px; padding: 6px; background: #09131df5; border: 1px solid #667e89; }
@@ -528,7 +531,6 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
   .game-menu { width: calc(100% - 24px); gap: 4px; }
   .game-menu button { flex: 1; min-width: 0; padding: 6px 4px; }
   .game-menu span { display: block; font-size: 12px; margin: 2px 0 0; }
-  .ghostline-status { font-size: 12px; }
   #voice-toggle { padding: 6px 8px; }
   #voice-caption { bottom: 296px; width: min(520px,72vw); max-height: 120px; }
   #voice-line { font-size: 14px; }
@@ -598,7 +600,6 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
   #story-instruction { font-size: 14px; }
   .street-life { display: none; }
   .bottom-hud { bottom: 58px; width: 440px; }
-  .ghostline-status { margin-bottom: 4px; min-height: 0; font-size: 12px; padding: 3px 6px; }
   .hotbar-top { margin-bottom: 4px; }
   .ability { height: 52px; padding: 14px 8px 18px; }
   .hotbar-bottom, #founder-xp-status { display: none; }

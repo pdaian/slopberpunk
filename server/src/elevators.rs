@@ -130,7 +130,6 @@ pub(super) fn board(p: &mut Player, world: &World, id: &str, time: f64) -> bool 
         }
         let to = position(b, if y == 0.0 { b.height } else { 0.0 });
         p.c.position = from;
-        p.previous_position = from;
         p.elevator = Some(Ride::new(id.to_owned(), from, to, time));
         reset_motion(p);
         p.dirty = true;
@@ -149,7 +148,6 @@ fn reset_motion(p: &mut Player) {
     p.coyote = 0.0;
     p.jump_buffer = 0.0;
     p.grounded = true;
-    p.ghost_trail.clear();
 }
 
 pub(super) fn tick(p: &mut Player, time: f64) -> bool {
@@ -162,7 +160,6 @@ pub(super) fn tick(p: &mut Player, time: f64) -> bool {
     reset_motion(p);
     if arrived {
         p.elevator = None;
-        p.previous_position = p.c.position;
         p.dirty = true;
     }
     true
@@ -172,7 +169,6 @@ pub(super) fn tick(p: &mut Player, time: f64) -> bool {
 pub(super) fn cancel(p: &mut Player) {
     if let Some(ride) = p.elevator.take() {
         p.c.position = ride.from;
-        p.previous_position = ride.from;
         reset_motion(p);
     }
 }
@@ -192,13 +188,11 @@ mod tests {
             live_social: live_social::Session::default(),
             instance: None,
             owner: "account".into(),
-            previous_position: c.position,
             c,
             output,
             input: Movement::default(),
             last_input: 0.0,
             velocity: [0.0; 3],
-            ghost_trail: GhostTrail::default(),
             grounded: true,
             coyote: 0.0,
             jump_buffer: 0.0,

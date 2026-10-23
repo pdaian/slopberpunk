@@ -3,11 +3,10 @@ import { color, random, perspective, lookAt, multiply, project, distance } from 
 import { daylight } from './clock.js';
 import { tabardParts } from './tabard.js';
 import { hasFounderHalo, founderHaloParts } from './founders.js';
-import { ghostPosition } from './ghostline.js';
 import { dungeonZones, dungeonPosition } from './dungeons.js';
 import { box, pane, bevelBox, ellipsoid, transformMesh } from './geometry.js';
 import { CharacterMeshes } from './character.js';
-import { buildingExterior, buildingInterior, buildingLights, streetDetails, neighborhoodDetails, upperStreetDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry } from './scenery.js';
+import { buildingExterior, buildingInterior, buildingLights, buildingStyle, vendorLight, streetDetails, neighborhoodDetails, upperStreetDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry } from './scenery.js';
 import { cityStage, streetPoint } from './citylife.js';
 import { incidentGeometry } from './events.js';
 import { enemyAttackGeometry } from './enemy-attacks.js';
@@ -17,14 +16,15 @@ export { box } from './geometry.js';
 
 const vertexSource = `
 attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aGlow;
-uniform mat4 uMatrix; uniform mediump vec3 uEye; uniform mediump vec3 uSun; uniform mediump float uDay; uniform mediump float uTime;
+uniform mat4 uMatrix; uniform mediump vec3 uEye; uniform mediump vec3 uSun; uniform mediump float uDay; uniform mediump float uTime; uniform mediump float uWindowLight;
 varying mediump vec3 vColor; varying mediump float vGlow; varying mediump vec3 vPosition; varying mediump vec3 vNormal;
 void main(){
-  // Scenery glow values >= 2 mark rooted plants; the remainder is emission.
-  vGlow=aGlow>=2.0?aGlow-2.0:aGlow;
+  // [2,4) marks rooted plants; >= 4 marks glazing lit only after dusk.
+  bool windowPane=aGlow>=4.0,plant=aGlow>=2.0&&aGlow<4.0;
+  vGlow=windowPane?(aGlow-4.0)*uWindowLight:plant?aGlow-2.0:aGlow;
   vec3 position=aPosition;
-  if(aGlow>=2.0){float bend=sin(uTime*.8+aPosition.x*.12+aPosition.z*.07)*.055*clamp(aPosition.y,0.,15.);position.x+=bend;position.z+=bend*.4;}
-  vColor=aColor;
+  if(plant){float bend=sin(uTime*.8+aPosition.x*.12+aPosition.z*.07)*.055*clamp(aPosition.y,0.,15.);position.x+=bend;position.z+=bend*.4;}
+  vColor=windowPane?mix(vec3(.106,.169,.224),aColor,uWindowLight):aColor;
   vPosition=position; vNormal=aNormal; gl_Position=uMatrix*vec4(position,1.0);
 }`;
 const fragmentSource = `
@@ -33,21 +33,26 @@ uniform vec3 uFog; uniform mediump vec3 uEye; uniform mediump vec3 uSun; uniform
 uniform vec4 uLightPosition[LIGHT_COUNT]; uniform vec4 uLightColor[LIGHT_COUNT];
 float hash(vec2 p){p=mod(p,251.0);return fract(sin(dot(p,vec2(12.9898,78.233)))*437.585);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.)),f.x),f.y);}
-// Analytic ray/cylinder intersection, clipped to the lamp's height and opaque surface.
-// A midpoint radial falloff approximates a cone: no ray marching or offscreen buffers.
-float shaft(vec3 ray,float end,vec2 lamp){
-  vec2 offset=uEye.xz-lamp;
-  float a=dot(ray.xz,ray.xz), b=dot(offset,ray.xz), c=dot(offset,offset)-12.25;
+// Finite fixture volumes clipped at the visible surface. The midpoint falloff
+// approximates a cone for downward lamps and an outward wash for facade signs.
+float shaft(vec3 ray,float end,vec3 lamp,float radius,float direction){
+  bool down=abs(direction)<.5;
+  vec3 axis=down?vec3(0.,-1.,0.):abs(direction)>1.5?vec3(0.,0.,sign(direction)):vec3(sign(direction),0.,0.);
+  float reach=down?min(lamp.y,radius*.36):min(7.,radius*.4);
+  if(reach<=.01)return 0.;
+  vec3 offset=uEye-lamp;
+  float along=dot(offset,axis),travel=dot(ray,axis),width=.35+reach*.32;
+  vec3 radial=offset-axis*along,across=ray-axis*travel;
+  float a=dot(across,across),b=dot(radial,across),c=dot(radial,radial)-width*width;
   float lo=0.0,hi=end;
   if(a<.0001){if(c>0.0)return 0.0;}
   else{float d=b*b-a*c;if(d<=0.0)return 0.0;d=sqrt(d);lo=max(lo,(-b-d)/a);hi=min(hi,(-b+d)/a);}
-  if(abs(ray.y)<.0001){if(uEye.y<0.0||uEye.y>9.6)return 0.0;}
-  else{float t0=-uEye.y/ray.y,t1=(9.6-uEye.y)/ray.y;lo=max(lo,min(t0,t1));hi=min(hi,max(t0,t1));}
+  if(abs(travel)<.0001){if(along<0.0||along>reach)return 0.0;}
+  else{float t0=-along/travel,t1=(reach-along)/travel;lo=max(lo,min(t0,t1));hi=min(hi,max(t0,t1));}
   if(hi<=lo)return 0.0;
-  vec3 mid=uEye+ray*(lo+hi)*.5;
-  float radius=.35+(9.6-mid.y)*.32;
-  float density=1.0-smoothstep(radius*.25,radius,length(mid.xz-lamp));
-  return (1.0-exp(-(hi-lo)*.065))*density;
+  float midpoint=(lo+hi)*.5,spread=.35+(along+travel*midpoint)*.32;
+  float density=1.0-smoothstep(spread*.25,spread,length(radial+across*midpoint));
+  return (1.0-exp(-(hi-lo)*.12))*density;
 }
 void main(){
   // Fragment distance keeps large ground polygons from inheriting fog from distant corners.
@@ -61,7 +66,11 @@ void main(){
   float weather=.5+.5*sin(uTime*.009);
   float density=.24+.76*exp(-max(0.0,(uEye.y+vPosition.y)*.5)*.023);
   float bank=noise(vPosition.xz*.008+vec2(uTime*.006,0.));
-  float fog=1.0-exp(-d*(.0015+weather*.0011)*density*(.85+bank*.5));
+  vec3 air=(uEye+vPosition)*.5;
+  float cityHaze=1.0-smoothstep(1000.,1450.,max(abs(air.x),abs(air.z)));
+  float smog=cityHaze*exp(-max(0.,air.y)*.015)*(.4+.6*noise(air.xz*.013+vec2(uTime*.004,0.)));
+  vec3 fogColor=mix(uFog,mix(vec3(.07,.095,.12),vec3(.43,.36,.29),uDay),smog*.3);
+  float fog=1.0-exp(-d*(.0015+weather*.0011)*density*(.85+bank*.5+smog*.65));
   fog=clamp(fog-max(0.0,vGlow)*.045,0.0,1.0);
   if(normal.y>.85&&vPosition.y<.25&&vGlow>=0.0){
     vec2 p=vPosition.xz;float city=1.0-step(1120.0,max(abs(p.x),abs(p.y)));
@@ -106,6 +115,7 @@ void main(){
   }
   // Bounded fixture lights leave unlit service walls and alleys in shadow.
   // The facing mask prevents a facade sign from lighting through its own wall.
+  vec3 scattering=vec3(0.),mistLight=vec3(0.);
   for(int i=0;i<LIGHT_COUNT;i++){
     vec3 delta=uLightPosition[i].xyz-vPosition;float radius=uLightPosition[i].w;
     if(radius>0.0){
@@ -113,6 +123,8 @@ void main(){
       float facing=abs(direction)<.5?1.0:abs(direction)>1.5?smoothstep(-.3,.1,-delta.z*sign(direction)):smoothstep(-.3,.1,-delta.x*sign(direction));
       float falloff=pow(max(0.0,1.0-ld/radius),2.0)*facing*(1.0-indoors);
       vec3 radiance=uLightColor[i].rgb*falloff*(1.0-uDay*.7);
+      mistLight+=radiance*.35;
+      if(uVolume>.5)scattering+=uLightColor[i].rgb*shaft(ray,d,uLightPosition[i].xyz,radius,direction)*(1.0-uDay*.5);
       surface+=vColor*radiance*(.12+max(dot(normal,L),0.0))*2.6*(1.0-clamp(vGlow,0.,1.));
       if(wet>.01){
         float specular=pow(max(dot(reflect(-L,normal),-ray),0.0),mix(18.,55.,wet));
@@ -122,20 +134,14 @@ void main(){
     }
   }
   surface+=vec3(.11,.08,.055)*indoors*(1.0-clamp(vGlow,0.,1.));
-  vec3 c=mix(surface,uFog,fog);
+  vec3 c=mix(surface,fogColor,fog);
   if(uVolume>.0){
     float sun=pow(max(dot(ray,normalize(uSun)),0.0),12.0)*uDay*fog;
-    c+=vec3(.32,.25,.14)*sun*uVolume;
-    // Only shade the four Commons lamps near the viewer; low quality skips shafts.
-    if(uVolume>.5&&length(uEye.xz)<100.0){
-      float beams=shaft(ray,d,vec2(-32.,32.))+shaft(ray,d,vec2(32.,32.))
-        +shaft(ray,d,vec2(-32.,-32.))+shaft(ray,d,vec2(32.,-32.));
-      c+=vec3(.38,.55,.65)*beams*(1.0-uDay*.72);
-    }
+    c+=(vec3(.38,.29,.16)*sun*(.65+bank*.7)+scattering*(1.0-fog*.6))*uVolume*(1.0-indoors);
   }
   float alpha=1.0;
   if(vGlow< -3.0){c=vec3(.012,.018,.028);alpha=(-vGlow-3.0)*(1.0-fog);}
-  else if(vGlow<0.0){c=mix(uFog,vec3(.48,.56,.62),.35);alpha=pow(max(0.0,dot(normal,-ray)),2.0)*.14*(1.0-fog)*min(1.0,-vGlow);}
+  else if(vGlow<0.0){c=mix(fogColor,vColor,.45)+mistLight+scattering*uVolume;alpha=pow(max(0.0,dot(normal,-ray)),2.0)*.14*(1.0-fog)*min(1.0,-vGlow);}
   gl_FragColor=vec4(pow(max(c,vec3(0.)),vec3(.88)),alpha);
 }`;
 const skyVertex = `attribute vec2 aPosition; varying vec2 vUv; void main(){vUv=aPosition*.5+.5;gl_Position=vec4(aPosition,0.,1.);}`;
@@ -250,7 +256,7 @@ export class Renderer {
     this.sceneProgram = program(gl, vertexSource.replaceAll('mediump',precision), fragmentSource.replaceAll('mediump',precision).replaceAll('LIGHT_COUNT',this.lightLimit), this.webgl2);
     this.skyProgram = program(gl, skyVertex, skyFragment.replaceAll('mediump',precision), this.webgl2);
     this.glowProgram = program(gl, glowVertex, glowFragment, this.webgl2);
-    this.locations = Object.fromEntries(['uMatrix','uEye','uFog','uSun','uDay','uVolume','uTime','uDetail','uRoom','uRoomHeight','uLightPosition','uLightColor'].map(n => [n, gl.getUniformLocation(this.sceneProgram, n)]));
+    this.locations = Object.fromEntries(['uMatrix','uEye','uFog','uSun','uDay','uWindowLight','uVolume','uTime','uDetail','uRoom','uRoomHeight','uLightPosition','uLightColor'].map(n => [n, gl.getUniformLocation(this.sceneProgram, n)]));
     this.glowLocations = Object.fromEntries(['uMatrix','uEye','uHeight','uDay','uTime','uDetail'].map(n=>[n,gl.getUniformLocation(this.glowProgram,n)]));
     this.attributes = ['aPosition','aNormal','aColor','aGlow'].map(n => gl.getAttribLocation(this.sceneProgram, n));
     this.glowAttributes = ['aLight','aTint'].map(n=>gl.getAttribLocation(this.glowProgram,n));
@@ -302,11 +308,13 @@ export class Renderer {
     this.gl.uniform4fv(this.locations.uLightPosition,this.lightPositions);
     this.gl.uniform4fv(this.locations.uLightColor,this.lightColors);
   }
-  drawGlows(day,visible,height,time) {
+  drawGlows(day,visible,height,time,windowLight) {
     const gl=this.gl,points=[],limit=this.quality<=.5?48:160;
     for(const l of this.nearLights){
+      const strength=l.strength*(l.kind==='window'?windowLight:1);
+      if(strength<=0)continue;
       if(!visible({center:l.position,radius:l.size,range:600}))continue;
-      points.push(...l.position,l.size,...l.rgb,l.strength);
+      points.push(...l.position,l.size,...l.rgb,strength);
       if(points.length/8>=limit)break;
     }
     if(!points.length)return;
@@ -382,8 +390,7 @@ export class Renderer {
       const p=l.position;
       box(props,[p[0],p[1]+1.2,p[2]],[1.4,2.4,1.2],'#344c48');
       box(props,[p[0],p[1]+1.9,p[2]+.63],[1.1,.7,.06],l.color,.85);
-      box(props,[p[0],p[1]+3.4,p[2]],[.14,2,.14],l.color,.9);
-      this.lights.push({position:[p[0],p[1]+4.45,p[2]],color:l.color,radius:8,direction:0,size:1.8,strength:.55});
+      this.lights.push({position:[p[0],p[1]+1.9,p[2]+.7],color:l.color,radius:5,direction:2,size:1.1,strength:.55});
     }
     for(const [x,z] of [[-32,32],[32,32],[-32,-32],[32,-32],[-8,60],[8,60]]) {
       box(props,[x,5,z],[.3,10,.3],'#46615b');
@@ -397,12 +404,22 @@ export class Renderer {
     this.upload(props,[0,20,0],4000);
     for(const neighborhood of this.cityLife?.content.neighborhoods||[]){
       const v=[],center=data.districts.find(d=>d.id===neighborhood.id).center;
-      neighborhoodDetails(v,neighborhood,neighborhood.sites.map(id=>data.landmarks.find(l=>l.id===id)));
+      const sites=neighborhood.sites.map(id=>data.landmarks.find(l=>l.id===id));
+      neighborhoodDetails(v,neighborhood,sites);
+      if(['market','transit'].includes(neighborhood.motif))for(const [index,site]of sites.entries()){
+        const [x,y,z]=site.position;
+        this.lights.push(vendorLight([x,y,z-2],neighborhood.motif==='market'?'market':'skybridge',index*7));
+      }
       this.upload(v,center,65,220);
     }
     for(const b of this.cityLife?.streetBlocks||[]){
       const position=streetPoint(b,0,-2.5);position[1]+=4.35;
       this.lights.push({position,color:this.cityLife.neighborhoods.get(b.neighborhood).color,radius:14,direction:0,size:2.5,strength:.8});
+      const motif=this.cityLife.neighborhoods.get(b.neighborhood).motif;
+      if(['market','transit'].includes(motif)){
+        const light=vendorLight([0,0,-2],motif==='market'?'market':'skybridge',b.seed),worldPosition=streetPoint(b,light.position[0],light.position[2]);
+        worldPosition[1]+=light.position[1];this.lights.push({...light,position:worldPosition});
+      }
     }
     for(const l of this.lights)l.rgb=color(l.color);
   }
@@ -444,12 +461,6 @@ export class Renderer {
       }
       attach(mesh,pose.body);
     }
-  }
-  ghostline(v,ghost,time) {
-    const position=ghostPosition(ghost,time),next=ghostPosition(ghost,time+.05),color='#81e5ed';
-    this.actor(v,{id:`ghost-${ghost.owner}`,position,model:'humanoid',color,ghost:true,velocity:next.map((n,i)=>(n-position[i])/.05),yaw:Math.atan2(next[0]-position[0],next[2]-position[2])},time);
-    for(const s of ghost.path)box(v,[s.position[0],s.position[1]+.15,s.position[2]],[.18,.18,.18],color,.8);
-    for(let i=0;i<16;i++){const a=i/16*Math.PI*2;box(v,[position[0]+Math.sin(a)*2.5,position[1]+.12,position[2]+Math.cos(a)*2.5],[.18,.12,.18],color,1);}
   }
   dungeon(v, catalog, run, time) {
     const d=catalog.entries.find(d=>d.id===run.dungeon);if(!d)return;
@@ -500,6 +511,20 @@ export class Renderer {
           ellipsoid(mist,[vent[0]+age*.9,.4+age*3.2,vent[2]+Math.sin(age*3+i)*.25],[.7+age*1.8,.7+age*2,.7+age*1.5],'#657581',-Math.max(.001,Math.sin(age*Math.PI)),0,8);
         }
       }
+      if(this.quality>.5&&!b.rooftop&&buildingStyle(b).roof===2){
+        const source=[b.x+3,b.h+10.2,b.z];
+        if(distance(eye,source)<180)for(let i=0;i<4;i++){
+          const age=(sceneTime*.065+i/4+b.seed%13/13)%1;
+          ellipsoid(mist,[source[0]+age*6,source[1]+age*15,source[2]+age*2],[2+age*8,2+age*9,2+age*7],b.identity.district==='furnace'?'#756353':'#8e9694',-Math.max(.001,.9*Math.sin(age*Math.PI)),0,8);
+        }
+      }
+      if(this.quality>.5&&b.rooftop?.kind==='market')for(const side of [-1,1]){
+        const source=[b.x+side*6,1.6,b.z+b.d/2+1.2];
+        if(distance(eye,source)<65)for(let i=0;i<2;i++){
+          const age=(sceneTime*.24+i/2+b.seed%7/7)%1;
+          ellipsoid(mist,[source[0]+age*.3,source[1]+age*1.6,source[2]],[.35+age*.65,.4+age*.7,.35+age*.6],'#b8b7a7',-Math.max(.001,.7*Math.sin(age*Math.PI)),0,6);
+        }
+      }
     }
     for(const neighborhood of this.cityLife?.content.neighborhoods||[]){
       const stage=cityStage(neighborhood,this.cityLife.completed),index=neighborhood.stages.indexOf(stage);
@@ -535,7 +560,7 @@ export class Renderer {
       box(v,[x,y,z],[.017,.9+rand()*.6,.017],'#657b91',.25);
     }
   }
-  render(camera, actors, effects, time, epoch = Date.now(), ghostlines = [], ghostTime = time, dungeon = null, incidents = null, elevator = null) {
+  render(camera, actors, effects, time, epoch = Date.now(), simulationTime = time, dungeon = null, incidents = null, elevator = null) {
     if(this.lost) return;
     const gl=this.gl, ratio=Math.min(devicePixelRatio||1,1.6)*this.quality;
     const width=Math.max(1,Math.floor(this.canvas.clientWidth*ratio)), height=Math.max(1,Math.floor(this.canvas.clientHeight*ratio));
@@ -565,6 +590,7 @@ export class Renderer {
     gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK);
     gl.useProgram(this.sceneProgram); gl.uniformMatrix4fv(this.locations.uMatrix,false,this.matrix);
     gl.uniform3fv(this.locations.uEye,camera.eye); gl.uniform3fv(this.locations.uFog,light.fog);
+    gl.uniform1f(this.locations.uWindowLight,light.windows);
     gl.uniform3fv(this.locations.uSun,light.sun);gl.uniform1f(this.locations.uDay,light.light);gl.uniform1f(this.locations.uVolume,this.volumetric?(this.quality<=.5?.4:1):0);
     gl.uniform1f(this.locations.uTime,this.reducedMotion?0:time);gl.uniform1f(this.locations.uDetail,this.quality);
     const room=this.world.interiorAt(camera.eye)||this.world.interiorAt(camera.target);
@@ -576,15 +602,14 @@ export class Renderer {
     if(!dungeon)for(const e of this.world.elevators){
       const rides=[elevator,...actors.map(a=>a.elevator)].filter(r=>r?.id===e.id);
       // One cabin per height, including other passengers visible in multiplayer.
-      const positions=rides.map(r=>({position:ridePosition(r,ghostTime),ride:r}));
+      const positions=rides.map(r=>({position:ridePosition(r,simulationTime),ride:r}));
       for(const y of e.stops)if(!rides.length)positions.push({position:[e.position[0],y,e.position[2]],ride:null});
-      for(const [index,cab]of positions.entries())if(distance(camera.eye,cab.position)<100&&!positions.slice(0,index).some(other=>distance(other.position,cab.position)<.5))elevatorCabin(v,e,cab.position,cab.ride,ghostTime,this.reducedMotion);
+      for(const [index,cab]of positions.entries())if(distance(camera.eye,cab.position)<100&&!positions.slice(0,index).some(other=>distance(other.position,cab.position)<.5))elevatorCabin(v,e,cab.position,cab.ride,simulationTime,this.reducedMotion);
     }
-    if(dungeon)this.dungeon(v,dungeon.catalog,dungeon.run,ghostTime);
-    if(incidents)incidentGeometry(v,incidents.events,incidents.rules,camera.eye,ghostTime,this.reducedMotion);
-    enemyAttackGeometry(v,actors,camera.eye,ghostTime,this.reducedMotion);
+    if(dungeon)this.dungeon(v,dungeon.catalog,dungeon.run,simulationTime);
+    if(incidents)incidentGeometry(v,incidents.events,incidents.rules,camera.eye,simulationTime,this.reducedMotion);
+    enemyAttackGeometry(v,actors,camera.eye,simulationTime,this.reducedMotion);
     for(const actor of actors) if((actor.health!==0||actor.ghost) && distance(camera.eye,actor.position)<260 && (!actor.role||visible({center:[actor.position[0],actor.position[1]+1.2,actor.position[2]],radius:2.5,range:120}))) this.actor(v,actor,time);
-    for(const ghost of ghostlines)if(ghostTime<=ghost.started+ghost.path.at(-1).time&&distance(camera.eye,ghostPosition(ghost,ghostTime))<260)this.ghostline(v,ghost,ghostTime);
     for(const e of effects) {
       const age=time-e.time; if(age>e.duration) continue;
       const p=e.position;
@@ -592,7 +617,7 @@ export class Renderer {
         const dx=p[0]-e.from[0], dz=p[2]-e.from[2], len=Math.hypot(dx,dz);
         box(v,[(p[0]+e.from[0])/2,p[1]+1.5,(p[2]+e.from[2])/2],[.12,.12,len],e.color,1,Math.atan2(dx,dz));
       } else {
-        const s=e.kind==='braid'?e.radius*age/e.duration:1+age*9;
+        const s=1+age*9;
         for(let i=0;i<12;i++){const a=i/12*Math.PI*2;box(v,[p[0]+Math.sin(a)*s,p[1]+.15+age,p[2]+Math.cos(a)*s],[.2,.2,.2],e.color,1);}
       }
     }
@@ -605,7 +630,7 @@ export class Renderer {
       gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mist),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,mist.length/10);
       gl.depthMask(true);gl.disable(gl.BLEND);
     }
-    this.drawGlows(light.light,visible,height,time);
+    this.drawGlows(light.light,visible,height,time,light.windows);
   }
   project(p) {return this.matrix?project(p,this.matrix,this.canvas.clientWidth,this.canvas.clientHeight):null;}
 }

@@ -621,8 +621,6 @@ mod tests {
             input: Movement::default(),
             last_input: 0.0,
             velocity: [0.0; 3],
-            previous_position: position,
-            ghost_trail: GhostTrail::default(),
             grounded: true,
             coyote: 0.0,
             jump_buffer: 0.0,

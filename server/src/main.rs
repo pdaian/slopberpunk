@@ -10,7 +10,6 @@ mod elevators;
 mod enemy_ai;
 mod forge;
 mod founders;
-mod ghostline;
 mod live_social;
 mod morality;
 mod progression;
@@ -20,7 +19,6 @@ mod terrain;
 mod tutorial;
 mod web;
 mod world_events;
-use ghostline::{GhostTrail, Ghostline};
 use social::{SigningIdentity, SocialState};
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
@@ -472,38 +470,6 @@ impl Content {
         .any(|key| !self.rule("combat", key).is_finite() || self.rule("combat", key) <= 0.0)
         {
             return Err(io::Error::other("Invalid enemy combat rules"));
-        }
-        let ghost_rule = |key| self.rule("ghostline", key);
-        if ![
-            "historySeconds",
-            "sampleSeconds",
-            "minSeconds",
-            "minDistance",
-            "armSeconds",
-            "triggerRadius",
-            "allyMultiplier",
-            "energyReturn",
-            "maxVisible",
-        ]
-        .iter()
-        .all(|key| ghost_rule(key).is_finite() && ghost_rule(key) > 0.0)
-            || ghost_rule("sampleSeconds") < 0.05
-            || ghost_rule("historySeconds") > 6.0
-            || ghost_rule("minSeconds") < ghost_rule("sampleSeconds")
-            || ghost_rule("minSeconds") > ghost_rule("historySeconds")
-            || ghost_rule("armSeconds") >= ghost_rule("minSeconds")
-            || ghost_rule("maxVisible") > 8.0
-            || ghost_rule("maxVisible").fract() != 0.0
-            || ghost_rule("allyMultiplier") < 1.0
-            || !self.abilities.iter().any(|a| {
-                a.id == "ghostline"
-                    && a.kind == "ghostline"
-                    && a.cooldown > ghost_rule("historySeconds")
-                    && a.cost >= ghost_rule("energyReturn")
-                    && a.radius > 0.0
-            })
-        {
-            return Err(io::Error::other("Invalid Ghostline rules"));
         }
         let ids: HashSet<_> = self.quests.iter().map(|q| q.id.as_str()).collect();
         if ids.len() != self.quests.len()
@@ -1796,8 +1762,6 @@ struct Player {
     input: Movement,
     last_input: f64,
     velocity: Vec3,
-    previous_position: Vec3,
-    ghost_trail: GhostTrail,
     grounded: bool,
     coyote: f64,
     jump_buffer: f64,
@@ -1829,7 +1793,6 @@ fn damage_enemy(
     time: f64,
     seed: &mut u32,
     from: Vec3,
-    multiplier: f64,
 ) {
     if e.health <= 0.0
         || e.instance != p.instance
@@ -1864,7 +1827,6 @@ fn damage_enemy(
         + f64::from(p.c.level) * 3.0
         + f64::from(p.c.weapon_rank) * data.rule("inventory", "weaponUpgradeDamage"))
         * stats.damage
-        * multiplier
         * (1.0 + combo);
     let damage = if roll <= miss {
         0.0
@@ -2222,7 +2184,6 @@ struct Shard {
     world: World,
     players: HashMap<String, Player>,
     enemies: Vec<Enemy>,
-    ghostlines: HashMap<String, Ghostline>,
     saves: mpsc::Sender<Save>,
     time: f64,
     ticks: u64,
@@ -2296,7 +2257,6 @@ impl Shard {
             world,
             players: HashMap::new(),
             enemies,
-            ghostlines: HashMap::new(),
             saves,
             time: 0.0,
             ticks: 0,
@@ -2333,8 +2293,7 @@ impl Shard {
                         if let Some(recovery)=&mut c.death{let corpse=self.world.clear_saved_position(recovery.corpse);relocated|=corpse!=recovery.corpse;recovery.corpse=corpse;}
                         if relocated{c.revision+=1;}
                         let id=c.id.clone();let yaw=c.yaw;
-                        let previous_position=c.position;
-                        self.players.insert(id,Player{elevator:None,live_social:live_social::Session::default(),instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:relocated});
+                        self.players.insert(id,Player{elevator:None,live_social:live_social::Session::default(),instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:relocated});
                         let _=reply.send(Ok(()));self.snapshots();
                     }
                     Some(Command::Transfer{player,source_time,request,reply})=>self.accept_dungeon_transfer(player,source_time,request,reply),
@@ -2349,7 +2308,7 @@ impl Shard {
                     }
                     Some(Command::Leave{id})=>{
                         if self.forwarded.remove(&id){if let Some(lobby)=&self.lobby{let _=lobby.send(Command::Leave{id}).await;}}
-                        else{self.leave_dungeon(&id);self.ghostlines.remove(&id);if let Some(p)=self.players.remove(&id){let save=Save{stored:saved_player(&p,self.time),release:true,reply:None};let _=self.saves.send(save).await;}}
+                        else{self.leave_dungeon(&id);if let Some(p)=self.players.remove(&id){let save=Save{stored:saved_player(&p,self.time),release:true,reply:None};let _=self.saves.send(save).await;}}
                     }
                     Some(Command::Shutdown{reply})=>{
                         let mut acknowledgements=Vec::new();for (_,p) in self.players.drain(){let(tx,rx)=oneshot::channel();let _=self.saves.send(Save{stored:saved_player(&p,self.time),release:true,reply:Some(tx)}).await;acknowledgements.push(rx);}
@@ -2440,27 +2399,7 @@ impl Shard {
                 .iter()
                 .filter(|e| e.instance == p.instance && dist(e.position, p.c.position) < radius)
                 .collect();
-            let mut ghosts: Vec<_> = self
-                .ghostlines
-                .values()
-                .filter(|g| {
-                    self.players
-                        .get(&g.owner)
-                        .is_some_and(|owner| owner.instance == p.instance)
-                        && (g.owner == p.c.id || dist(g.position(self.time), p.c.position) < radius)
-                })
-                .collect();
-            ghosts.sort_by(|a, b| {
-                (a.owner != p.c.id)
-                    .cmp(&(b.owner != p.c.id))
-                    .then_with(|| {
-                        dist(a.position(self.time), p.c.position)
-                            .total_cmp(&dist(b.position(self.time), p.c.position))
-                    })
-                    .then_with(|| a.owner.cmp(&b.owner))
-            });
-            ghosts.truncate(self.content.rule("ghostline", "maxVisible") as usize);
-            let delivered=p.output.try_send(json!({"type":"snapshot","social":p.live_social.pending,"chatContext":live_social::context(&self.content.map,p),"version":DATA_VERSION,"character":p.c,"elevator":p.elevator,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id),"worldEvents":self.world_event_snapshot(p)})).is_ok();
+            let delivered=p.output.try_send(json!({"type":"snapshot","social":p.live_social.pending,"chatContext":live_social::context(&self.content.map,p),"version":DATA_VERSION,"character":p.c,"elevator":p.elevator,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"dungeon":self.dungeon_snapshot(&p.c.id),"worldEvents":self.world_event_snapshot(p)})).is_ok();
             if delivered && !p.live_social.pending.is_empty() {
                 delivered_chat.push(p.c.id.clone());
             }
@@ -2480,7 +2419,6 @@ impl Shard {
         self.tick_dungeons();
         for p in self.players.values_mut() {
             p.c.revision += 1;
-            p.previous_position = p.c.position;
             movement(p, &self.content, &self.world, self.time, 0.05);
             tutorial::tick(p, &self.content, &self.world);
         }
@@ -2494,7 +2432,6 @@ impl Shard {
                 &mut self.seed,
             );
         }
-        self.tick_ghostlines();
         self.tick_world_events();
         for p in self.players.values_mut() {
             quests::tick(p, &self.content, &self.world);
@@ -2562,7 +2499,6 @@ impl Shard {
                         now_millis() as f64 / 1000.0,
                     );
                 }
-                self.ghostlines.remove(id);
             }
         } else {
             self.game_action(&mut p, value);
@@ -2600,7 +2536,6 @@ impl Shard {
                 };
                 elevators::cancel(p);
                 p.c.position = position;
-                p.previous_position = position;
                 p.velocity = [0.0; 3];
                 p.input = Movement {
                     yaw: p.c.yaw,
@@ -2610,8 +2545,6 @@ impl Shard {
                 p.dash = 0.0;
                 p.jump_buffer = 0.0;
                 p.coyote = 0.0;
-                p.ghost_trail.clear();
-                self.ghostlines.remove(&p.c.id);
                 // The cooldown also identifies relocation in authoritative snapshots,
                 // including moves too short for ordinary teleport detection.
                 p.cooldowns.insert("unstuck".into(), self.time + 30.0);
@@ -2648,7 +2581,7 @@ impl Shard {
                 }
                 if p.instance.is_none()
                     && data.map.tutorial.contains(p.c.position)
-                    && matches!(a.kind.as_str(), "damage" | "stun" | "area" | "ghostline")
+                    && matches!(a.kind.as_str(), "damage" | "stun" | "area")
                 {
                     notice(
                         p,
@@ -2670,34 +2603,12 @@ impl Shard {
                     );
                     return;
                 }
-                let ghost = if a.kind == "ghostline" {
-                    let speed = data.rule("movement", "dashSpeed") * stats.speed
-                        + data.rule("movement", "jump");
-                    p.ghost_trail.record(self.time, p.c.position, speed, data);
-                    let Some(ghost) = p.ghost_trail.release(&p.c, self.time, data) else {
-                        notice(
-                            p,
-                            "Move at least 12 m over at least 2 seconds, then use Ghostline.",
-                        );
-                        return;
-                    };
-                    Some(ghost)
-                } else {
-                    None
-                };
                 p.c.energy -= energy_cost;
                 p.cooldowns
                     .insert(id.to_owned(), self.time + a.cooldown * (1.0 - stats.haste));
                 p.global_ready = self.time + data.rule("combat", "globalCooldown");
                 p.dirty = true;
-                if let Some(ghost) = ghost {
-                    self.ghostlines.insert(p.c.id.clone(), ghost);
-                    notice(
-                        p,
-                        "Ghostline is active. Touch your moving blue ghost to blast enemies.",
-                    );
-                    emit(p, json!({"type":"sound","name":"surge"}));
-                } else if a.kind == "heal" {
+                if a.kind == "heal" {
                     let power = a.power + f64::from(p.c.level) * 3.0 + stats.healing;
                     p.c.health = (p.c.health + power).min(stats.health);
                     for ally in self.players.values_mut().filter(|ally| {
@@ -2744,7 +2655,7 @@ impl Shard {
                             continue;
                         }
                         let from = p.c.position;
-                        damage_enemy(p, e, a, data, self.time, &mut self.seed, from, 1.0);
+                        damage_enemy(p, e, a, data, self.time, &mut self.seed, from);
                     }
                     emit(
                         p,
@@ -2761,7 +2672,10 @@ impl Shard {
                         && dist(n.position, p.c.position) < data.r("interactionRadius")
                         && self.world.visible(p.c.position, n.position)
                 }) {
-                    notice(p, "Return to the quest giver marked on your map.");
+                    notice(
+                        p,
+                        "Move closer to the person who gave you this quest. Your journal describes where to find them.",
+                    );
                     return;
                 }
                 if text(&value["operation"]) == "accept" && available(q, &p.c) {
@@ -2815,7 +2729,6 @@ impl Shard {
                 }) {
                     p.last_interact = self.time;
                     if tutorial::interact(p, data, id) {
-                        self.ghostlines.remove(&p.c.id);
                         return;
                     }
                     progress(p, data, "interact", &l.id);
@@ -2826,9 +2739,7 @@ impl Shard {
             }
             "lift" => {
                 if id.starts_with("elevator-") {
-                    if elevators::board(p, &self.world, id, self.time) {
-                        self.ghostlines.remove(&p.c.id);
-                    }
+                    elevators::board(p, &self.world, id, self.time);
                     return;
                 }
                 if let Some(l) = data.map.lifts.iter().find(|l| {
@@ -2843,9 +2754,6 @@ impl Shard {
                     {
                         p.c.position[1] = l.stops[(i + 1) % l.stops.len()];
                         p.velocity = [0.0; 3];
-                        p.previous_position = p.c.position;
-                        p.ghost_trail.clear();
-                        self.ghostlines.remove(&p.c.id);
                         p.dirty = true;
                     }
                 }

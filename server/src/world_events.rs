@@ -268,7 +268,10 @@ impl Shard {
         if dist(p.c.position, site.position) >= self.content.r("interactionRadius")
             || !self.world.visible(p.c.position, site.position)
         {
-            notice(p, "Move closer to the marked repair control.");
+            notice(
+                p,
+                "Move closer to the repair control. Your journal names the next one.",
+            );
             return;
         }
         p.last_interact = self.time;
@@ -286,7 +289,7 @@ impl Shard {
         } else {
             notice(
                 p,
-                "This control is repaired. Defeat any enemy machines and stay inside the marked ring.",
+                "This control is repaired. Restore the other control, defeat any enemy machines, and stay near the main control.",
             );
         }
     }
@@ -328,7 +331,7 @@ impl Shard {
                         &self.players,
                         anchor,
                         &format!(
-                            "{} · repair both marked controls, then stay inside the marked ring.",
+                            "{} · repair both controls, then stay near the main control until service returns.",
                             entry.name
                         ),
                     );
@@ -501,8 +504,6 @@ mod tests {
                 input: Movement::default(),
                 last_input: 0.0,
                 velocity: [0.0; 3],
-                previous_position: position,
-                ghost_trail: GhostTrail::default(),
                 grounded: true,
                 coyote: 0.0,
                 jump_buffer: 0.0,
@@ -828,7 +829,6 @@ mod tests {
                 s.time,
                 &mut s.seed,
                 position,
-                1.0,
             );
         }
         assert_eq!(s.enemies[0].health, 0.0);

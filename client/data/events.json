@@ -25,7 +25,7 @@
       "enemy": "drone",
       "spawns": [[36, 0, 54], [50, 0, 40]],
       "color": "#efb778",
-      "warning": "Lantern Market · the city’s debt-collection system is shutting off the kitchen water. Repair both marked controls and defeat its machines.",
+      "warning": "Lantern Market · the city’s debt-collection system is shutting off the kitchen water. Repair Lantern kitchen records and Commons water meter and defeat its machines.",
       "success": "The kitchen has running water again. Neighbors can return for a meal.",
       "failure": "The kitchen water is off. Wait nearby for the controls to reset, then try again.",
       "activity": "serve"
@@ -40,7 +40,7 @@
       "enemy": null,
       "spawns": [],
       "color": "#c9a2ec",
-      "warning": "Glass Steps · the cooling pipes have burst. Repair both marked controls. Move out of striped danger areas before the countdown ends.",
+      "warning": "Glass Steps · the cooling pipes have burst. Repair Unsorted witness shelf and Cooling priority console. Move out of striped danger areas before the countdown ends.",
       "success": "Cooling works again. Residents can put the rescued memory records back into safe storage.",
       "failure": "Cooling has stopped. Residents move the memory records to safety. Wait for the controls to reset, then try again.",
       "activity": "work"
@@ -55,7 +55,7 @@
       "enemy": "warden",
       "spawns": [[-320, 0, -290], [-320, 0, -324]],
       "color": "#e99b6f",
-      "warning": "Copper Walk · debt collectors are shutting off heating in occupied homes. Repair both marked controls and defeat their machines.",
+      "warning": "Copper Walk · debt collectors are shutting off heating in occupied homes. Repair Occupied flats register and Copper heating valve and defeat their machines.",
       "success": "The homes have heating again. The repair crew can take a break and eat.",
       "failure": "The collectors have shut off the heating. Wait for the controls to reset, then try again.",
       "activity": "eat"
@@ -70,7 +70,7 @@
       "enemy": null,
       "spawns": [],
       "color": "#b5d78d",
-      "warning": "Listening Courts · floodwater has damaged the warning system. Repair both marked controls. Move out of striped danger areas before the countdown ends.",
+      "warning": "Listening Courts · floodwater has damaged the warning system. Repair Court warning log and Handrail warning control. Move out of striped danger areas before the countdown ends.",
       "success": "The warning lights and vibrating handrails work again. Neighbors can tend their plants while watching the water level.",
       "failure": "The warning system has stopped. Neighbors warn each other door to door. Wait for the controls to reset, then try again.",
       "activity": "tend"
@@ -85,7 +85,7 @@
       "enemy": "drone",
       "spawns": [[320, 24, 295], [320, 24, 327]],
       "color": "#81dce5",
-      "warning": "Last Connection · the lift system is rejecting night workers’ passes. Repair both marked controls and defeat the machines blocking access.",
+      "warning": "Last Connection · the lift system is rejecting night workers’ passes. Repair Night platform register and Service-pass counter and defeat the machines blocking access.",
       "success": "The lift accepts passes again. The stranded workers can get home.",
       "failure": "The lift still rejects the workers’ passes. Wait for the controls to reset, then try again.",
       "activity": "carry"

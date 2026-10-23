@@ -23,22 +23,22 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "relay-node",
         "count": 1,
-        "text": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and use it, then return to Iri.",
-        "voice": "Post the opening hours after the kitchen water supply is restored. Select the marked terminal and use it, then return to Iri."
+        "text": "Post the kitchen’s opening hours at the Relay terminal.",
+        "voice": "Post the kitchen’s opening hours at the Relay terminal."
       }
     ],
     "story": {
@@ -731,22 +731,22 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
-        "text": "Register the witnesses who kept the kitchen open. Select the marked terminal and use it, then return to Sera.",
-        "voice": "Register the witnesses who kept the kitchen open. Select the marked terminal and use it, then return to Sera."
+        "text": "Register the kitchen witnesses at the Memory vault.",
+        "voice": "Register the kitchen witnesses at the Memory vault."
       }
     ],
     "story": {
@@ -1439,28 +1439,28 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "forge",
         "count": 1,
-        "text": "Record the bypass repair at the public forge. Select the marked terminal and use it, then return to Bram.",
-        "voice": "Record the bypass repair at the public forge. Select the marked terminal and use it, then return to Bram."
+        "text": "Record the kitchen repair at the Public forge.",
+        "voice": "Record the kitchen repair at the Public forge."
       }
     ],
     "story": {
       "chapter": "A place at the table",
       "speaker": "bram",
-      "invitation": "You there, runner. Bram Cinder. Kitchen pump is sound; lock on the feed is not. Come to my marker. We have work to do."
+      "invitation": "You there, runner. Bram Cinder. Kitchen pump is sound; lock on the feed is not. Find me northwest of the Commons exchange. We have work to do."
     }
   },
   {
@@ -2147,22 +2147,22 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "choir-array",
         "count": 1,
-        "text": "Connect the kitchen to the independent warning circuit. Select the marked terminal and use it, then return to Ves.",
-        "voice": "Connect the kitchen to the independent warning circuit. Select the marked terminal and use it, then return to Ves."
+        "text": "Connect the kitchen at the Warning control panel.",
+        "voice": "Connect the kitchen at the Warning control panel."
       }
     ],
     "story": {
@@ -2855,22 +2855,22 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and use it, then return to Oru.",
-        "voice": "Return to the kitchen and reserve a bowl for the next arrival. Select the marked terminal and use it, then return to Oru."
+        "text": "Reserve a welcome meal at the Lantern kitchen records.",
+        "voice": "Reserve a welcome meal at the Lantern kitchen records."
       }
     ],
     "story": {
@@ -3167,22 +3167,22 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "memory-vault",
         "count": 1,
-        "text": "Record your chosen name beside the repair record. Select the marked terminal and use it, then return to Oru.",
-        "voice": "Record your chosen name beside the repair record. Select the marked terminal and use it, then return to Oru."
+        "text": "Record your chosen name at the Memory vault.",
+        "voice": "Record your chosen name at the Memory vault."
       }
     ],
     "story": {
@@ -3479,22 +3479,22 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "relay-node",
         "count": 1,
-        "text": "Leave your new introduction on the neighborhood channel. Select the marked terminal and use it, then return to Oru.",
-        "voice": "Leave your new introduction on the neighborhood channel. Select the marked terminal and use it, then return to Oru."
+        "text": "Leave your introduction at the Relay terminal.",
+        "voice": "Leave your introduction at the Relay terminal."
       }
     ],
     "story": {
@@ -3791,22 +3791,22 @@
         "type": "interact",
         "target": "market",
         "count": 1,
-        "text": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice.",
-        "voice": "Go to the Commons exchange, select its terminal, and use it to read the shutoff notice."
+        "text": "Read the shutoff notice at the Commons exchange.",
+        "voice": "Read the shutoff notice at the Commons exchange."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Check the restored water supply with the kitchen growers. Select the marked terminal and use it, then return to Oru.",
-        "voice": "Check the restored water supply with the kitchen growers. Select the marked terminal and use it, then return to Oru."
+        "text": "Check the restored water supply at the Lantern kitchen records.",
+        "voice": "Check the restored water supply at the Lantern kitchen records."
       }
     ],
     "story": {
@@ -4372,22 +4372,22 @@
         "type": "explore",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Walk to Lantern kitchen records. You do not need to press a button.",
-        "voice": "Walk to Lantern kitchen records. You do not need to press a button."
+        "text": "Visit Lantern kitchen records.",
+        "voice": "Visit Lantern kitchen records."
       },
       {
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Select Commons water meter and use it to compare the records.",
-        "voice": "Select Commons water meter and use it to compare the records."
+        "text": "Compare the records at Commons water meter.",
+        "voice": "Compare the records at Commons water meter."
       },
       {
         "type": "interact",
         "target": "lantern-kitchen",
         "count": 1,
-        "text": "Select Lantern kitchen records and use it to save the differences between the records.",
-        "voice": "Select Lantern kitchen records and use it to save the differences between the records."
+        "text": "Save the differences between the records at Lantern kitchen records.",
+        "voice": "Save the differences between the records at Lantern kitchen records."
       }
     ],
     "story": {
@@ -4407,7 +4407,7 @@
       "neighborhood-market-00"
     ],
     "giver": "nella",
-    "briefing": "The same jug of water was billed twice. Read the Commons water meter. Help repair both controls during the next water shutoff, defeat the machines, and stay inside the marked ring for 12 seconds. Read the meter again to save the proof.",
+    "briefing": "The kitchen was charged twice for the same jug. Compare the Commons water meter before and after restoring the water supply.",
     "completion": "Same serial, two charges. There is our proof. The kitchen is running again, but I cannot stand at that meter all night. One more job: help us share the work. The meter still lists every debt. Its meal count has no space for a person who went hungry. Oru copies both columns.",
     "objective": {
       "type": "interact",
@@ -4423,22 +4423,22 @@
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Select Commons water meter and use it to read the record before the emergency.",
-        "voice": "Select Commons water meter and use it to read the record before the emergency."
+        "text": "Read the record before the emergency at Commons water meter.",
+        "voice": "Read the record before the emergency at Commons water meter."
       },
       {
         "type": "event",
         "target": "water-lockout",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds.",
-        "voice": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Commons water meter.",
+        "voice": "Restore service at Commons water meter."
       },
       {
         "type": "interact",
         "target": "commons-water",
         "count": 1,
-        "text": "Select Commons water meter and use it to save the repair results.",
-        "voice": "Select Commons water meter and use it to save the repair results."
+        "text": "Save the repair results at Commons water meter.",
+        "voice": "Save the repair results at Commons water meter."
       }
     ],
     "story": {
@@ -4474,8 +4474,8 @@
         "type": "interact",
         "target": "pantry-ledger",
         "count": 1,
-        "text": "Select Kitchen schedule board and use it to post the work schedule.",
-        "voice": "Select Kitchen schedule board and use it to post the work schedule."
+        "text": "Post the work schedule at Kitchen schedule board.",
+        "voice": "Post the work schedule at Kitchen schedule board."
       },
       {
         "type": "hold",
@@ -4488,8 +4488,8 @@
         "type": "interact",
         "target": "pantry-ledger",
         "count": 1,
-        "text": "Select Kitchen schedule board and use it to confirm who takes the next shift.",
-        "voice": "Select Kitchen schedule board and use it to confirm who takes the next shift."
+        "text": "Confirm who takes the next shift at Kitchen schedule board.",
+        "voice": "Confirm who takes the next shift at Kitchen schedule board."
       }
     ],
     "story": {
@@ -4507,7 +4507,7 @@
     "level": 10,
     "requires": [],
     "giver": "elin",
-    "briefing": "Visit the Unsorted witness shelf. Elin needs to know whether the discarded record was unwanted, or merely unprofitable. Follow the markers to compare both records, then return to the first to save the differences.",
+    "briefing": "Visit the Unsorted witness shelf. Elin needs to know whether the discarded record was unwanted, or merely unprofitable. Compare it with Cooling priority console, then save the differences at Unsorted witness shelf.",
     "completion": "The witness wanted that morning kept. A clerk places the request beside its disposable label and waits for an explanation.",
     "objective": {
       "type": "explore",
@@ -4523,19 +4523,19 @@
         "type": "explore",
         "target": "glass-witness",
         "count": 1,
-        "text": "Walk to Unsorted witness shelf. You do not need to press a button."
+        "text": "Visit Unsorted witness shelf."
       },
       {
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Select Cooling priority console and use it to compare the records."
+        "text": "Compare the records at Cooling priority console."
       },
       {
         "type": "interact",
         "target": "glass-witness",
         "count": 1,
-        "text": "Select Unsorted witness shelf and use it to save the differences between the records."
+        "text": "Save the differences between the records at Unsorted witness shelf."
       }
     ]
   },
@@ -4550,7 +4550,7 @@
       "neighborhood-archive-00"
     ],
     "giver": "elin",
-    "briefing": "Read the Cooling priority console and find what decides which memories remain cold. The block is facing another emergency: memory cooling failure. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
+    "briefing": "Read the Cooling priority console and find what decides which memories remain cold. Restore service here, then read Cooling priority console again to save the result.",
     "completion": "Elin isolates the payment sort. Technicians begin marking redundant cabinets instead of asking families to outbid each other.",
     "objective": {
       "type": "interact",
@@ -4566,19 +4566,19 @@
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Select Cooling priority console and use it to read the record before the emergency."
+        "text": "Read the record before the emergency at Cooling priority console."
       },
       {
         "type": "event",
         "target": "cooling-failure",
         "count": 1,
-        "text": "Repair both marked controls. Stay inside the marked ring for 12 seconds. Move out of striped danger areas before they strike."
+        "text": "Restore service at Cooling priority console."
       },
       {
         "type": "interact",
         "target": "cooling-priority",
         "count": 1,
-        "text": "Select Cooling priority console and use it to save the repair results."
+        "text": "Save the repair results at Cooling priority console."
       }
     ]
   },
@@ -4593,7 +4593,7 @@
       "neighborhood-archive-01"
     ],
     "giver": "elin",
-    "briefing": "File the permission-based cooling work schedule at the Glass Steps permission desk. Release duplicate space only where its witnesses have agreed. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "briefing": "File the permission-based cooling work schedule at the Glass Steps permission desk. Release duplicate space only where its witnesses have agreed. Check Cooling priority console for ten seconds, then confirm the next shift at Glass Steps permission desk.",
     "completion": "Families share the available cold space. Some copies are lost by permission. Elin keeps the refusals in the same ledger as the savings. A witness keeps a written account of the coat she repaired with her sister. Elin sends its consent terms to the Living Record without copying the memory.",
     "objective": {
       "type": "interact",
@@ -4609,7 +4609,7 @@
         "type": "interact",
         "target": "consent-desk",
         "count": 1,
-        "text": "Select Glass Steps permission desk and use it to post the work schedule."
+        "text": "Post the work schedule at Glass Steps permission desk."
       },
       {
         "type": "hold",
@@ -4621,7 +4621,7 @@
         "type": "interact",
         "target": "consent-desk",
         "count": 1,
-        "text": "Select Glass Steps permission desk and use it to confirm who takes the next shift."
+        "text": "Confirm who takes the next shift at Glass Steps permission desk."
       }
     ]
   },
@@ -4634,7 +4634,7 @@
     "level": 20,
     "requires": [],
     "giver": "merek",
-    "briefing": "Visit the Occupied flats register. Merek will not redirect the line using a housing count that erases half the people who need it. Follow the markers to compare both records, then return to the first to save the differences.",
+    "briefing": "Visit the Occupied flats register. Merek will not redirect the line using a housing count that erases half the people who need it. Compare it with Copper heating valve, then save the differences at Occupied flats register.",
     "completion": "The crew adds twenty-three households to its work sheet. The official vacancy count stays pinned underneath, where everyone can see the difference.",
     "objective": {
       "type": "explore",
@@ -4650,19 +4650,19 @@
         "type": "explore",
         "target": "cold-flats",
         "count": 1,
-        "text": "Walk to Occupied flats register. You do not need to press a button."
+        "text": "Visit Occupied flats register."
       },
       {
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Select Copper heating valve and use it to compare the records."
+        "text": "Compare the records at Copper heating valve."
       },
       {
         "type": "interact",
         "target": "cold-flats",
         "count": 1,
-        "text": "Select Occupied flats register and use it to save the differences between the records."
+        "text": "Save the differences between the records at Occupied flats register."
       }
     ]
   },
@@ -4677,7 +4677,7 @@
       "neighborhood-furnace-00"
     ],
     "giver": "merek",
-    "briefing": "Inspect the Copper heating valve. Find both the bypass setting and the responsibility for payment attached to touching it. The block is facing another emergency: heating shutdown. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
+    "briefing": "Inspect the Copper heating valve. Find both the bypass setting and the responsibility for payment attached to touching it. Restore service here, then read Copper heating valve again to save the result.",
     "completion": "The crew marks the bypass and crosses out the space reserved for one apprentice to inherit the entire repair debt agreement.",
     "objective": {
       "type": "interact",
@@ -4693,19 +4693,19 @@
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Select Copper heating valve and use it to read the record before the emergency."
+        "text": "Read the record before the emergency at Copper heating valve."
       },
       {
         "type": "event",
         "target": "heat-seizure",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Copper heating valve."
       },
       {
         "type": "interact",
         "target": "heat-diverter",
         "count": 1,
-        "text": "Select Copper heating valve and use it to save the repair results."
+        "text": "Save the repair results at Copper heating valve."
       }
     ]
   },
@@ -4720,7 +4720,7 @@
       "neighborhood-furnace-01"
     ],
     "giver": "merek",
-    "briefing": "Post the shared heat and repair work schedule at the Copper Walk shift rules. Record who checks the bypass and who takes over at the shift limit. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "briefing": "Post the shared heat and repair work schedule at the Copper Walk shift rules. Record who checks the bypass and who takes over at the shift limit. Check Copper heating valve for ten seconds, then confirm the next shift at Copper Walk shift rules.",
     "completion": "The empty office cools. Occupied homes take turns warming, and the repair crew takes its first protected meal break beside the open work sheet. Merek sends the Living Record a sheet with twenty-three occupied addresses. The old vacancy report stays attached as evidence.",
     "objective": {
       "type": "interact",
@@ -4736,7 +4736,7 @@
         "type": "interact",
         "target": "shift-charter",
         "count": 1,
-        "text": "Select Copper Walk shift rules and use it to post the work schedule."
+        "text": "Post the work schedule at Copper Walk shift rules."
       },
       {
         "type": "hold",
@@ -4748,7 +4748,7 @@
         "type": "interact",
         "target": "shift-charter",
         "count": 1,
-        "text": "Select Copper Walk shift rules and use it to confirm who takes the next shift."
+        "text": "Confirm who takes the next shift at Copper Walk shift rules."
       }
     ]
   },
@@ -4761,7 +4761,7 @@
     "level": 30,
     "requires": [],
     "giver": "sable",
-    "briefing": "Visit the Court warning log. Sable wants the failed flood advisory recorded before anyone calls the quiet court a finished success. Follow the markers to compare both records, then return to the first to save the differences.",
+    "briefing": "Visit the Court warning log. Sable wants the failed flood advisory recorded before anyone calls the quiet court a finished success. Compare it with Handrail warning control, then save the differences at Court warning log.",
     "completion": "The assembly reads the missed advisory in silence. Sable adds accessible warning endpoints to the unfinished work.",
     "objective": {
       "type": "explore",
@@ -4777,19 +4777,19 @@
         "type": "explore",
         "target": "silent-warning",
         "count": 1,
-        "text": "Walk to Court warning log. You do not need to press a button."
+        "text": "Visit Court warning log."
       },
       {
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Select Handrail warning control and use it to compare the records."
+        "text": "Compare the records at Handrail warning control."
       },
       {
         "type": "interact",
         "target": "silent-warning",
         "count": 1,
-        "text": "Select Court warning log and use it to save the differences between the records."
+        "text": "Save the differences between the records at Court warning log."
       }
     ]
   },
@@ -4804,7 +4804,7 @@
       "neighborhood-quiet-00"
     ],
     "giver": "sable",
-    "briefing": "Test the Handrail warning control and inspect its failure indicator. A warning needs a way to tell people when it cannot warn them. The block is facing another emergency: flood alarm failure. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
+    "briefing": "Test the Handrail warning control and inspect its failure indicator. A warning needs a way to tell people when it cannot warn them. Restore service here, then read Handrail warning control again to save the result.",
     "completion": "Neighbors check the pulses against the lamps. The failure light is added to the inspection sheet, not hidden beneath a successful demonstration.",
     "objective": {
       "type": "interact",
@@ -4820,19 +4820,19 @@
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Select Handrail warning control and use it to read the record before the emergency."
+        "text": "Read the record before the emergency at Handrail warning control."
       },
       {
         "type": "event",
         "target": "flood-surge",
         "count": 1,
-        "text": "Repair both marked controls. Stay inside the marked ring for 12 seconds. Move out of striped danger areas before they strike."
+        "text": "Restore service at Handrail warning control."
       },
       {
         "type": "interact",
         "target": "tactile-relay",
         "count": 1,
-        "text": "Select Handrail warning control and use it to save the repair results."
+        "text": "Save the repair results at Handrail warning control."
       }
     ]
   },
@@ -4847,7 +4847,7 @@
       "neighborhood-quiet-01"
     ],
     "giver": "sable",
-    "briefing": "Register the inspection work schedule at the Listening Courts noticeboard. Keep the accessible warning public and the court voluntarily quiet. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "briefing": "Register the inspection work schedule at the Listening Courts noticeboard. Keep the accessible warning public and the court voluntarily quiet. Check Handrail warning control for ten seconds, then confirm the next shift at Listening Courts noticeboard.",
     "completion": "The lamps begin their inspection cycle. Caretakers return to the planters; two names remain on the board for the next battery check. Sable adds a receipt test to the Living Record: a warning counts when people can see or feel it, not when the sender declares it sent.",
     "objective": {
       "type": "interact",
@@ -4863,7 +4863,7 @@
         "type": "interact",
         "target": "court-assembly",
         "count": 1,
-        "text": "Select Listening Courts noticeboard and use it to post the work schedule."
+        "text": "Post the work schedule at Listening Courts noticeboard."
       },
       {
         "type": "hold",
@@ -4875,7 +4875,7 @@
         "type": "interact",
         "target": "court-assembly",
         "count": 1,
-        "text": "Select Listening Courts noticeboard and use it to confirm who takes the next shift."
+        "text": "Confirm who takes the next shift at Listening Courts noticeboard."
       }
     ]
   },
@@ -4888,7 +4888,7 @@
     "level": 40,
     "requires": [],
     "giver": "ivo",
-    "briefing": "Visit the Night platform register. Ivo needs the names of the people who used the supposedly empty service. Follow the markers to compare both records, then return to the first to save the differences.",
+    "briefing": "Visit the Night platform register. Ivo needs the names of the people who used the supposedly empty service. Compare it with Service-pass counter, then save the differences at Night platform register.",
     "completion": "Forty names fill the departure sheet. Commuters compare the list with the zero on the closure notice.",
     "objective": {
       "type": "explore",
@@ -4904,19 +4904,19 @@
         "type": "explore",
         "target": "night-platform",
         "count": 1,
-        "text": "Walk to Night platform register. You do not need to press a button."
+        "text": "Visit Night platform register."
       },
       {
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Select Service-pass counter and use it to compare the records."
+        "text": "Compare the records at Service-pass counter."
       },
       {
         "type": "interact",
         "target": "night-platform",
         "count": 1,
-        "text": "Select Night platform register and use it to save the differences between the records."
+        "text": "Save the differences between the records at Night platform register."
       }
     ]
   },
@@ -4931,7 +4931,7 @@
       "neighborhood-skybridge-00"
     ],
     "giver": "ivo",
-    "briefing": "Read the Service-pass counter. Trace where the cleaners and carers disappear from the passenger total. The block is facing another emergency: night lift shutdown. Read the marked record, follow the emergency tracker to fix the problem, then read the record again to save the result.",
+    "briefing": "Read the Service-pass counter. Trace where the cleaners and carers disappear from the passenger total. Restore service here, then read Service-pass counter again to save the result.",
     "completion": "Ivo posts the exclusion rule beside the board. The mechanic starts checking the late lift while the workers negotiate its hours.",
     "objective": {
       "type": "interact",
@@ -4947,19 +4947,19 @@
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Select Service-pass counter and use it to read the record before the emergency."
+        "text": "Read the record before the emergency at Service-pass counter."
       },
       {
         "type": "event",
         "target": "transit-lockdown",
         "count": 1,
-        "text": "Repair both marked controls. Defeat the enemy machines, then stay inside the marked ring for 12 seconds."
+        "text": "Restore service at Service-pass counter."
       },
       {
         "type": "interact",
         "target": "service-counter",
         "count": 1,
-        "text": "Select Service-pass counter and use it to save the repair results."
+        "text": "Save the repair results at Service-pass counter."
       }
     ]
   },
@@ -4974,7 +4974,7 @@
       "neighborhood-skybridge-01"
     ],
     "giver": "ivo",
-    "briefing": "Publish the staffed late-lift work schedule at the Last Connection duty board. Count service passengers and name the relief crew. Post the schedule at the marked terminal. Stay at the next marker for ten seconds, then return to the board to confirm the next shift.",
+    "briefing": "Publish the staffed late-lift work schedule at the Last Connection duty board. Count service passengers and name the relief crew. Check Service-pass counter for ten seconds, then confirm the next shift at Last Connection duty board.",
     "completion": "The late lift keeps its crew. There are fewer connections than the workers wanted, but the final one has a published time and someone responsible for keeping it. Ivo sends the forty names to the Living Record. One passenger adds the time she can now tell her daughter she will be home.",
     "objective": {
       "type": "interact",
@@ -4990,7 +4990,7 @@
         "type": "interact",
         "target": "last-connection",
         "count": 1,
-        "text": "Select Last Connection duty board and use it to post the work schedule."
+        "text": "Post the work schedule at Last Connection duty board."
       },
       {
         "type": "hold",
@@ -5002,7 +5002,7 @@
         "type": "interact",
         "target": "last-connection",
         "count": 1,
-        "text": "Select Last Connection duty board and use it to confirm who takes the next shift."
+        "text": "Confirm who takes the next shift at Last Connection duty board."
       }
     ]
   }

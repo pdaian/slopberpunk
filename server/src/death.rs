@@ -106,7 +106,6 @@ pub(super) fn fallen(p: &mut Player, data: &Content, time: f64) {
     };
     p.shield = 0.0;
     p.dash = 0.0;
-    p.ghost_trail.clear();
     if p.instance.is_none() && p.c.death.is_none() {
         let lost = cost(
             p.c.gold,
@@ -122,7 +121,6 @@ pub(super) fn fallen(p: &mut Player, data: &Content, time: f64) {
 
 fn relocate(p: &mut Player, position: Vec3) {
     p.c.position = position;
-    p.previous_position = position;
     p.velocity = [0.0; 3];
     p.input = Movement {
         yaw: p.c.yaw,
@@ -132,7 +130,6 @@ fn relocate(p: &mut Player, position: Vec3) {
     p.coyote = 0.0;
     p.jump_buffer = 0.0;
     p.dash = 0.0;
-    p.ghost_trail.clear();
     p.dirty = true;
 }
 
@@ -242,13 +239,11 @@ mod tests {
             live_social: live_social::Session::default(),
             instance: None,
             owner: "account".into(),
-            previous_position: c.position,
             c,
             output,
             input: Movement::default(),
             last_input: 0.0,
             velocity: [0.0; 3],
-            ghost_trail: GhostTrail::default(),
             grounded: true,
             coyote: 0.0,
             jump_buffer: 0.0,
