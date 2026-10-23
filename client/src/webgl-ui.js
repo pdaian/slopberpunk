@@ -327,7 +327,28 @@ export class WebGLUI {
     (select.closest('dialog')||this.source).append(menu);this.selectMenu=menu;
     (menu.querySelector('[aria-selected="true"]')||menu.querySelector('button:not(:disabled)'))?.focus();
   }
+  scrollWheel(e) {
+    if(this.lost||e.defaultPrevented||!e.cancelable||e.ctrlKey||e.metaKey)return;
+    const dx=e.shiftKey&&!e.deltaX?e.deltaY:e.deltaX,dy=e.shiftKey&&!e.deltaX?0:e.deltaY;
+    if(!dx&&!dy)return;
+    let node=e.target.nodeType===3?e.target.parentElement:e.target;
+    while(node&&node!==this.source) {
+      const style=getComputedStyle(node),line=number(style.lineHeight)||number(style.fontSize)*1.5||16;
+      const x=dx&&/auto|scroll/.test(style.overflowX)&&node.scrollWidth>node.clientWidth;
+      const y=dy&&/auto|scroll/.test(style.overflowY)&&node.scrollHeight>node.clientHeight;
+      const left=node.scrollLeft,top=node.scrollTop;
+      if(x)node.scrollLeft+=dx*(e.deltaMode===1?line:e.deltaMode===2?node.clientWidth:1);
+      if(y)node.scrollTop+=dy*(e.deltaMode===1?line:e.deltaMode===2?node.clientHeight:1);
+      const moved=node.scrollLeft!==left||node.scrollTop!==top;
+      if(moved||x&&/contain|none/.test(style.overscrollBehaviorX)||y&&/contain|none/.test(style.overscrollBehaviorY)) {
+        e.preventDefault();if(moved)this.invalidate(node);return;
+      }
+      node=node.parentElement;
+    }
+  }
   bindControls() {
+    // Scroll the semantic tree explicitly even while its native paint is suppressed.
+    this.source.addEventListener('wheel',e=>this.scrollWheel(e),{passive:false});
     // Suppress OS select popovers; these choices use the same WebGL painter as panels.
     this.source.addEventListener('pointerdown',e=>{
       if(this.selectMenu&&!this.selectMenu.contains(e.target)&&e.target!==this.selectOwner)this.closeSelect();

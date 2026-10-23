@@ -4,7 +4,7 @@ use std::{io, net::SocketAddr};
 
 pub(super) struct Config {
     pub bind: SocketAddr,
-    pub origins: Vec<String>,
+    pub origins: Option<Vec<String>>,
     pub secure: bool,
     pub workers: usize,
     pub shards: usize,
@@ -47,32 +47,14 @@ impl Config {
             "1" => true,
             _ => return Err(invalid("SLOPERBERPUNK_SECURE must be 0 or 1")),
         };
-        let origins = match get("SLOPERBERPUNK_ORIGINS")? {
-            Some(value) => value
-                .split(',')
-                .map(normalize_origin)
-                .collect::<io::Result<Vec<_>>>()?,
-            None => {
-                let mut hosts = vec![
-                    "localhost".to_owned(),
-                    "127.0.0.1".to_owned(),
-                    "[::1]".to_owned(),
-                ];
-                if !bind.ip().is_unspecified() {
-                    let host = match bind.ip() {
-                        std::net::IpAddr::V4(ip) => ip.to_string(),
-                        std::net::IpAddr::V6(ip) => format!("[{ip}]"),
-                    };
-                    if !hosts.contains(&host) {
-                        hosts.push(host);
-                    }
-                }
-                hosts
-                    .into_iter()
-                    .map(|host| normalize_origin(&format!("http://{host}:{}", bind.port())))
-                    .collect::<io::Result<Vec<_>>>()?
-            }
-        };
+        let origins = get("SLOPERBERPUNK_ORIGINS")?
+            .map(|value| {
+                value
+                    .split(',')
+                    .map(normalize_origin)
+                    .collect::<io::Result<Vec<_>>>()
+            })
+            .transpose()?;
         let workers = count(
             get("SLOPERBERPUNK_WORKERS")?,
             cores.clamp(1, 4),
@@ -111,7 +93,7 @@ fn count(value: Option<String>, default: usize, name: &str) -> io::Result<usize>
     Ok(value)
 }
 
-fn normalize_origin(value: &str) -> io::Result<String> {
+pub(super) fn normalize_origin(value: &str) -> io::Result<String> {
     let uri = value
         .trim()
         .parse::<Uri>()
@@ -166,17 +148,14 @@ mod tests {
     }
 
     #[test]
-    fn listener_defaults_and_port_80_origins() {
+    fn listener_defaults_and_port_80_use_same_origin_requests() {
         let default = config(&[], 8).unwrap();
         assert_eq!(default.bind, "0.0.0.0:8080".parse::<SocketAddr>().unwrap());
         assert!(!default.secure);
-        assert!(default.origins.contains(&"http://localhost:8080".into()));
+        assert!(default.origins.is_none());
         let port_80 = config(&[("PORT", "80")], 8).unwrap();
         assert_eq!(port_80.bind.port(), 80);
-        assert!(port_80.origins.contains(&"http://localhost".into()));
-        assert!(port_80.origins.contains(&"http://127.0.0.1".into()));
-        assert!(port_80.origins.contains(&"http://[::1]".into()));
-        assert!(!port_80.origins.iter().any(|s| s.ends_with(":80")));
+        assert!(port_80.origins.is_none());
     }
 
     #[test]
@@ -192,7 +171,7 @@ mod tests {
         .unwrap();
         assert_eq!(c.bind, "[::1]:8080".parse::<SocketAddr>().unwrap());
         assert_eq!((c.workers, c.shards), (1, 1));
-        assert!(c.origins.contains(&"http://[::1]:8080".into()));
+        assert!(c.origins.is_none());
     }
 
     #[test]
@@ -205,7 +184,10 @@ mod tests {
             8,
         )
         .unwrap();
-        assert_eq!(c.origins, ["https://game.example", "http://localhost"]);
+        assert_eq!(
+            c.origins.unwrap(),
+            ["https://game.example", "http://localhost"]
+        );
         for origin in [
             "",
             "*",

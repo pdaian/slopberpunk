@@ -164,6 +164,83 @@ test('panel decoration and list markers do not add stray dashes or bullets',t=>{
   style.listStyleType='disc';ui.element(node);assert.equal(marks.at(-1),'·');
 });
 
+function scrolling(t) {
+  const listeners=new Map(),source={addEventListener:(name,fn,options)=>listeners.set(name,{fn,options}),querySelectorAll:()=>[],append(){}};
+  globals(t,{getComputedStyle:node=>node.style,document:{createElement:()=>({setAttribute(){}})}});
+  const ui=Object.create(WebGLUI.prototype);Object.assign(ui,{source,layers:new Map()});ui.bindControls();
+  const element=(parentElement=source,properties={})=>{
+    const node={nodeType:1,tagName:'DIV',parentElement,clientWidth:200,scrollWidth:200,clientHeight:100,scrollHeight:400,
+      style:{overflowX:'visible',overflowY:'auto',overscrollBehaviorX:'auto',overscrollBehaviorY:'auto',fontSize:'16px',lineHeight:'24px'},...properties};
+    let left=0,top=0;
+    Object.defineProperties(node,{
+      scrollLeft:{get:()=>left,set:value=>{left=Math.max(0,Math.min(value,node.scrollWidth-node.clientWidth));}},
+      scrollTop:{get:()=>top,set:value=>{top=Math.max(0,Math.min(value,node.scrollHeight-node.clientHeight));}},
+    });
+    if(parentElement===source)ui.layers.set(node,{dirty:false});return node;
+  };
+  const wheel=(target,extra={})=>{
+    const e={target,deltaX:0,deltaY:60,deltaMode:0,cancelable:true,defaultPrevented:false,prevented:false,
+      preventDefault(){this.defaultPrevented=true;this.prevented=true;},...extra};
+    listeners.get('wheel').fn(e);return e;
+  };
+  return {ui,source,listeners,element,wheel};
+}
+
+test('wheel gestures scroll the splash from content or empty space and repaint its WebGL layer',t=>{
+  const {ui,listeners,element,wheel}=scrolling(t),landing=element(undefined,{id:'landing'}),text=element(landing,{scrollHeight:100});
+  assert.equal(listeners.get('wheel').options.passive,false,'handled gestures must not also scroll natively');
+  assert.equal(wheel(text,{deltaY:96}).prevented,true);
+  assert.equal(landing.scrollTop,96);assert.equal(text.scrollTop,0);assert.equal(ui.layers.get(landing).dirty,true);
+  ui.layers.get(landing).dirty=false;
+  wheel(landing,{deltaY:-40});assert.equal(landing.scrollTop,56);assert.equal(ui.layers.get(landing).dirty,true);
+  wheel({nodeType:3,parentElement:text},{deltaY:20.25});assert.equal(landing.scrollTop,76.25,'trackpad deltas retain fractional pixels');
+});
+
+test('nested panels scroll locally, chain at their limits, and honor scroll containment',t=>{
+  const {element,wheel}=scrolling(t),dialog=element(undefined,{tagName:'DIALOG',clientHeight:300,scrollHeight:1200}),stream=element(dialog);
+  stream.scrollTop=260;wheel(stream);assert.equal(stream.scrollTop,300);assert.equal(dialog.scrollTop,0);
+  wheel(stream);assert.equal(dialog.scrollTop,60,'a full inner panel passes further scrolling to its parent');
+  wheel(stream,{deltaY:-60});assert.equal(stream.scrollTop,240);assert.equal(dialog.scrollTop,60);
+  stream.scrollTop=0;wheel(stream,{deltaY:-60});assert.equal(dialog.scrollTop,0);
+  for(const behavior of ['contain','none']) {
+    stream.style.overscrollBehaviorY=behavior;dialog.scrollTop=100;
+    assert.equal(wheel(stream,{deltaY:-60}).prevented,true);assert.equal(dialog.scrollTop,100);
+    stream.scrollTop=300;assert.equal(wheel(stream).prevented,true);assert.equal(dialog.scrollTop,100);
+    stream.scrollTop=0;
+  }
+});
+
+test('wheel scrolling skips clipped content and only handles panels with overflow',t=>{
+  const {ui,source,element,wheel}=scrolling(t),creation=element(undefined,{id:'creation'}),preview=element(creation);
+  for(const overflow of ['hidden','clip','visible']) {
+    preview.style.overflowY=overflow;creation.scrollTop=0;
+    wheel(preview);assert.equal(preview.scrollTop,0);assert.equal(creation.scrollTop,60);
+  }
+  creation.scrollTop=0;creation.clientHeight=creation.scrollHeight;ui.layers.get(creation).dirty=false;
+  assert.equal(wheel(preview).prevented,false);assert.equal(ui.layers.get(creation).dirty,false);
+  creation.clientHeight=100;wheel(preview);assert.equal(creation.scrollTop,60,'resizing back to an overflowing layout re-enables scrolling');
+  assert.equal(wheel(source).prevented,false,'the overlay itself must not consume world input');
+});
+
+test('wheel scrolling supports line and page units, horizontal trackpads and Shift-wheel',t=>{
+  const {element,wheel}=scrolling(t),panel=element(undefined,{scrollWidth:1000,scrollHeight:1000});panel.style.overflowX='auto';
+  wheel(panel,{deltaMode:1,deltaY:3});assert.equal(panel.scrollTop,72);
+  wheel(panel,{deltaMode:2,deltaY:1});assert.equal(panel.scrollTop,172);
+  wheel(panel,{deltaMode:1,deltaX:2,deltaY:0});assert.equal(panel.scrollLeft,48);
+  wheel(panel,{deltaMode:2,deltaY:1,shiftKey:true});assert.equal(panel.scrollLeft,248);assert.equal(panel.scrollTop,172);
+  wheel(panel,{deltaX:12,deltaY:8,shiftKey:true});assert.equal(panel.scrollLeft,260);assert.equal(panel.scrollTop,180);
+  panel.style.lineHeight='normal';wheel(panel,{deltaMode:1,deltaY:1});assert.equal(panel.scrollTop,204);
+});
+
+test('wheel handling preserves browser zoom, canceled events and native recovery controls',t=>{
+  const {ui,element,wheel}=scrolling(t),panel=element();
+  for(const extra of [{ctrlKey:true},{metaKey:true},{cancelable:false},{defaultPrevented:true},{deltaX:0,deltaY:0}]) {
+    assert.equal(wheel(panel,extra).prevented,false);assert.equal(panel.scrollTop,0);
+  }
+  ui.lost=true;assert.equal(wheel(panel).prevented,false);assert.equal(panel.scrollTop,0);
+  ui.lost=false;wheel(panel);assert.equal(panel.scrollTop,60);
+});
+
 function keyboard(t) {
   const listeners=new Map(),documentEvents=new Map(),actions=[];
   globals(t,{window:{addEventListener:(name,fn)=>listeners.set(name,fn)},document:{addEventListener:(name,fn)=>documentEvents.set(name,fn),querySelector:()=>null},navigator:{getGamepads:()=>[]}});

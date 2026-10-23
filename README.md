@@ -16,7 +16,7 @@ Open [localhost:8080](http://localhost:8080), choose **PLAY**, and register or s
 
 The Rust process serves the client, HTTP API, and multiplayer WebSockets. The client uses JavaScript modules directly, with no frontend build step. The first Cargo run downloads dependencies and compiles the server; startup creates its data directory.
 
-The default listener is `0.0.0.0:8080`. Use `HOST=127.0.0.1` for local-only access, `PORT` to change the port, or `SLOPERBERPUNK_BIND=IP:port` to override both. For another hostname or LAN IP, set `SLOPERBERPUNK_ORIGINS` to the exact browser origin. See [operations](docs/OPERATIONS.md) for configuration, HTTPS hosting, and deployment.
+The default listener is `0.0.0.0:8080`. Use `HOST=127.0.0.1` for local-only access, `PORT` to change the port, or `SLOPERBERPUNK_BIND=IP:port` to override both. Login and gameplay work through the hostname or IP used to open the page, including a LAN address such as `http://192.168.1.20:8080`. Set `SLOPERBERPUNK_ORIGINS` to restrict access to exact browser origins. See [operations](docs/OPERATIONS.md) for configuration, HTTPS hosting, and deployment.
 
 ## Playing
 

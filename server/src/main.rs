@@ -1222,21 +1222,35 @@ struct App {
     social_rates: Mutex<HashMap<String, Rate>>,
     auth_slots: Arc<Semaphore>,
     dummy_hash: String,
-    origins: Vec<String>,
+    origins: Option<Vec<String>>,
     secure: bool,
     shards: Vec<mpsc::Sender<Command>>,
     dungeon_lobby: mpsc::Sender<Command>,
     saves: mpsc::Sender<Save>,
 }
-fn origin(headers: &HeaderMap, app: &App) -> ResultApi<()> {
+fn origin(headers: &HeaderMap, origins: Option<&[String]>, secure: bool) -> ResultApi<()> {
     let supplied = headers
         .get(header::ORIGIN)
+        .filter(|_| headers.get_all(header::ORIGIN).iter().count() == 1)
         .and_then(|h| h.to_str().ok())
         .ok_or(ApiError(
             StatusCode::FORBIDDEN,
             "A same-origin request is required.",
         ))?;
-    if app.origins.iter().any(|s| s == supplied) {
+    let allowed = if let Some(origins) = origins {
+        origins.iter().any(|s| s == supplied)
+    } else {
+        // The browser's target host supports LAN/public addresses without trusting proxy headers.
+        let scheme = if secure { "https" } else { "http" };
+        headers
+            .get(header::HOST)
+            .filter(|_| headers.get_all(header::HOST).iter().count() == 1)
+            .and_then(|h| h.to_str().ok())
+            .and_then(|h| h.parse::<axum::http::uri::Authority>().ok())
+            .and_then(|host| config::normalize_origin(&format!("{scheme}://{host}")).ok())
+            .is_some_and(|target| target == supplied)
+    };
+    if allowed {
         Ok(())
     } else {
         Err(ApiError(
@@ -1246,7 +1260,7 @@ fn origin(headers: &HeaderMap, app: &App) -> ResultApi<()> {
     }
 }
 fn mutation(headers: &HeaderMap, app: &App) -> ResultApi<()> {
-    origin(headers, app)?;
+    origin(headers, app.origins.as_deref(), app.secure)?;
     if headers.get("X-Sloperberpunk").and_then(|h| h.to_str().ok()) != Some("1") {
         return Err(ApiError(StatusCode::FORBIDDEN, "Missing request marker."));
     }
@@ -2824,7 +2838,7 @@ async fn world_upgrade(
     headers: HeaderMap,
     upgrade: WebSocketUpgrade,
 ) -> ResultApi<Response> {
-    origin(&headers, &app)?;
+    origin(&headers, app.origins.as_deref(), app.secure)?;
     let (token, session) = authenticate(&headers, &app)?;
     Ok(upgrade
         .read_buffer_size(8192)
@@ -3126,6 +3140,136 @@ async fn serve(config: config::Config) -> Result<(), Box<dyn std::error::Error>>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn browser_headers(supplied: &str, host: &str) -> HeaderMap {
+        HeaderMap::from_iter([
+            (header::ORIGIN, HeaderValue::from_str(supplied).unwrap()),
+            (header::HOST, HeaderValue::from_str(host).unwrap()),
+        ])
+    }
+
+    #[test]
+    fn default_origins_accept_the_browser_host_on_any_server_address() {
+        for (secure, host, supplied) in [
+            (false, "localhost:8080", "http://localhost:8080"),
+            (false, "127.0.0.1:8080", "http://127.0.0.1:8080"),
+            (false, "192.168.1.20:8080", "http://192.168.1.20:8080"),
+            (false, "203.0.113.10:8080", "http://203.0.113.10:8080"),
+            (false, "[::1]:8080", "http://[::1]:8080"),
+            (false, "[2001:db8::1]:8080", "http://[2001:db8::1]:8080"),
+            (false, "192.168.1.20", "http://192.168.1.20"),
+            (false, "192.168.1.20:80", "http://192.168.1.20"),
+            (false, "GAME.EXAMPLE:8080", "http://game.example:8080"),
+            (true, "game.example", "https://game.example"),
+            (true, "game.example:443", "https://game.example"),
+            (true, "game.example:8443", "https://game.example:8443"),
+        ] {
+            assert!(
+                origin(&browser_headers(supplied, host), None, secure).is_ok(),
+                "{supplied} at {host} (secure={secure})"
+            );
+        }
+    }
+
+    #[test]
+    fn default_origins_reject_other_hosts_ports_schemes_and_invalid_origins() {
+        for supplied in [
+            "http://attacker.example:8080",
+            "http://game.example.attacker.example:8080",
+            "http://game.example:8081",
+            "http://game.example",
+            "https://game.example:8080",
+            "ws://game.example:8080",
+            "null",
+            "*",
+            "",
+            "http://game.example:8080/path",
+            "http://game.example:8080?query",
+            "http://game.example:8080#fragment",
+            "http://user@game.example:8080",
+            "http://game.example:8080 http://attacker.example:8080",
+        ] {
+            let headers = browser_headers(supplied, "game.example:8080");
+            assert_eq!(
+                origin(&headers, None, false).unwrap_err().0,
+                StatusCode::FORBIDDEN,
+                "{supplied}"
+            );
+        }
+        assert!(
+            origin(
+                &browser_headers("http://game.example", "game.example"),
+                None,
+                true
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn default_origins_require_single_valid_headers_and_ignore_forwarded_headers() {
+        let headers = browser_headers("http://game.example:8080", "game.example:8080");
+        for name in [header::ORIGIN, header::HOST] {
+            let mut missing = headers.clone();
+            missing.remove(&name);
+            assert!(origin(&missing, None, false).is_err());
+            let mut duplicate = headers.clone();
+            duplicate.append(name.clone(), headers[&name].clone());
+            assert!(origin(&duplicate, None, false).is_err());
+            let mut invalid = headers.clone();
+            invalid.insert(name, HeaderValue::from_bytes(b"\xff").unwrap());
+            assert!(origin(&invalid, None, false).is_err());
+        }
+        for host in [
+            "",
+            "game.example:8080/",
+            "game.example:8080/path",
+            "game.example:8080?query",
+            "game.example:8080#fragment",
+            "user@game.example:8080",
+            "game.example:8080,attacker.example:8080",
+            "game.example:abc",
+            "game.example:65536",
+        ] {
+            assert!(
+                origin(
+                    &browser_headers("http://game.example:8080", host),
+                    None,
+                    false
+                )
+                .is_err(),
+                "{host}"
+            );
+        }
+        let mut forwarded = browser_headers("https://game.example", "127.0.0.1:8080");
+        forwarded.insert(
+            "forwarded",
+            HeaderValue::from_static("host=game.example;proto=https"),
+        );
+        forwarded.insert("x-forwarded-host", HeaderValue::from_static("game.example"));
+        forwarded.insert("x-forwarded-proto", HeaderValue::from_static("https"));
+        assert!(origin(&forwarded, None, false).is_err());
+        assert!(origin(&forwarded, None, true).is_err());
+    }
+
+    #[test]
+    fn explicit_origins_replace_same_host_defaults_and_support_proxy_host_rewrites() {
+        let origins = vec!["https://game.example".to_owned()];
+        for secure in [false, true] {
+            let headers = browser_headers("https://game.example", "127.0.0.1:8080");
+            assert!(origin(&headers, Some(&origins), secure).is_ok());
+            let headers = browser_headers("http://192.168.1.20:8080", "192.168.1.20:8080");
+            assert!(origin(&headers, Some(&origins), secure).is_err());
+        }
+        let mut headers = browser_headers("https://game.example", "game.example");
+        assert!(origin(&headers, Some(&[]), true).is_err());
+        headers.append(
+            header::ORIGIN,
+            HeaderValue::from_static("https://game.example"),
+        );
+        assert!(origin(&headers, Some(&origins), true).is_err());
+    }
+
     fn content() -> Arc<Content> {
         Arc::new(
             Content::load(&PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../client")).unwrap(),
