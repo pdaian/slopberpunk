@@ -374,6 +374,17 @@ export function neighborhoodDetails(v, neighborhood, sites) {
   }
 }
 
+export function upperStreetDetails(v, block, neighborhood) {
+  const mesh=[],accent=neighborhood.color;
+  neighborhoodDetails(mesh,neighborhood,[{position:[0,0,0]}]);
+  const label={market:'HOT BOWLS',archive:'READING STOP',workshop:'REPAIR BENCH',garden:'SEED EXCHANGE',transit:'NIGHT CONNECTION'}[neighborhood.motif];
+  box(mesh,[-2.4,2.25,-2.5],[.12,4.5,.12],'#72858b');
+  box(mesh,[0,4.45,-2.5],[4.9,.12,.16],accent,.9);
+  box(mesh,[0,3.25,-2.3],[4.5,.8,.12],'#202833');
+  lettering(mesh,label,[-label.length*.12,3.45,-2.22],accent,.04);
+  transformMesh(v,mesh,block.position,block.yaw);
+}
+
 export function civilianProps(v, actor) {
   if (!['carry','eat','work','repair','serve','tend'].includes(actor.activity)) return;
   const mesh = [], color = actor.color;

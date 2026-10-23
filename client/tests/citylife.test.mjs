@@ -6,7 +6,7 @@ import { World, routeHeight } from '../src/world.js';
 import { CityLife, CITY_ACTIVITIES, cityStage, cityEvent, createRoutine, routineAt, validateCityLife } from '../src/citylife.js';
 import { availableQuest } from '../src/prediction.js';
 import { CharacterMeshes, activityPose, motionPose } from '../src/character.js';
-import { neighborhoodDetails, civilianProps, streetScene } from '../src/scenery.js';
+import { neighborhoodDetails, upperStreetDetails, civilianProps, streetScene } from '../src/scenery.js';
 import { distance } from '../src/math.js';
 
 const read = name => JSON.parse(readFileSync(new URL(`../data/${name}.json`, import.meta.url)));
@@ -63,7 +63,7 @@ test('invalid content fails before starting the scene', () => {
 });
 
 test('all authored and generated routes clear walls, furniture, and skyway edges', () => {
-  const life = create(), residents = [...life.locals, ...life.travellers, ...world.buildings.flatMap(b => life.blockResidents(b))];
+  const life = create(), residents = [...life.locals, ...life.travellers, ...world.buildings.flatMap(b => life.blockResidents(b)), ...life.streetBlocks.flatMap(b=>life.streetResidents(b))];
   assert.equal(life.locals.length, 36);
   assert.equal(new Set(residents.map(r => r.id)).size, residents.length);
   let samples = 0;
@@ -77,6 +77,57 @@ test('all authored and generated routes clear walls, furniture, and skyway edges
     }
   }
   assert.ok(samples > 600000);
+});
+
+test('every upper street and skyway has nearby workers, visitors, and pedestrians by day and night',()=>{
+  const life=create(),names=new Set(life.streetBlocks.map(b=>b.name));
+  for(const r of data.world.routes.filter(r=>r.kind==='street'&&r.start[1]>0&&r.start[1]===r.end[1]))assert.ok(names.has(r.name),r.id);
+  for(const p of data.world.platforms.filter(p=>p.id.endsWith('-skyway')))assert.ok(names.has(p.id.replaceAll('-',' ')),p.id);
+  assert.deepEqual(new Set(life.streetBlocks.map(b=>b.position[1])),new Set([12,24,48]));
+  assert.deepEqual(life.streetBlocks,create().streetBlocks,'street layout must agree across clients');
+  for(const b of life.streetBlocks){
+    const residents=life.streetResidents(b),host=residents[0];
+    assert.ok(new Set(residents.map(r=>r.role)).size>=3);
+    for(const now of [atActivity(host,'duty',12),atActivity(host,'duty',1)])for(const quality of [.5,1]){
+      const actors=life.update(now,b.center,{quality});
+      for(const resident of residents)assert.ok(actors.some(a=>a.id===resident.id&&a.position[1]===b.position[1]),`${resident.id} missing on quality ${quality}`);
+      const worker=actors.find(a=>a.id===host.id),role=data.citylife.roles[host.role];
+      const expected=new Date(now).getUTCHours()===12?role.activity:role.nightActivity||role.activity;
+      if(expected==='talk'&&worker.activity==='wait')assert.equal(worker.title,'Waiting for a neighbor');
+      else assert.equal(worker.activity,expected);
+      assert.ok(life.conversation(worker,now).personal.includes(b.name.toLowerCase()));
+      assert.ok(actors.length<=(quality===.5?30:64));
+    }
+  }
+});
+
+test('long street couriers remain visible between distant endpoints and conversations retain priority',()=>{
+  const life=create(),resident=life.travellers.find(r=>r.id==='route-crown-street-north');
+  const segment=resident.routine.segments.find(s=>s.activity==='walk'),duration=resident.routine.duration;
+  const start=epoch/1000,offset=(segment.start+segment.end)/2-start-resident.seed;
+  const now=(start+(offset%duration+duration)%duration)*1000,position=routineAt(resident.routine,now/1000+resident.seed).position;
+  for(const quality of [.5,1]){
+    assert.ok(life.update(now,position,{quality}).some(a=>a.id===resident.id));
+    const actors=life.update(now+50,[position[0],24,position[2]],{quality,focus:resident.id});
+    assert.equal(actors[0].id,resident.id);
+    assert.equal(actors[0].activity,'talk');
+  }
+});
+
+test('upper street workspaces stay supported, leave crossings clear, and use bounded finite meshes',()=>{
+  const life=create(),spacing=data.world.buildingGrid.spacing;
+  for(const b of life.streetBlocks){
+    const v=[];upperStreetDetails(v,b,life.neighborhoods.get(b.neighborhood));
+    assert.ok(v.length>0&&v.length<25000&&v.every(Number.isFinite));assert.equal(v.length%30,0);
+    const along=Math.abs(Math.cos(b.yaw))>.5?0:2,seen=new Set();
+    for(let i=0;i<v.length;i+=10){
+      const p=[v[i],b.position[1],v[i+2]],key=p.map(n=>n.toFixed(4)).join(',');
+      assert.ok(Math.abs(p[along]-Math.round(p[along]/spacing)*spacing)>9,'fixtures must leave street junctions open');
+      assert.equal(world.collides(...p,0,Math.max(.01,v[i+1]-p[1])),false,`obstructed fixture in ${b.id}`);
+      if(seen.has(key))continue;seen.add(key);
+      near(world.floorAt(p[0],p[2],p[1]+.1,p[1]-.2),p[1]);
+    }
+  }
 });
 
 test('upper floors stay populated and street scenes return continuously to their meeting point',()=>{
@@ -241,8 +292,18 @@ test('streaming bounds crowd density and releases old block and reaction state',
     assert.ok(life.update(epoch + i * 30000 + 100, origin, { quality: .5 }).length <= 30);
   }
   life.update(epoch + 2000000, [0, 0, 2700]);
-  assert.equal(life.actors.length, 0);assert.equal(life.states.size, 0);assert.equal(life.blocks.size, 0);
+  assert.equal(life.actors.length, 0);assert.equal(life.states.size, 0);assert.equal(life.blocks.size, 0);assert.equal(life.upperBlocks.size,0);
   life.clear();assert.equal(life.lastTime, null);
+});
+
+test('walking the upper network releases old crews and keeps reaction state bounded',()=>{
+  const life=create();
+  for(const [i,b] of life.streetBlocks.entries()){
+    const actors=life.update(epoch+i*30000,b.center,{quality:.5});
+    assert.ok(actors.length<=30);assert.ok(life.upperBlocks.size<25);assert.ok(life.states.size<200);
+  }
+  life.update(epoch+10000000,[0,0,2700]);
+  assert.equal(life.upperBlocks.size,0);assert.equal(life.states.size,0);
 });
 
 test('activity poses, held objects, and all neighborhood scenery produce finite meshes', () => {

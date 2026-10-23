@@ -353,6 +353,15 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
     renderer.quality=.5;renderer.reducedMotion=true;
     renderer.render(camera,residents,[],11,Date.UTC(2026,0,1,0));
     assert.equal(uniforms.get('uDay'),0);assert.equal(uniforms.get('uTime'),0);assert.ok(depthWrite);
+    for(const height of [12,24,48])for(const quality of [.5,1]){
+      const block=life.streetBlocks.find(b=>b.position[1]===height),[x,y,z]=block.position;
+      renderer.quality=quality;
+      renderer.render({eye:[x,y+2,z],target:[x,y+1,z-6]},life.update(epoch,block.position,{quality}),[],12,epoch);
+      assert.ok(renderer.details.has(block),'upper street workspaces must stream on both quality settings');
+      assert.ok(uniforms.get('uLightPosition').some((v,i)=>i%4===1&&Math.abs(v-y-4.35)<1e-4),'upper street fixtures must illuminate their own deck');
+      assert.ok(depthWrite);
+    }
+    renderer.quality=.5;
     for(const b of world.rooftops){
       const y=b.levels.at(-2),inside={eye:[b.x,y+2,b.z],target:[b.x,y+1,b.z-6]};
       renderer.render(inside,[],[],12,epoch);

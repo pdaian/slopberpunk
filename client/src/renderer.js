@@ -7,8 +7,8 @@ import { ghostPosition } from './ghostline.js';
 import { dungeonZones, dungeonPosition } from './dungeons.js';
 import { box, pane, bevelBox, ellipsoid, transformMesh } from './geometry.js';
 import { CharacterMeshes } from './character.js';
-import { buildingExterior, buildingInterior, buildingLights, streetDetails, neighborhoodDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry } from './scenery.js';
-import { cityStage } from './citylife.js';
+import { buildingExterior, buildingInterior, buildingLights, streetDetails, neighborhoodDetails, upperStreetDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry } from './scenery.js';
+import { cityStage, streetPoint } from './citylife.js';
 import { incidentGeometry } from './events.js';
 import { enemyAttackGeometry } from './enemy-attacks.js';
 export { box } from './geometry.js';
@@ -278,6 +278,11 @@ export class Renderer {
       const v=[];streetDetails(v,b);if(b.interior)buildingInterior(v,b,this.world.data);
       this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d,b.rooftop?b.h:20)/2,150,false));
     }
+    for(const b of this.cityLife?.streetBlocks||[]){
+      if(distance(eye,b.position)>150||this.details.has(b))continue;
+      const v=[];upperStreetDetails(v,b,this.cityLife.neighborhoods.get(b.neighborhood));
+      this.details.set(b,this.upload(v,b.position,7,150,false));
+    }
   }
   updateLighting(eye) {
     if(!this.lightEye||distance(eye,this.lightEye)>16){
@@ -392,6 +397,10 @@ export class Renderer {
       const v=[],center=data.districts.find(d=>d.id===neighborhood.id).center;
       neighborhoodDetails(v,neighborhood,neighborhood.sites.map(id=>data.landmarks.find(l=>l.id===id)));
       this.upload(v,center,65,220);
+    }
+    for(const b of this.cityLife?.streetBlocks||[]){
+      const position=streetPoint(b,0,-2.5);position[1]+=4.35;
+      this.lights.push({position,color:this.cityLife.neighborhoods.get(b.neighborhood).color,radius:14,direction:0,size:2.5,strength:.8});
     }
     for(const l of this.lights)l.rgb=color(l.color);
   }

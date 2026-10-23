@@ -46,6 +46,50 @@ export function routineAt(routine, seconds) {
   return { position, velocity, yaw: segment.yaw, activity: segment.activity };
 }
 
+// Workspace X runs along the deck; positive Z faces inward from its edge.
+export function streetPoint(block, x, z) {
+  const c=Math.cos(block.yaw),s=Math.sin(block.yaw);
+  return [block.position[0]+x*c+z*s,block.position[1],block.position[2]-x*s+z*c];
+}
+
+function elevatedStreetBlocks(world) {
+  const spacing=world.data.buildingGrid.spacing,blocks=[];
+  const stations=[...world.data.landmarks,...world.data.lifts.flatMap(l=>l.stops.map(y=>({position:[l.position[0],y,l.position[2]]})))];
+  const streets=(world.data.routes||[]).filter(r=>r.kind==='street'&&r.start[1]>0&&r.start[1]===r.end[1]);
+  for(const p of world.data.platforms){
+    const axis=p.size[0]>p.size[2]?0:2,cross=2-axis;
+    if(p.position[1]<=0||p.size[axis]<spacing||p.size[cross]>40)continue;
+    const start=[...p.position],end=[...p.position];start[axis]-=p.size[axis]/2;end[axis]+=p.size[axis]/2;
+    streets.push({id:p.id,name:p.id.replaceAll('-',' '),start,end,width:p.size[cross]});
+  }
+  for(const street of streets){
+    const axis=street.start[0]===street.end[0]?2:0,cross=2-axis;
+    const low=Math.min(street.start[axis],street.end[axis]),high=Math.max(street.start[axis],street.end[axis]);
+    const seed=street.id.split('').reduce((n,c)=>(n*31+c.charCodeAt(0))>>>0,0);
+    for(let cell=Math.floor(low/spacing);cell<Math.ceil(high/spacing);cell++){
+      const from=Math.max(low,cell*spacing)+10,to=Math.min(high,(cell+1)*spacing)-10;
+      if(to-from<20||street.width<10)continue;
+      const center=[...street.start];center[axis]=(from+to)/2;
+      for(const side of [cell%2?-1:1,cell%2?1:-1]){
+        const position=[...center];position[cross]+=side*(street.width/2-3.4);
+        const block={id:`upper-${street.id}-${cell}`,name:street.name,center,position,halfLength:(to-from)/2,radius:Math.hypot((to-from)/2,street.width/2),walkway:street.width-4.7,
+          yaw:axis===0?(side===1?Math.PI:0):-side*Math.PI/2,seed:Math.abs(seed+cell*173),neighborhood:world.district(center).id};
+        const clear=(x,z,height=2.1)=>{
+          const p=streetPoint(block,x,z);
+          return !world.collides(...p,.65,height)&&Math.abs(world.floorAt(p[0],p[2],p[1]+.1,p[1]-.2)-p[1])<.01;
+        };
+        // Keep fixtures and routines off stair openings, lift pads, and existing stations.
+        if(stations.some(l=>distance(position,l.position)<9))continue;
+        let safe=true;
+        for(let x=-3;x<=3;x++)for(let z=-3;z<=1;z++)if(!clear(x,z,4.7))safe=false;
+        for(let x=-block.halfLength;x<=block.halfLength;x+=.5)for(const z of [block.walkway,block.walkway-1.2])if(!clear(x,z))safe=false;
+        if(safe){blocks.push(block);break;}
+      }
+    }
+  }
+  return blocks;
+}
+
 export function validateCityLife(content, data, world) {
   const fail = message => { throw new Error(`Invalid city life: ${message}`); };
   if (content?.format !== 'sloperberpunk-city-life' || content.version !== 1 || !content.neighborhoods?.length) fail('schema');
@@ -87,6 +131,8 @@ export class CityLife {
     this.neighborhoods = new Map(content.neighborhoods.map(n => [n.id, n]));
     this.locals = [];
     this.blocks = new Map();
+    this.streetBlocks = elevatedStreetBlocks(world);
+    this.upperBlocks = new Map();
     this.states = new Map();
     this.actors = [];
     this.lastTime = null;
@@ -118,11 +164,31 @@ export class CityLife {
     }
     this.travellers=(world.data.routes||[]).filter(r=>r.kind!=='hill'||r.start[1]!==r.end[1]).map((route,i)=>{
       const resident=this.resident(`route-${route.id}`,`${content.names.first[i%content.names.first.length]} ${content.names.last[(i+4)%content.names.last.length]}`,'courier',world.district(route.start).id,3300+i*53,createRoutine([{...stop(route.start,'carry',8),route},{...stop(route.end,'work',16),route}],1.35));
+      resident.routeCenter=mix3(route.start,route.end,.5);resident.routeRadius=distance(route.start,route.end)/2;
       resident.personal=`I carry supplies along ${route.name.toLowerCase()}. ${route.kind==='street'?'The marked edge lanes keep us clear of the freight route.':'The handrails help when the steps are wet.'}`;return resident;
     });
   }
   resident(id, name, role, neighborhood, seed, routine, local = false) {
     return { id, name, role, neighborhood, seed: Math.abs(seed), routine, local, model: 'humanoid', race: races[mod(seed, races.length)], color: this.neighborhoods.get(neighborhood)?.color || '#95aab6' };
+  }
+  streetResidents(b) {
+    if(this.upperBlocks.has(b))return this.upperBlocks.get(b);
+    const n=this.neighborhoods.get(b.neighborhood),first=this.content.names.first,last=this.content.names.last;
+    const role={market:'cook',archive:'archivist',workshop:'technician',garden:'gardener',transit:'commuter'}[n.motif];
+    const at=(x,z,activity='wait',seconds=0)=>({position:streetPoint(b,x,z),activity,seconds,yaw:b.yaw+Math.PI});
+    const routes=[
+      [role,[at(-.9,-.7,'duty',32),at(.9,-.7,'duty',24)]],
+      [n.motif==='market'?'customer':role,[at(1.8,.9,n.motif==='market'?'eat':'duty',22),at(-1.8,.9,'talk',18)]],
+      ['courier',[at(-b.halfLength,b.walkway,'carry',4),at(b.halfLength,b.walkway,'carry',7)]],
+      ['neighbor',[at(b.halfLength,b.walkway-1.2,'wait',12),at(-b.halfLength,b.walkway-1.2,'wait',16)]]
+    ];
+    const residents=routes.map(([role,stops],i)=>{
+      const seed=b.seed+i*137,resident=this.resident(`${b.id}-${i}`,`${first[seed%first.length]} ${last[Math.floor(seed/13)%last.length]}`,role,b.neighborhood,seed,createRoutine(stops,1.25+i*.12));
+      resident.personal=`I work along ${b.name.toLowerCase()}. ${this.content.roles[role].line}`;
+      return resident;
+    });
+    this.upperBlocks.set(b,residents);
+    return residents;
   }
   blockResidents(b) {
     if (this.blocks.has(b)) return this.blocks.get(b);
@@ -194,7 +260,11 @@ export class CityLife {
     const hour = mod(epoch, 86400000) / 3600000, working = hour >= 6 && hour < 20;
     const radius = quality <= .5 ? 78 : 115, limit = quality <= .5 ? 30 : 64;
     const candidates = this.locals.filter(r => distance(origin, this.world.data.districts.find(d => d.id === r.neighborhood).center) < radius + 50);
-    candidates.push(...this.travellers.filter(r=>r.routine.segments.some(s=>distance(origin,s.from)<radius+50)));
+    candidates.push(...this.travellers.filter(r=>distance(origin,r.routeCenter)<radius+r.routeRadius));
+    for(const b of this.streetBlocks){
+      if(distance(origin,b.center)<radius+b.radius)candidates.push(...this.streetResidents(b));
+      else this.upperBlocks.delete(b);
+    }
     const spacing = this.world.data.buildingGrid.spacing, cx = Math.floor(origin[0] / spacing), cz = Math.floor(origin[2] / spacing), used = new Set();
     for (let x = cx - 2; x <= cx + 2; x++) for (let z = cz - 2; z <= cz + 2; z++) {
       const b = this.world.cells.get(`${x},${z}`);
@@ -273,8 +343,8 @@ export class CityLife {
       actors.push({ ...resident, position, velocity, yaw, activity, title: treatment.wary && nearby && stopped ? 'Keeping their distance' : title, gesture: greeting, treatment, line: activity === 'flee' ? incident?.hazard ? 'Get out of the marked circle. The line is about to discharge!' : 'Keep back from the machines. Get behind a wall!' : incidentLine || (nearby && treatment.line) || this.outcomes.get(resident.neighborhood) || (base.activity==='scene'?event.detail:resident.local?stage?.line:resident.personal) || role.line });
     }
     for (const [id, state] of this.states) if (seconds - state.seen > 20 || seconds < state.seen) this.states.delete(id);
-    // Keep authored residents and the open conversation present when density is reduced.
-    actors.sort((a, b) => Number(b.id === focus) - Number(a.id === focus) || Number(b.local) - Number(a.local) || distance(origin, a.position) - distance(origin, b.position) || a.id.localeCompare(b.id));
+    // Preserve conversations, then spend the crowd budget on the viewer's floor first.
+    actors.sort((a, b) => Number(b.id === focus) - Number(a.id === focus) || Number(Math.abs(b.position[1]-origin[1])<3)-Number(Math.abs(a.position[1]-origin[1])<3) || Number(b.local) - Number(a.local) || distance(origin, a.position) - distance(origin, b.position) || a.id.localeCompare(b.id));
     this.actors = actors.slice(0, limit);
     for (const actor of this.actors) if (actor.activity === 'talk' && actor.id !== focus && !actor.gesture) {
       const partner = this.actors.find(other => other.id !== actor.id && other.activity !== 'flee' && Math.hypot(other.velocity[0], other.velocity[2]) < .1 && distance(actor.position, other.position) < 5 && this.world.lineOfSight(actor.position, other.position));
