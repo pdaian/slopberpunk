@@ -998,7 +998,11 @@ impl Shard {
                 .await
                 .map_err(|_| internal())??;
         if let Some(p) = self.players.get_mut(id) {
+            let position = p.c.position;
             p.c = saved.character;
+            if p.elevator.is_some() {
+                p.c.position = position;
+            }
             p.dirty = true;
         }
         Ok(result)

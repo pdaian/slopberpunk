@@ -8,14 +8,15 @@ import { incidentTargets } from './events.js';
 
 export function collectTargets(data, simulation, residents = [], players = []) {
   const c = simulation.character, targets = [];
+  if (simulation.elevator) return targets;
   if (c.health <= 0 && !isSpirit(c)) return targets;
   const add = (kind, object, action, range = data.rules.interactionRadius, key = `${kind}:${object.id}`) => {
     targets.push({ key, kind, object, position: object.position, action, range });
   };
   const lifts = () => {
-    for (const lift of data.world.lifts) {
+    for (const lift of [...data.world.lifts,...(simulation.world?.elevators||[])]) {
       const y = lift.stops.reduce((a, b) => Math.abs(a - c.position[1]) <= Math.abs(b - c.position[1]) ? a : b);
-      add('lift', { ...lift, position: [lift.position[0], y, lift.position[2]] }, 'Ride');
+      add('lift', { ...lift, position: [lift.position[0], y, lift.position[2]] }, lift.venue?(y?'Return to street':'Visit top floor'):'Ride',lift.venue?5:data.rules.interactionRadius);
     }
   };
   if (isSpirit(c)) {

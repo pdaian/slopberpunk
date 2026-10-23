@@ -97,6 +97,7 @@ pub(super) fn restore(c: &mut Character, data: &Content) {
 }
 
 pub(super) fn fallen(p: &mut Player, data: &Content, time: f64) {
+    elevators::cancel(p);
     p.dead_at = time;
     p.velocity = [0.0; 3];
     p.input = Movement {
@@ -237,6 +238,7 @@ mod tests {
         let c: Character = serde_json::from_value(json!({"version":2,"id":"runner","name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"gold":100,"position":[0,0,32],"yaw":0,"health":0,"energy":0,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{"relay-00":0},"completed":[],"introSeen":true})).unwrap();
         let (output, _) = mpsc::channel(64);
         let p = Player {
+            elevator: None,
             live_social: live_social::Session::default(),
             instance: None,
             owner: "account".into(),

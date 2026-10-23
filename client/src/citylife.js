@@ -195,7 +195,7 @@ export class CityLife {
     const n = this.world.district([b.x, 0, b.z]).id;
     const first = this.content.names.first, last = this.content.names.last;
     const point = (x, z, activity = 'wait', seconds = 0, yaw = 0) => ({ position: [x, 0, z], activity, seconds, yaw });
-    const x0 = b.x - b.w / 2 - 3.5, x1 = b.x + b.w / 2 + 3.5, z0 = b.z - b.d / 2 - 3.5, z1 = b.z + b.d / 2 + 3.5;
+    const x0 = b.x - b.w / 2 - 3.5, x1 = b.x + b.w / 2 + 3.5, z0 = b.z - b.d / 2 - 3.5, z1 = b.z + b.d / 2 + (b.rooftop?.venue?9:3.5);
     const routes = [
       ['courier', [point(x0, z0, 'carry', 7), point(x1, z0, 'carry', 5), point(x1, z1), point(b.x, z1, 'carry', 12), point(x0, z1)]],
       ['neighbor', [point(x0 + .6, z0, 'talk', 16), point(x0 + .6, z1, 'wait', 18), point(x0 + 1.8, z1), point(x0 + 1.8, z0)]]
@@ -220,9 +220,9 @@ export class CityLife {
       const at=(position,activity='walk',seconds=0,route,yaw=0)=>({position,activity,seconds,route,yaw});
       const add=(id,role,stops)=>{
         const index=residents.length,resident=this.resident(`${id}-${b.id}`,`${first[(b.seed+index*3)%first.length]} ${last[(b.seed+index*7)%last.length]}`,role,n,b.seed+index*173,createRoutine(stops,1.3));
-        resident.building=b.identity;resident.personal=b.rooftop.line;residents.push(resident);
+        resident.building=b.rooftop.venue?{...b.identity,name:b.rooftop.name,history:b.rooftop.venue.description,purpose:b.rooftop.venue.view}:b.identity;resident.personal=b.rooftop.line;residents.push(resident);
       };
-      const front=b.z+b.d/2+2.8,roofCenter=[b.x,b.h,b.z];
+      const front=b.z+b.d/2+(b.rooftop.venue?9:2.8),roofCenter=[b.x,b.h,b.z];
       add('street-host',b.rooftop.role,[at([b.x-6,0,front],'duty',35,undefined,Math.PI),at([b.x+6,0,front],'talk',20,undefined,Math.PI)]);
       add('street-visitor','customer',[at([b.x+6,0,front+1.5],'talk',23,undefined,Math.PI),at([b.x-6,0,front+1.5],b.rooftop.activity,18,undefined,Math.PI)]);
       add('roof-host',b.rooftop.role,[at([b.x-6,b.h,b.z+2.5],'duty',32),at([b.x+6,b.h,b.z+2.5],'duty',24)]);

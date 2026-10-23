@@ -9,6 +9,7 @@ import { box, bevelBox, ellipsoid, slope, transformMesh } from '../src/geometry.
 import { Renderer } from '../src/renderer.js';
 import { CityLife } from '../src/citylife.js';
 import { rooftopGeometry, streetDestination, routeGeometry } from '../src/scenery.js';
+import { rideDuration, ridePosition } from '../src/elevators.js';
 
 const read=name=>JSON.parse(readFileSync(new URL(`../data/${name}.json`,import.meta.url)));
 const data=Object.fromEntries(['world','rules','races','talents','dungeons','citylife'].map(name=>[name,read(name)]));
@@ -171,8 +172,8 @@ test('rooftops, furniture tops, and skyway landings remain valid floors',()=>{
   assert.ok(world.collides(data.world.bounds+1,0,0));
 });
 
-test('five distinct street destinations have continuous routes to their roofs and back',()=>{
-  assert.equal(world.rooftops.length,5);
+test('all street destinations have continuous routes to their roofs and back',()=>{
+  assert.equal(world.rooftops.length,data.world.rooftops.length);
   assert.equal(new Set(world.rooftops.map(b=>b.rooftop.kind)).size,5);
   for(const b of world.rooftops){
     const path=[[b.x,0,b.z+b.d/2+3],[b.x,0,b.routes[0].start[2]],...b.routes.flatMap(r=>[r.start,r.end]),[b.x,b.h,b.routes.at(-1).end[2]],[b.x,b.h,b.z]];
@@ -193,6 +194,7 @@ test('five distinct street destinations have continuous routes to their roofs an
     assert.equal(world.rooftopAt([b.x,0,b.z]),null);
     for(const y of b.levels.slice(0,-1))assert.equal(world.interiorAt([b.x,y,b.z]),b);
     for(const axis of [0,2])for(const side of [-1,1]){
+      if(b.rooftop.venue&&axis===2&&side===1)continue; // Protected elevator balcony replaces this parapet.
       const p=[b.x,b.h,b.z];p[axis]+=side*((axis===0?b.w:b.d)/2-.2);
       assert.ok(world.collides(...p),'roof parapet must prevent walking off the edge');
     }
@@ -371,6 +373,15 @@ test('renderer streams and releases interior detail, scales quality, and pauses 
       assert.ok(renderer.details.has(b),'roof access must remain visible on low quality');
       assert.equal(uniforms.get('uRoomHeight'),0,'rooftops must receive outdoor lighting');
       assert.ok(depthWrite);
+      const e=world.elevators.find(e=>e.id===`elevator-${b.id}`);
+      if(e){
+        const from=[...e.position],to=[e.position[0],b.h,e.position[2]],ride={id:e.id,from,to,started:0,duration:rideDuration(from,to)};
+        for(const time of [0,ride.duration/2,ride.duration]){
+          const p=ridePosition(ride,time);
+          renderer.render({eye:[p[0],p[1]+1.8,p[2]],target:[p[0],p[1]+1.8,p[2]+8]},[],[],time,epoch,[],time,null,null,ride);
+          assert.ok(depthWrite,'ride rendering must restore depth writes');
+        }
+      }
     }
     const residentBuffers=renderer.details.size,previouslyDeleted=deleted;
     renderer.render({eye:[0,3,2700],target:[0,2,2600]},[],[],20);

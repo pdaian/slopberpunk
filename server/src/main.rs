@@ -6,6 +6,7 @@ mod config;
 mod death;
 mod dungeons;
 mod economy;
+mod elevators;
 mod enemy_ai;
 mod forge;
 mod founders;
@@ -331,6 +332,8 @@ struct InteriorRoom {
 #[derive(Clone, Deserialize)]
 struct Rooftop {
     cell: [i32; 2],
+    #[serde(default)]
+    venue: Option<elevators::Venue>,
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -549,6 +552,11 @@ impl Content {
                 .map
                 .rooftops
                 .iter()
+                .any(|r| r.venue.as_ref().is_some_and(|v| !v.valid()))
+            || self
+                .map
+                .rooftops
+                .iter()
                 .map(|r| r.cell)
                 .collect::<HashSet<_>>()
                 .len()
@@ -677,6 +685,11 @@ impl World {
                 let rooftop = decoration % 5 != 0
                     && map.interiors.is_some()
                     && map.rooftops.iter().any(|r| r.cell == [ix, iz]);
+                let elevator = rooftop
+                    && map
+                        .rooftops
+                        .iter()
+                        .any(|r| r.cell == [ix, iz] && r.venue.is_some());
                 let mut solids = Vec::new();
                 let mut add = |center: Vec3, size: Vec3| {
                     solids.push(Solid {
@@ -776,10 +789,23 @@ impl World {
                                 [side * (width / 2.0 - 0.15), height + 0.45, 0.0],
                                 [0.3, 0.9, depth],
                             );
-                            add(
-                                [0.0, height + 0.45, side * (depth / 2.0 - 0.15)],
-                                [width, 0.9, 0.3],
-                            );
+                            if elevator && side == 1.0 {
+                                for wing in [-1.0, 1.0] {
+                                    add(
+                                        [
+                                            wing * (width + 5.0) / 4.0,
+                                            height + 0.45,
+                                            depth / 2.0 - 0.15,
+                                        ],
+                                        [(width - 5.0) / 2.0, 0.9, 0.3],
+                                    );
+                                }
+                            } else {
+                                add(
+                                    [0.0, height + 0.45, side * (depth / 2.0 - 0.15)],
+                                    [width, 0.9, 0.3],
+                                );
+                            }
                             for end in [-1.0, 1.0] {
                                 add([side * 6.0, height + 0.6, end * 5.0], [3.0, 1.2, 3.0]);
                             }
@@ -798,6 +824,9 @@ impl World {
                     }
                 } else {
                     add([0.0, height / 2.0, 0.0], [width, height, depth]);
+                }
+                if elevator {
+                    solids.extend(elevators::solids(x, z, height, depth));
                 }
                 cells.insert(
                     (ix, iz),
@@ -1758,6 +1787,7 @@ struct Movement {
     sprint: bool,
 }
 struct Player {
+    elevator: Option<elevators::Ride>,
     live_social: live_social::Session,
     instance: Option<u64>,
     owner: String,
@@ -1946,6 +1976,9 @@ fn movement(p: &mut Player, data: &Content, world: &World, time: f64, dt: f64) {
         p.c.resurrection_sickness = (p.c.resurrection_sickness - dt).max(0.0);
         economy::tick(&mut p.c, data, dt);
     }
+    if elevators::tick(p, time) {
+        return;
+    }
     if time - p.last_input > 0.3 {
         p.input = Movement {
             yaw: p.c.yaw,
@@ -2119,10 +2152,14 @@ fn saved_player(p: &Player, time: f64) -> StoredCharacter {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs_f64();
+    let mut character = p.c.clone();
+    if let Some(ride) = &p.elevator {
+        character.position = ride.from;
+    }
     StoredCharacter {
         version: DATA_VERSION,
         owner: p.owner.clone(),
-        character: p.c.clone(),
+        character,
         cooldowns: p
             .cooldowns
             .iter()
@@ -2297,7 +2334,7 @@ impl Shard {
                         if relocated{c.revision+=1;}
                         let id=c.id.clone();let yaw=c.yaw;
                         let previous_position=c.position;
-                        self.players.insert(id,Player{live_social:live_social::Session::default(),instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:relocated});
+                        self.players.insert(id,Player{elevator:None,live_social:live_social::Session::default(),instance:None,owner:stored.owner,c,output,input:Movement{yaw,..Movement::default()},last_input:self.time,velocity:[0.0;3],previous_position,ghost_trail:GhostTrail::default(),grounded:true,coyote:0.0,jump_buffer:0.0,dash:0.0,dash_ready,cooldowns,global_ready,shield:0.0,shield_until:0.0,last_combat:self.time,dead_at:self.time,last_interact:-100.0,last_sequence:0,dirty:relocated});
                         let _=reply.send(Ok(()));self.snapshots();
                     }
                     Some(Command::Transfer{player,source_time,request,reply})=>self.accept_dungeon_transfer(player,source_time,request,reply),
@@ -2397,7 +2434,7 @@ impl Shard {
                 }
             }
             nearby.sort_unstable_by(|a, b| a.0.total_cmp(&b.0));
-            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"velocity":other.velocity,"grounded":other.grounded,"health":other.c.health,"ghost":death::is_spirit(&other.c),"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id),"forge":{"appearance":other.c.forge.appearance,"score":forge_scores.get(other.c.id.as_str())}})).collect();
+            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"velocity":other.velocity,"elevator":other.elevator,"grounded":other.grounded,"health":other.c.health,"ghost":death::is_spirit(&other.c),"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id),"forge":{"appearance":other.c.forge.appearance,"score":forge_scores.get(other.c.id.as_str())}})).collect();
             let enemies: Vec<_> = self
                 .enemies
                 .iter()
@@ -2423,7 +2460,7 @@ impl Shard {
                     .then_with(|| a.owner.cmp(&b.owner))
             });
             ghosts.truncate(self.content.rule("ghostline", "maxVisible") as usize);
-            let delivered=p.output.try_send(json!({"type":"snapshot","social":p.live_social.pending,"chatContext":live_social::context(&self.content.map,p),"version":DATA_VERSION,"character":p.c,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id),"worldEvents":self.world_event_snapshot(p)})).is_ok();
+            let delivered=p.output.try_send(json!({"type":"snapshot","social":p.live_social.pending,"chatContext":live_social::context(&self.content.map,p),"version":DATA_VERSION,"character":p.c,"elevator":p.elevator,"enemies":enemies,"players":nearby,"time":self.time,"serverTime":now_millis(),"guild":badges.get(&p.c.id),"socialRevision":social_revision,"cooldowns":p.cooldowns,"dashReady":p.dash_ready,"shield":p.shield,"sequence":p.last_sequence,"ghostlines":ghosts,"ghostCharge":p.ghost_trail.charge(&self.content),"dungeon":self.dungeon_snapshot(&p.c.id),"worldEvents":self.world_event_snapshot(p)})).is_ok();
             if delivered && !p.live_social.pending.is_empty() {
                 delivered_chat.push(p.c.id.clone());
             }
@@ -2464,6 +2501,17 @@ impl Shard {
         }
     }
     fn action(&mut self, id: &str, value: &Value) {
+        if self.players.get(id).is_some_and(|p| p.elevator.is_some())
+            && !matches!(
+                text(&value["type"]),
+                "move" | "chat" | "emote" | "intro_seen"
+            )
+        {
+            if let Some(p) = self.players.get(id) {
+                notice(p, "Enjoy the view. The gates open at the next landing.");
+            }
+            return;
+        }
         if matches!(text(&value["type"]), "chat" | "emote") {
             self.live_social_action(id, value);
             return;
@@ -2737,6 +2785,12 @@ impl Shard {
                 }
             }
             "lift" => {
+                if id.starts_with("elevator-") {
+                    if elevators::board(p, &self.world, id, self.time) {
+                        self.ghostlines.remove(&p.c.id);
+                    }
+                    return;
+                }
                 if let Some(l) = data.map.lifts.iter().find(|l| {
                     l.id == id
                         && (p.c.position[0] - l.position[0]).hypot(p.c.position[2] - l.position[2])
@@ -3432,7 +3486,10 @@ mod tests {
     fn rooftop_destinations_connect_to_the_street_and_preserve_saved_positions() {
         let d = content();
         let w = World::new(&d.map);
-        assert_eq!(w.cells.values().filter(|b| b.rooftop).count(), 5);
+        assert_eq!(
+            w.cells.values().filter(|b| b.rooftop).count(),
+            d.map.rooftops.len()
+        );
         for roof in &d.map.rooftops {
             let b = &w.cells[&(roof.cell[0], roof.cell[1])];
             let mut routes: Vec<_> = w
@@ -3490,6 +3547,12 @@ mod tests {
                     [b.x, b.height, b.z + side * (b.depth / 2.0 - 0.2)],
                     [b.x + side * (b.width / 2.0 - 0.2), levels[3], b.z],
                 ] {
+                    if roof.venue.is_some()
+                        && side == 1.0
+                        && blocked == [b.x, b.height, b.z + side * (b.depth / 2.0 - 0.2)]
+                    {
+                        continue;
+                    }
                     assert!(w.collides(blocked, 0.65));
                     let recovered = w.clear_saved_position(blocked);
                     assert!(!w.collides(recovered, 0.65));
@@ -3516,7 +3579,7 @@ mod tests {
         d.map.rooftops.push(rooftops[0].clone());
         assert!(d.validate().is_err());
         for cell in [[0, 0], [999, 999]] {
-            d.map.rooftops = vec![Rooftop { cell }];
+            d.map.rooftops = vec![Rooftop { cell, venue: None }];
             assert!(d.validate().is_err());
         }
         d.map.rooftops = rooftops;

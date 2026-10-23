@@ -2,9 +2,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { glyphs, pixelGlyph, GlyphAtlas } from '../src/pixel-font.js';
 import { WebGLUI, rgba, intersection, clippedQuad, wrapLines } from '../src/webgl-ui.js';
 import { Input } from '../src/input.js';
+import { controllerLookStorage, controllerLookKey } from '../src/controller-look.js';
 import { controlLabel, inputPrompt, updateInputPrompts } from '../src/input-prompts.js';
 import { Community } from '../src/social.js';
 const economyData={economy:JSON.parse(readFileSync(new URL('../data/economy.json',import.meta.url),'utf8'))};
@@ -364,6 +366,125 @@ function assertLook(looks,expected,message) {
   const actual=looks.at(-1);
   assert.ok(actual?.length===2&&actual.every((value,i)=>Math.abs(value-expected[i])<1e-12),message||`expected look ${expected}, got ${actual}`);
 }
+function calibrateLook(input,pad,move){
+  input.menu=true;input.sample(.02);
+  const samples=[[-1,0],[1,0],[0,-1],[0,1],[0,0]].map(([x,y])=>{move(x,y);return input.controllerSnapshot();});
+  const saved=input.saveControllerLook(samples);input.sample(.02);input.menu=false;
+  return {saved,samples};
+}
+
+test('calibrated extra axes look in every direction without casting their trigger aliases',t=>{
+  const {input,actions,looks}=pointer(t),pad=standardPad();pad.id='358a-0203-Backbone One';pad.axes=[0,0,0,0,0,0,-1,-1];
+  navigator.getGamepads=()=>[pad];
+  const move=(x,y)=>{pad.axes[4]=x;pad.axes[5]=y;pad.buttons[6]={pressed:x<-.5,value:x<-.5?1:0};pad.buttons[7]={pressed:y<-.5,value:y<-.5?1:0};};
+  move(-1,0);input.sample(.02);assert.equal(actions[0].action,'ability:aegis','reproduce the reported shield conflict');assertLook(looks,[0,0]);
+  calibrateLook(input,pad,move);actions.length=0;
+  for(const [x,y]of [[-1,0],[1,0],[0,-1],[0,1],[-1,1],[0,0]]){
+    move(x,y);assert.deepEqual(input.sample(.02),{forward:0,strafe:0,jump:false,dash:false,sprint:false});assertLook(looks,[x*.046,y*.036]);
+    input.sample(.02);assertLook(looks,[x*.046,y*.036],'held look remains continuous');
+  }
+  assert.deepEqual(actions,[],'stick aliases must never cast shield or shoot');
+  move(.1,-.1);pad.axes[0]=1;pad.axes[1]=-1;assert.equal(input.sample(.02).forward,1);assertLook(looks,[0,0]);
+  pad.buttons[4].pressed=true;input.sample(.02);assert.equal(actions.at(-1).action,'ability:surge','unrelated buttons retain their bindings');
+});
+
+test('analog buttons can provide inverted two-axis look without triggering abilities',t=>{
+  const {input,actions,looks}=pointer(t),pad=standardPad();navigator.getGamepads=()=>[pad];
+  const move=(x,y)=>{pad.buttons[6]={value:(1-x)/2,pressed:x<.8};pad.buttons[7]={value:(y+1)/2,pressed:y>-.8};};
+  calibrateLook(input,pad,move);
+  for(const [x,y]of [[-1,0],[1,-1],[0,1],[0,0]]){move(x,y);input.sample(.02);assertLook(looks,[x*.046,y*.036]);}
+  assert.deepEqual(actions,[]);
+  move(-.585,.585);input.sample(.02);assertLook(looks,[-.023,.018],'analog strength retains proportional camera speed');
+  looks.length=0;for(let i=0;i<50;i++)input.sample(.02);
+  const slow=looks.reduce(([x,y],[dx,dy])=>[x+dx,y+dy],[0,0]);looks.length=0;
+  for(let i=0;i<100;i++)input.sample(.01);
+  assertLook([looks.reduce(([x,y],[dx,dy])=>[x+dx,y+dy],[0,0])],slow,'calibrated look remains independent of frame rate');
+});
+
+test('directional button look works and cannot navigate menus or cast abilities',t=>{
+  const {input,actions,looks}=pointer(t),pad=standardPad();navigator.getGamepads=()=>[pad];
+  const move=(x,y)=>{for(const [i,pressed]of [[6,x<0],[7,x>0],[14,y<0],[15,y>0]])pad.buttons[i]={pressed,value:Number(pressed)};};
+  calibrateLook(input,pad,move);move(-1,1);input.sample(.02);assertLook(looks,[-.046,.036]);assert.deepEqual(actions,[]);
+  input.menu=true;looks.length=0;let focused=0;
+  document.querySelector=s=>s==='dialog[open]'?{querySelectorAll:()=>[{getClientRects:()=>[{}],focus(){focused++;}}]}:null;
+  move(1,-1);input.sample(.02);assert.equal(focused,0);assert.deepEqual(looks,[]);
+  input.menu=false;input.sample(.02);assertLook(looks,[.046,-.036]);assert.deepEqual(actions,[]);
+});
+
+test('look preferences survive reload and a changed controller slot, and reset restores defaults',t=>{
+  const {input,looks}=pointer(t),pad=standardPad(),storage=new Map();pad.axes=[0,0,0,0,0,0];
+  globals(t,{localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)}});
+  navigator.getGamepads=()=>[pad];
+  const move=(x,y)=>{pad.axes[4]=x;pad.axes[5]=y;};
+  assert.equal(calibrateLook(input,pad,move).saved,true);assert.ok(storage.has(controllerLookStorage));
+  const restored=new Input(input.canvas,()=>{},(x,y)=>looks.push([x,y]));restored.menu=false;
+  pad.index=2;navigator.getGamepads=()=>[null,null,pad];restored.sample(.02);
+  move(-1,1);restored.sample(.02);assertLook(looks,[-.046,.036]);
+  const other=standardPad();other.id='Another controller';other.axes=[0,0,1,-1,1,1];
+  navigator.getGamepads=()=>[other];restored.sample(.02);assertLook(looks,[.046,-.036],'a different controller keeps its own layout');
+  navigator.getGamepads=()=>[pad];move(0,0);restored.sample(.02);restored.resetControllerLook();
+  move(-1,1);restored.sample(.02);assertLook(looks,[0,0]);assert.deepEqual(JSON.parse(storage.get(controllerLookStorage)),[]);
+});
+
+test('restored button look waits for center on connection and follows activity on the correct pad',t=>{
+  const {input,actions,looks}=pointer(t),pad=standardPad(2),idle=standardPad();pad.id='Backbone';
+  let pads=[null,null,pad];navigator.getGamepads=()=>pads;
+  const move=(x,y)=>{pad.buttons[6]={value:(x+1)/2,pressed:x>-.8};pad.buttons[7]={value:(y+1)/2,pressed:y>-.8};};
+  calibrateLook(input,pad,move);
+  pads=[];input.sample(.02);
+  pads=[idle,null,pad];move(-1,-1);input.sample(.02);assertLook(looks,[0,0],'uninitialized or held inputs cannot turn on reconnect');
+  move(0,0);input.sample(.02);move(-1,1);input.sample(.02);
+  assert.equal(input.padIndex,2);assertLook(looks,[-.046,.036]);assert.deepEqual(actions,[]);
+  input.lastDevice='keyboard';input.sample(.02);assert.equal(input.lastDevice,'keyboard','holding a stick is not new prompt activity');
+});
+
+test('bad calibration and unavailable storage preserve usable input',t=>{
+  const {input,looks}=pointer(t),pad=standardPad();navigator.getGamepads=()=>[pad];
+  globals(t,{localStorage:{getItem(){throw new Error('blocked');},setItem(){throw new Error('blocked');}}});
+  const move=(x,y)=>{pad.axes[2]=x;pad.axes[3]=y;};
+  const {samples,saved}=calibrateLook(input,pad,move);assert.equal(saved,false);
+  const key=controllerLookKey(pad),profile=input.padLookProfiles.get(key);
+  assert.throws(()=>input.saveControllerLook(Array(5).fill(samples[4])),/all four directions/);
+  assert.throws(()=>input.saveControllerLook(samples.map((s,i)=>i===2?{...s,key:'another device'}:s)),/same controller/);
+  assert.equal(input.padLookProfiles.get(key),profile,'failed calibration must keep the previous working mapping');
+  move(1,-1);input.sample(.02);assertLook(looks,[.046,-.036]);
+  const restored=new Input(input.canvas,()=>{},(x,y)=>looks.push([x,y]));restored.menu=false;restored.sample(.02);assertLook(looks,[.046,-.036]);
+  for(const invalid of [null,{}, {bindings:[null,null,null,null],buttons:[]}, {bindings:profile.bindings.map(b=>({...b,index:99})),buttons:[]}]){
+    restored.padLookProfiles.set(key,invalid);restored.sample(.02);assertLook(looks,[.046,-.036],'invalid saved settings fall back to normal look');
+  }
+  navigator.getGamepads=()=>[];assert.throws(()=>input.controllerSnapshot(),/Connect your controller/);
+  navigator.getGamepads=()=>{throw new Error('policy');};assert.doesNotThrow(()=>input.sample(.02));
+});
+
+test('Settings completes right-stick setup using controller confirmation and supports cancel and reset',async t=>{
+  const {input,actions,looks}=pointer(t),pad=standardPad(),nodes=new Map(),storage=new Map();pad.axes=[0,0,0,0,0,0];
+  globals(t,{localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)}});
+  navigator.getGamepads=()=>[pad];input.sample(.02);
+  const node=selector=>{
+    if(!nodes.has(selector))nodes.set(selector,{listeners:new Map(),open:false,hidden:false,textContent:'',innerHTML:'',dataset:{},querySelectorAll:()=>[],
+      addEventListener(k,fn){this.listeners.set(k,fn);},setAttribute(){},focus(){document.activeElement=this;},showModal(){this.open=true;},close(){this.open=false;}});
+    return nodes.get(selector);
+  };
+  document.querySelector=s=>s==='.ui-select'?null:s==='dialog[open]'?(node('#panel-dialog').open?node('#panel-dialog'):null):node(s);
+  document.querySelectorAll=()=>[];
+  const context={fixtureInput:input,document,window,inputPrompt,updateInputPrompts,esc:s=>s,matchMedia:()=>({matches:false}),WorldClock:class{},setTimeout(){},clearTimeout(){}};
+  let source=readFileSync(new URL('../src/app.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');source=source.slice(0,source.lastIndexOf('boot().catch'));
+  runInNewContext(source+`\ninput=fixtureInput;audio={enabled:false,narration:false,voiceMessage:'',stopVoice(){}};renderer={quality:1,volumetric:true};state='playing';wireEvents();globalThis.harness={showSettings,closePanel};`,context);
+  const click=action=>node('#dialog-content').listeners.get('click')({target:{closest:()=>({dataset:{do:action}})}});
+  node('#controller-look-next').click=()=>click('controller-look-next');
+  context.harness.showSettings();assert.match(node('#dialog-content').innerHTML,/SET UP RIGHT STICK/);
+  await click('controller-look');assert.equal(input.calibratingLook,true);
+  for(const [x,y]of [[-1,0],[1,0],[0,-1],[0,1],[0,0]]){
+    pad.axes[4]=x;pad.axes[5]=y;pad.buttons[6]={pressed:x<0,value:Number(x<0)};
+    pad.buttons[0].pressed=false;input.sample(.02);pad.buttons[0].pressed=true;input.sample(.02);
+  }
+  assert.equal(input.calibratingLook,false);assert.match(node('#toast').textContent,/look saved/);assert.equal(input.padLookProfiles.size,1);
+  assert.deepEqual(actions,[]);assert.ok(storage.has(controllerLookStorage));
+  context.harness.closePanel();pad.buttons[0].pressed=false;input.sample(.02);
+  pad.axes[4]=-1;pad.buttons[6]={pressed:true,value:1};input.sample(.02);assertLook(looks,[-.046,0]);assert.deepEqual(actions,[]);
+  context.harness.showSettings();await click('controller-look');context.harness.closePanel();assert.equal(input.calibratingLook,false);assert.equal(input.padLookProfiles.size,1);
+  context.harness.showSettings();await click('controller-look-reset');assert.equal(input.padLookProfiles.size,0);
+});
 
 test('right stick looks continuously and independently of left-stick movement',t=>{
   const {input,looks}=pointer(t),pad=standardPad();pad.axes=[0,0,1,-1];

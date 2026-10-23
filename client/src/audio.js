@@ -108,6 +108,10 @@ export class AudioEngine {
     };play();
   }
   effect(name){if(!this.enabled)return;const e=this.score.effects[name];if(e)this.tone(e[0],e[2],.06,'triangle',e[1]);}
+  elevatorChime(arrival=false){
+    if(!this.enabled)return;
+    for(const [i,note]of (arrival?[880,659.25,523.25]:[523.25,659.25,783.99]).entries())this.tone(note,.65,.025,'sine',null,i*.17);
+  }
   speak(text,speaker='narrator'){
     if(this.destroyed)return false;
     this.stopVoice();if(!text?.trim())return false;

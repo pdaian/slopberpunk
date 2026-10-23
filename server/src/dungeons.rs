@@ -327,6 +327,13 @@ impl Shard {
         let Some(p) = self.players.get(id) else {
             return false;
         };
+        if p.elevator.is_some() {
+            notice(
+                p,
+                "Wait for the elevator to arrive before joining a dungeon.",
+            );
+            return false;
+        }
         let d = self.content.dungeons.get(text(&value["dungeon"]));
         if self.dungeons.busy(id) || p.instance.is_some() {
             notice(p, "Leave your current dungeon or waiting queue first.");
@@ -672,6 +679,7 @@ impl Shard {
                 for t in &run.tickets {
                     self.ghostlines.remove(&t.id);
                     if let Some(p) = self.players.get_mut(&t.id) {
+                        elevators::cancel(p);
                         p.instance = Some(run.id);
                         p.c.dungeon_return = Some(self.content.map.spawn);
                         relocate(p, position(&rules, [0.0, 0.0, 14.0]), &self.content);
@@ -994,6 +1002,7 @@ mod tests {
         s.players.insert(
             id.into(),
             Player {
+                elevator: None,
                 live_social: live_social::Session::default(),
                 instance: None,
                 owner: "account".into(),

@@ -1,5 +1,10 @@
 // Editable mesh primitives. Y is up; forward is +Z. GPL-3.0-or-later.
 import { color } from './math.js';
+import { pixelGlyph } from './pixel-font.js';
+
+export function lettering(v,text,position,color,scale=.07,glow=.65) {
+  for(const [index,char]of [...text.toUpperCase()].entries())for(const [row,bits]of (pixelGlyph(char)||[]).entries())for(let col=0;col<5;col++)if(bits&(1<<(4-col)))pane(v,[position[0]+(index*6+col)*scale,position[1]-row*scale,position[2]],[scale*.85,scale*.85,0],color,glow,4);
+}
 
 const faces = [
   [[1,0,0], [[1,-1,-1],[1,1,-1],[1,1,1],[1,-1,1]]],

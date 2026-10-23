@@ -11,6 +11,8 @@ import { buildingExterior, buildingInterior, buildingLights, streetDetails, neig
 import { cityStage, streetPoint } from './citylife.js';
 import { incidentGeometry } from './events.js';
 import { enemyAttackGeometry } from './enemy-attacks.js';
+import { elevatorCabin } from './elevator-scenery.js';
+import { ridePosition } from './elevators.js';
 export { box } from './geometry.js';
 
 const vertexSource = `
@@ -533,7 +535,7 @@ export class Renderer {
       box(v,[x,y,z],[.017,.9+rand()*.6,.017],'#657b91',.25);
     }
   }
-  render(camera, actors, effects, time, epoch = Date.now(), ghostlines = [], ghostTime = time, dungeon = null, incidents = null) {
+  render(camera, actors, effects, time, epoch = Date.now(), ghostlines = [], ghostTime = time, dungeon = null, incidents = null, elevator = null) {
     if(this.lost) return;
     const gl=this.gl, ratio=Math.min(devicePixelRatio||1,1.6)*this.quality;
     const width=Math.max(1,Math.floor(this.canvas.clientWidth*ratio)), height=Math.max(1,Math.floor(this.canvas.clientHeight*ratio));
@@ -571,6 +573,13 @@ export class Renderer {
     this.updateLighting(camera.eye);
     for(const chunk of [...this.chunks,...this.details.values()])if(visible(chunk)){this.bind(chunk.buffer);gl.drawArrays(gl.TRIANGLES,0,chunk.count);}
     const v=[],mist=[];this.shadows=mist;
+    if(!dungeon)for(const e of this.world.elevators){
+      const rides=[elevator,...actors.map(a=>a.elevator)].filter(r=>r?.id===e.id);
+      // One cabin per height, including other passengers visible in multiplayer.
+      const positions=rides.map(r=>({position:ridePosition(r,ghostTime),ride:r}));
+      for(const y of e.stops)if(!rides.length)positions.push({position:[e.position[0],y,e.position[2]],ride:null});
+      for(const [index,cab]of positions.entries())if(distance(camera.eye,cab.position)<100&&!positions.slice(0,index).some(other=>distance(other.position,cab.position)<.5))elevatorCabin(v,e,cab.position,cab.ride,ghostTime,this.reducedMotion);
+    }
     if(dungeon)this.dungeon(v,dungeon.catalog,dungeon.run,ghostTime);
     if(incidents)incidentGeometry(v,incidents.events,incidents.rules,camera.eye,ghostTime,this.reducedMotion);
     enemyAttackGeometry(v,actors,camera.eye,ghostTime,this.reducedMotion);

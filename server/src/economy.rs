@@ -745,6 +745,7 @@ mod tests {
     fn player(data: &Content) -> Player {
         let (output, _) = mpsc::channel(32);
         Player {
+            elevator: None,
             live_social: live_social::Session::default(),
             instance: None,
             owner: "owner".into(),

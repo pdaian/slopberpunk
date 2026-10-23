@@ -1,7 +1,7 @@
 // Original modular architecture and street furniture. GPL-3.0-or-later.
 import { random } from './math.js';
-import { box, pane, bevelBox, ellipsoid, slope, transformMesh } from './geometry.js';
-import { pixelGlyph } from './pixel-font.js';
+import { box, pane, bevelBox, ellipsoid, slope, transformMesh, lettering } from './geometry.js';
+import { venueGeometry, elevatorShaft } from './elevator-scenery.js';
 import { cityEvent } from './citylife.js';
 
 export function routeGeometry(v, route, accent='#8bc6bb') {
@@ -36,10 +36,6 @@ export function routeGeometry(v, route, accent='#8bc6bb') {
     transformMesh(v,mesh,[(start[0]+end[0])/2+dx,(start[1]+end[1])/2+1.05,(start[2]+end[2])/2+dz],yaw,-Math.atan2(rise,length));
     for(let d=0;d<=length;d+=4){const t=d/length;box(v,[start[0]+(end[0]-start[0])*t+dx,start[1]+rise*t+.5,start[2]+(end[2]-start[2])*t+dz],[.08,1,.08],'#677876');}
   }
-}
-
-function lettering(v,text,position,color,scale=.07,glow=.65) {
-  for(const [index,char]of [...text.toUpperCase()].entries())for(const [row,bits]of (pixelGlyph(char)||[]).entries())for(let col=0;col<5;col++)if(bits&(1<<(4-col)))pane(v,[position[0]+(index*6+col)*scale,position[1]-row*scale,position[2]],[scale*.85,scale*.85,0],color,glow,4);
 }
 
 export function tutorialGeometry(v, data) {
@@ -94,9 +90,10 @@ export function buildingLights(b) {
     color:b.interior?.color||style.neon,radius:14,direction:2,size:3.5,strength:.7});
   lights.push({kind:'sign',position:[b.x+side*(b.w/2+1.34),b.h*.58,b.z],
     color:style.neon,radius:17,direction:side,size:3,strength:.8});
-  if(b.rooftop)for(const side of [-1,1])lights.push({kind:'roof',position:[b.x,b.h+3.5,b.z+side*(b.d/2-1.5)],color:style.neon,radius:16,direction:0,size:2.5,strength:.8});
+  if(b.rooftop)for(const side of [-1,1])lights.push({kind:'roof',position:[b.x,b.h+3.5,b.z+side*(b.d/2-1.5)],color:b.rooftop.venue?.accent||style.neon,radius:16,direction:0,size:2.5,strength:.8});
   else lights.push({kind:'beacon',position:[b.x,b.h+[14.6,5.4,9.2,2.8][style.roof],b.z],
     color:b.seed%2?'#ff7967':'#a4e4ef',radius:5,direction:0,size:1.8,strength:.65});
+  if(b.rooftop?.venue)for(const y of [0,b.h])lights.push({kind:'elevator',position:[b.x,y+4.3,b.z+b.d/2+4],color:b.rooftop.venue.accent,radius:12,direction:0,size:2,strength:.9});
   return lights;
 }
 
@@ -240,6 +237,7 @@ export function buildingInterior(v,b,data) {
 
 // Featured roofs use the same slab openings, parapets and fixture boxes as movement.
 export function rooftopGeometry(v,b) {
+  if(b.rooftop.venue){venueGeometry(v,b);elevatorShaft(v,b);return;}
   const {x,z,h}=b,accent=b.identity.trim,kind=b.rooftop.kind;
   for(const s of b.solids){
     if(s.kind==='floor'&&Math.abs(s.center[1]+s.size[1]/2-h)<.01)box(v,s.center,s.size,kind==='quiet'?'#617360':'#515967');
@@ -305,7 +303,7 @@ export function streetDestination(v,b) {
   }
   box(v,[x,6.2,front+.3],[b.w-2,.9,.15],'#23333e');
   lettering(v,b.rooftop.street,[x-b.rooftop.street.length*.18,6.45,front+.4],accent,.06);
-  lettering(v,'ROOF / STAIRS INSIDE',[x-3.4,3.85,front+.15],accent,.06);
+  lettering(v,b.rooftop.venue?'OBSERVATION ELEVATOR':'ROOF / STAIRS INSIDE',[x-3.4,3.85,front+.15],accent,.06);
 }
 
 export function streetDetails(v,b) {

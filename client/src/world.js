@@ -1,5 +1,6 @@
 // Sloperberpunk — GPL-3.0-or-later. See LICENSE.
 import { random } from './math.js';
+import { buildingElevator, elevatorSolids, validVenue } from './elevators.js';
 
 export function validRoute(r,bounds) {
   if(!r||![r.start,r.end].every(p=>Array.isArray(p)&&p.length===3&&p.every(Number.isFinite)&&Math.abs(p[0])<=bounds&&Math.abs(p[2])<=bounds&&p[1]>=0&&p[1]<=256)||!Number.isFinite(r.width)||r.width<2||r.width>40||!['stairs','ramp','hill','street'].includes(r.kind))return false;
@@ -86,10 +87,13 @@ export function buildingSolids(b, config) {
     for(const side of [-1,1]){
       add([side*6,.6,b.d/2+1.2],[3,1.2,1.4],'street-fixture');
       add([side*(b.w/2-.15),b.h+.45,0],[.3,.9,b.d],'parapet');
-      add([0,b.h+.45,side*(b.d/2-.15)],[b.w,.9,.3],'parapet');
+      if(b.rooftop.venue&&side===1){
+        for(const wing of [-1,1])add([wing*(b.w+5)/4,b.h+.45,side*(b.d/2-.15)],[(b.w-5)/2,.9,.3],'parapet');
+      }else add([0,b.h+.45,side*(b.d/2-.15)],[b.w,.9,.3],'parapet');
       for(const end of [-1,1])add([side*6,b.h+.6,end*5],[3,1.2,3],'roof-fixture');
     }
   }
+  if(b.rooftop?.venue)solids.push(...elevatorSolids(b));
   return solids;
 }
 
@@ -103,6 +107,7 @@ export class World {
     this.routeCells = new Map();
     this.discovered = new Set();
     const rooftops=data.rooftops||[];
+    if(Array.isArray(rooftops)&&rooftops.some(r=>r?.venue!==undefined&&!validVenue(r.venue)))throw new Error('Invalid rooftop venue.');
     if(!Array.isArray(rooftops)||rooftops.length>32||rooftops.some(r=>!r||!Array.isArray(r.cell)||r.cell.length!==2||!r.cell.every(Number.isInteger)||!['market','archive','furnace','quiet','skybridge'].includes(r.kind)||![r.name,r.street].every(s=>typeof s==='string'&&s.length>0&&s.length<=48))||new Set(rooftops.map(r=>r.cell.join(','))).size!==rooftops.length)throw new Error('Invalid rooftop destination.');
     const g = data.buildingGrid, rand = random(data.seed);
     for (let x = g.min; x <= g.max; x++) for (let z = g.min; z <= g.max; z++) {
@@ -124,6 +129,7 @@ export class World {
       this.cells.set(`${x},${z}`, b);
     }
     this.rooftops=this.buildings.filter(b=>b.rooftop);
+    this.elevators=this.rooftops.filter(b=>b.rooftop.venue).map(buildingElevator);
     if(data.interiors&&this.rooftops.length!==rooftops.length)throw new Error('Rooftop destination must reference a public building.');
     for (const route of this.routes) {
       const padding = route.width / 2, s = g.spacing;
@@ -190,7 +196,7 @@ export class World {
     return b?.interior && pos[1] >= 0 && pos[1] < b.levels.at(-1) && Math.abs(pos[0] - b.x) < b.w / 2 && Math.abs(pos[2] - b.z) < b.d / 2 ? b : null;
   }
   rooftopAt(pos) {
-    return this.rooftops.find(b=>pos[1]>=b.h-.05&&pos[1]<b.h+4&&Math.abs(pos[0]-b.x)<b.w/2&&Math.abs(pos[2]-b.z)<b.d/2)||null;
+    return this.rooftops.find(b=>pos[1]>=b.h-.05&&pos[1]<b.h+4&&(Math.abs(pos[0]-b.x)<b.w/2&&Math.abs(pos[2]-b.z)<b.d/2||b.rooftop.venue&&Math.abs(pos[0]-b.x)<3&&pos[2]>=b.z+b.d/2&&pos[2]<=b.z+b.d/2+7))||null;
   }
   reveal(pos) {
     const s = this.data.cellSize, cx = Math.floor(pos[0] / s), cz = Math.floor(pos[2] / s);

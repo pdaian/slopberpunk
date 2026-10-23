@@ -612,6 +612,7 @@ mod tests {
         let c: Character = serde_json::from_value(json!({"version":2,"id":id,"name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"gold":45,"position":position,"yaw":0,"health":120,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
         let (output, _) = mpsc::channel(64);
         Player {
+            elevator: None,
             live_social: live_social::Session::default(),
             instance: None,
             owner: "account".into(),

@@ -641,3 +641,10 @@ dialog:has(.community-shell) { width: min(1100px,96vw); }
   .talent-tier { grid-template-columns: 1fr; }
   .talent-tier .talent-card { grid-column: 1 !important; }
 }
+/* The observation-car display shares the semantic HUD and WebGL UI painter. */
+.elevator-status{position:absolute;left:24px;top:24%;display:flex;flex-direction:column;gap:8px;max-width:calc(100vw - 32px);width:270px;padding:16px;text-align:center;background:rgba(31,19,34,.94);border:1px solid #d9b777;outline:1px solid #695238;outline-offset:4px;color:#f5dfb5;pointer-events:none}
+.elevator-status[hidden]{display:none}
+.elevator-status strong{font-size:20px;letter-spacing:1px}
+.elevator-status small{font-size:10px;letter-spacing:1.5px;color:#c8b28b}
+.elevator-status>span{font-size:12px}
+@media(max-width:600px){.elevator-status{left:16px;top:24%;width:220px;padding:12px}.elevator-status strong{font-size:16px}}

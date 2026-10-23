@@ -193,7 +193,7 @@ impl Shard {
     pub(super) fn tick_ghostlines(&mut self) {
         let data = &self.content;
         for p in self.players.values_mut() {
-            if p.c.health <= 0.0 {
+            if p.c.health <= 0.0 || p.elevator.is_some() {
                 p.ghost_trail.clear();
                 self.ghostlines.remove(&p.c.id);
             } else {
@@ -285,6 +285,7 @@ mod tests {
         let c: Character = serde_json::from_value(json!({"version":2,"id":id,"name":"Runner","race":"human","faction":"relay","level":0,"xp":0,"gold":45,"position":position,"yaw":0,"health":140,"energy":100,"medkits":3,"weaponRank":0,"talents":{},"activeQuests":{},"completed":[],"introSeen":true})).unwrap();
         let (output, _) = mpsc::channel(4);
         Player {
+            elevator: None,
             live_social: live_social::Session::default(),
             instance: None,
             owner: "account".into(),

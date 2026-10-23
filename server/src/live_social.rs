@@ -224,6 +224,7 @@ mod tests {
         s.players.insert(
             id.into(),
             Player {
+                elevator: None,
                 live_social: Session::default(),
                 instance: None,
                 owner: id.into(),

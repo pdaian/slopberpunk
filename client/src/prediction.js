@@ -5,6 +5,7 @@ import { isSpirit } from './death.js';
 import { economyBonuses } from './economy.js';
 import { statCaps, statNames } from './item-catalog.js';
 import { moralBonuses } from './morality.js';
+import { ridePosition } from './elevators.js';
 export { experienceFor } from './progression.js';
 
 export function stats(character, data) {
@@ -27,6 +28,7 @@ export class Prediction {
   constructor(data,world,character,emit=()=>{}) {
     this.data=data;this.world=world;this.character=character;this.emit=emit;this.time=0;
     this.dungeonState=null;this.enemies=[];this.worldEvents=[];this.ghostlines=[];this.ghostCharge={seconds:0,meters:0,ready:false};
+    this.elevator=null;
     this.velocity=[0,0,0];this.grounded=true;this.coyote=0;this.jumpBuffer=0;this.dash=0;this.dashReady=0;this.cooldowns={};this.shield=0;
   }
   get playerStats(){return stats(this.character,this.data);}
@@ -39,6 +41,7 @@ export class Prediction {
     const spirit=isSpirit(c);
     if(c.health<=0&&!spirit)return;
     if(input.yaw!==undefined&&Number.isFinite(input.yaw))c.yaw=input.yaw;
+    if(this.elevator){c.position=ridePosition(this.elevator,this.time);this.velocity=[0,0,0];this.dash=0;this.jumpBuffer=0;this.coyote=0;this.grounded=true;return;}
     if(input.jump)this.jumpBuffer=m.jumpBuffer;else this.jumpBuffer=Math.max(0,this.jumpBuffer-dt);
     this.coyote=this.grounded?m.coyoteTime:Math.max(0,this.coyote-dt);
     if(this.jumpBuffer>0&&this.coyote>0){this.velocity[1]=m.jump;this.grounded=false;this.coyote=0;this.jumpBuffer=0;this.event('sound',{name:'jump'});}

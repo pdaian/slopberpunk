@@ -23,6 +23,7 @@ The default listener is `0.0.0.0:8080`. Use `HOST=127.0.0.1` for local-only acce
 New characters start in the First Steps Courtyard. Follow the markers to learn movement, interaction, and combat, then use the Commons gate to enter the city. The gate also lets you skip training. The journal and map track your next objective.
 
 - Explore city streets, building interiors, rooftops, and four surrounding biomes.
+- Ride velvet-lined Art Deco observation elevators to the Gilded Hour hotel lounge, Maison Nocturne tasting terrace, Verdigris Winter Garden, and Blue Hour jazz club. Gold squares on the city map mark their street entrances. Select an elevator, use it, and choose **RIDE TO TOP FLOOR**; the same car returns you to the street. All four venues are free to explore.
 - Choose from four factions and four lineages. Their campaigns, neighborhood stories, and basin quests total 203 contracts, with saved choices and reputation.
 - Build around combat abilities, talents, equipment, and crafting. Ghostline replays your recent movement as an echo that you or another player can cross to trigger a shockwave.
 - Join six expeditions with fixed crew sizes of 1, 2, 3, 4, 6, or 8 players.
@@ -47,6 +48,8 @@ New characters start in the First Steps Courtyard. Follow the markers to learn m
 | Switch first/third-person camera | V |
 
 Touch controls and standard-mapped gamepads are also supported. Open **HOW TO PLAY** for their bindings and gameplay help. See [compatibility](docs/COMPATIBILITY.md) for browser and controller requirements, or the [Steam Deck guide](docs/STEAM_DECK.md) for setup.
+
+If the right stick does not look around or casts an ability, open **Settings → SET UP RIGHT STICK** and follow the five prompts. The game saves the camera mapping for that controller in your browser. **RESET RIGHT STICK** restores the default mapping.
 
 ## Server data
 

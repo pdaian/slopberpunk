@@ -1,5 +1,6 @@
 // Sloperberpunk browser application. GPL-3.0-or-later. See LICENSE.
 import { World } from './world.js';
+import { rideLabel, ridePosition } from './elevators.js';
 import { Renderer } from './renderer.js';
 import { WebGLUI } from './webgl-ui.js';
 import { Prediction,availableQuest,experienceFor,stats } from './prediction.js';
@@ -43,6 +44,7 @@ let cameraFov=1.04;
 let mapRegion='city';
 let bestiaryQuery={},catalogQueries={inventory:{},crafting:{}},talentBranch='Anchor';
 let storyCue='',currentGuide=null,promptDevice='';
+let controllerLookSamples=[];
 const prompt=(keyboard,gamepad,touch)=>inputText(input?.lastDevice,keyboard,gamepad,touch);
 const exploration=new Map();
 const worldClock=new WorldClock();
@@ -56,7 +58,7 @@ function setState(next){
   state=next;for(const name of ['landing','creation','cinematic','hud'])$(`#${name}`).hidden=next!==(name==='hud'?'playing':name);
   if(input){input.active=next==='playing'||next==='cinematic';input.menu=inputBlocked();input.clear();}
 }
-function closePanel(){interfaceUI?.closeSelect();if($('#panel-dialog').open)$('#panel-dialog').close();dialogPage='';audio?.stopVoice();if(input){input.menu=inputBlocked();input.clear();}}
+function closePanel(){interfaceUI?.closeSelect();if($('#panel-dialog').open)$('#panel-dialog').close();dialogPage='';audio?.stopVoice();if(input){input.menu=inputBlocked();input.calibratingLook=false;input.clear();}}
 function panel(title,html,eyebrow='SLOPERBERPUNK / MENU',page=''){
   liveChat?.close();
   if(dialogPage!==page)audio?.stopVoice();
@@ -64,7 +66,7 @@ function panel(title,html,eyebrow='SLOPERBERPUNK / MENU',page=''){
   $('#dialog-title').textContent=title;$('#dialog-eyebrow').textContent=eyebrow;$('#dialog-content').innerHTML=html;dialogPage=page;
   updateInputPrompts($('#dialog-content'),input?.lastDevice||'keyboard');
   if(!$('#panel-dialog').open)$('#panel-dialog').showModal();
-  if(input){input.menu=true;input.clear();}
+  if(input){input.menu=true;input.calibratingLook=page==='controller-look';input.clear();}
 }
 function initialUI(){
   $('#race-options').innerHTML=data.races.map(r=>`<label class="choice" style="--choice-color:${r.color}"><input type="radio" name="race" value="${r.id}" ${r.id===selectedRace?'checked':''}>${icon(r.id)}<strong>${esc(r.name)}</strong><small>${esc(r.passive.name)}</small></label>`).join('');
@@ -141,8 +143,18 @@ function onSnapshot(message){
   const economyState=c=>JSON.stringify([c.items,c.equipment,Object.keys(c.buffs||{}),c.mobKills,c.medkits,c.gold,c.level,c.talents,talentBudget(c,data.rules),c.workOrder,c.ordersCompleted,c.morality]);
   const economyChanged=['inventory','crafting','talents','orders','shop'].includes(dialogPage)&&economyState(previousCharacter)!==economyState(server);
   const recoveryChanged=isSpirit(previousCharacter)!==isSpirit(server)||(previousCharacter.health>0)!==(server.health>0);
+  const previousRide=simulation.elevator,nextRide=message.elevator||null;
+  if(nextRide&&!previousRide){
+    closePanel();targetKey=null;input.clear();yaw=Math.PI;pitch=0;
+    audio.elevatorChime();
+  }else if(previousRide&&!nextRide){
+    const destination=world.elevators.find(e=>e.id===previousRide.id);
+    input.clear();simulation.velocity=[0,0,0];yaw=server.position[1]>1?0:Math.PI;
+    if(!recoveryChanged&&destination){audio.elevatorChime(true);toast(server.position[1]>1?`${destination.name} · ${destination.venue.view}`:'Street level · Enjoy the city.');}
+  }
+  simulation.elevator=nextRide;
   const teleported=distance(previous,server.position)>8;
-  if(state==='playing'&&!recoveryChanged&&distance(previous,server.position)<3){
+  if(state==='playing'&&!recoveryChanged&&!previousRide&&!nextRide&&distance(previous,server.position)<3){
     const blended=mix3(previous,server.position,.12);
     if(!world.collides(...blended))server.position=blended;
   }
@@ -237,6 +249,7 @@ function perform(action,event){
     if(state==='playing'){if(targetKey){targetKey=null;return;}return isSpirit(simulation.character)?showRecoveryMenu():showSettings();}return;
   }
   if(state!=='playing')return;
+  if(simulation.elevator&&(action.startsWith('ability:')||['interact','target','pick','pick-activate','medkit'].includes(action)))return;
   if(action==='chat'||action==='gestures'){closePanel();liveChat.open(liveChat.channel,action==='gestures');return;}
   if(action.startsWith('ability:')){if(!$('#panel-dialog').open&&simulation.character.health>0){const target=selectedTarget();act({type:'ability',id:action.split(':')[1],target:target&&['enemy','practice'].includes(target.kind)?target.object.id:null});}return;}
   const panels={settings:()=>isSpirit(simulation.character)?showRecoveryMenu():showSettings(),journal:showJournal,story:()=>showJournal('story'),neighborhoods:()=>showJournal('neighborhoods'),talents:showTalents,inventory:showInventory,forge:()=>frameForge.open(),map:showMap,dungeons:showDungeons,guild:()=>community.open('guild').catch(e=>toast(e.message)),community:()=>community.open().catch(e=>toast(e.message))};if(panels[action])return panels[action]();
@@ -267,8 +280,14 @@ function activateTarget(){
   if(kind==='incident')return act({type:'worldEvent',id:object.event,cycle:object.cycle,site:object.id});
   if(kind==='npc')return talk(object);
   if(kind==='resident')return talkResident(object);
+  if(kind==='lift'&&object.venue)return showElevator(object);
   act({type:kind==='lift'?'lift':'interact',id:object.id});
   if(object.evidence)panel(object.name,`<div class="npc-quote">${esc(object.evidence)}</div><p class="panel-description">Return to the person who gave you this quest. Open QUESTS → Story to review completed quests.</p><button class="small-button" data-do="journal-filter" data-id="story">OPEN STORY ↗</button>`,'THE LIVING RECORD / FIELD EVIDENCE','street-record');
+}
+
+function showElevator(e){
+  const top=e.position[1]>0;
+  panel(e.name,`<article class="info-card" style="border-color:${e.venue.accent}"><small class="story-chapter">OBSERVATION ELEVATOR · ${Math.round(e.stops.at(-1))} M</small><p>${esc(e.venue.description)}</p><p class="npc-quote">${esc(e.venue.view)}</p><p>Velvet walls, brass sunbursts, and a panoramic ride. All guests welcome · no fare.</p><button class="button primary" data-do="ride-elevator" data-id="${esc(e.id)}">${top?'RETURN TO STREET':'RIDE TO TOP FLOOR'} ↗</button></article>`,'VESPER / HIGH SOCIETY','elevator:'+e.id);
 }
 
 function showDungeons(){
@@ -390,12 +409,31 @@ function showShop(){
 }
 function showMap(region=mapRegion){
   mapRegion=region;
-  panel('World map.',`<div class="tabs">${[['city','CITY / NEIGHBORHOODS'],['basin','PALE BASIN']].map(([id,name])=>`<button class="${mapRegion===id?'selected':''}" data-do="map-region" data-id="${id}">${name}</button>`).join('')}</div><canvas id="full-map" class="map-view" width="900" height="720" aria-label="Map of Vesper with local quest contacts, objectives, lifts, stairs, ramps, and hills"></canvas><div class="map-legend"><span><i></i> YOU</span><span><i style="background:#e8c983"></i> OBJECTIVES</span><span><i style="background:#7dbfc0"></i> LIFTS</span><span><i style="background:#efb778"></i> QUEST CONTACTS</span><span><i style="background:#ddb27c"></i> STAIRS / RAMPS / HILLS</span></div><p class="panel-description">Quest contacts appear even in places you have not visited. Open QUESTS → More → Neighborhoods to see their quests. Last Connection is on a walkway 24 m above the street; use the Night crew ramp or Transit lift. Green door markers show buildings you can enter. Yellow lines show stairs, ramps, and hills. The Pale Basin tab shows the land outside the city.</p>`,'WORLD MAP / '+(mapRegion==='city'?'VESPER':'PALE BASIN'),'map');
+  panel('World map.',`<div class="tabs">${[['city','CITY / NEIGHBORHOODS'],['basin','PALE BASIN']].map(([id,name])=>`<button class="${mapRegion===id?'selected':''}" data-do="map-region" data-id="${id}">${name}</button>`).join('')}</div><canvas id="full-map" class="map-view" width="900" height="720" aria-label="Map of Vesper with local quest contacts, objectives, lifts, stairs, ramps, and hills"></canvas><div class="map-legend"><span><i></i> YOU</span><span><i style="background:#e8c983"></i> OBJECTIVES</span><span><i style="background:#7dbfc0"></i> LIFTS</span><span><i style="background:#f0ca83"></i> OBSERVATION ELEVATORS</span><span><i style="background:#efb778"></i> QUEST CONTACTS</span><span><i style="background:#ddb27c"></i> STAIRS / RAMPS / HILLS</span></div><p class="panel-description">Quest contacts appear even in places you have not visited. Open QUESTS → More → Neighborhoods to see their quests. Last Connection is on a walkway 24 m above the street; use the Night crew ramp or Transit lift. Gold squares mark observation elevators to the Gilded Hour Hotel, Maison Nocturne, Hotel Verdigris, and Blue Hour Supper Club. Select a nearby elevator, use it, then choose RIDE TO TOP FLOOR. Ride the same elevator back to the street. Green door markers show buildings you can enter. Yellow lines show stairs, ramps, and hills. The Pale Basin tab shows the land outside the city.</p>`,'WORLD MAP / '+(mapRegion==='city'?'VESPER':'PALE BASIN'),'map');
   drawMap($('#full-map'),true);
 }
 function showSettings(){
-  panel('Settings.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Turn background music and game sounds on or off.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Character voices<small id="voice-status" role="status">${esc(audio.voiceMessage)}</small><small>Local English voices are preferred; other browser voices may use an online speech service. No microphone is needed.</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="test-voice">TEST VOICE ♫</button></div><div class="setting-row"><label for="setting-quality">Graphics quality<small>Choose Low if the game looks choppy or runs slowly.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Light beams<small>Show beams of sunlight and lamplight. Low graphics quality hides the lamp beams.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Camera turn speed</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">View your character from behind<small>Turn off to see through your character’s eyes. ${inputPrompt("Press V to switch.","Use this setting to switch views.","Use this setting to switch views.")}</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="forge">FRAME FORGE</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">DOWNLOAD CHARACTER FILE</button><button class="small-button" data-do="chat">NEARBY & ZONE CHAT</button><button class="small-button" data-do="gestures">GESTURES</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">Progress saved online · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS','settings');
+  const controllerLookSettings='<div class="setting-row"><div>Controller camera<small>If looking does nothing or casts an ability, set up your right stick once for this browser.</small></div></div><div class="settings-actions"><button class="small-button" data-do="controller-look">SET UP RIGHT STICK</button><button class="small-button" data-do="controller-look-reset">RESET RIGHT STICK</button></div>';
+  panel('Settings.',`<div class="setting-row"><label for="setting-music">Sound & music<small>Turn background music and game sounds on or off.</small></label><input id="setting-music" type="checkbox" ${audio.enabled?'checked':''}></div><div class="setting-row"><label for="setting-voice">Character voices<small id="voice-status" role="status">${esc(audio.voiceMessage)}</small><small>Local English voices are preferred; other browser voices may use an online speech service. No microphone is needed.</small></label><input id="setting-voice" type="checkbox" ${audio.narration?'checked':''}></div><div class="settings-actions"><button class="small-button" data-do="test-voice">TEST VOICE ♫</button></div><div class="setting-row"><label for="setting-quality">Graphics quality<small>Choose Low if the game looks choppy or runs slowly.</small></label><select id="setting-quality"><option value="1" ${renderer.quality===1?'selected':''}>High</option><option value="0.75" ${renderer.quality===.75?'selected':''}>Balanced</option><option value="0.5" ${renderer.quality===.5?'selected':''}>Low</option></select></div><div class="setting-row"><label for="setting-volume">Light beams<small>Show beams of sunlight and lamplight. Low graphics quality hides the lamp beams.</small></label><input id="setting-volume" type="checkbox" ${renderer.volumetric?'checked':''}></div><div class="setting-row"><label for="setting-sensitivity">Camera turn speed</label><input type="range" id="setting-sensitivity" min="0.001" max="0.006" step="0.0005" value="${input.sensitivity}"></div><div class="setting-row"><label for="setting-camera">View your character from behind<small>Turn off to see through your character’s eyes. ${inputPrompt("Press V to switch.","Use this setting to switch views.","Use this setting to switch views.")}</small></label><input id="setting-camera" type="checkbox" ${thirdPerson?'checked':''}></div>${controllerLookSettings}<div class="settings-actions"><button class="small-button" data-do="guide">CONTROLS</button><button class="small-button" data-do="forge">FRAME FORGE</button><button class="small-button" data-do="intro">REPLAY INTRO</button><button class="small-button" data-do="export">DOWNLOAD CHARACTER FILE</button><button class="small-button" data-do="chat">NEARBY & ZONE CHAT</button><button class="small-button" data-do="gestures">GESTURES</button><button class="small-button" data-do="community">COMMUNITY</button><button class="small-button" data-do="dungeons">DUNGEONS / GROUP FINDER</button><button class="small-button" data-do="leave">RETURN TO TITLE</button></div><p class="panel-description">Progress saved online · ${input.connected?'Standard controller connected.':'Keyboard, mouse, touch, and standard controllers supported.'} Sloperberpunk is GPL-3.0-or-later. There is no warranty. <a href="/LICENSE" target="_blank" rel="noopener">Read the license ↗</a></p>`,'OPTIONS','settings');
   updateVoiceButton();
+}
+function showControllerLook(){
+  input.controllerSnapshot();controllerLookSamples=[];
+  panel('Set up right-stick look.',`<p class="panel-description">Move only the right stick, without clicking it. Hold it fully in the requested direction, then choose NEXT with the mouse or the bottom face button (Cross / A). Release the triggers and other controls.</p><p id="controller-look-step" role="status">1 / 5 · Hold the right stick LEFT.</p><div class="settings-actions"><button id="controller-look-next" class="small-button" data-do="controller-look-next">NEXT</button><button class="small-button" data-do="settings">CANCEL</button></div>`,'CONTROLLER CAMERA','controller-look');
+  $('#controller-look-next').focus();
+}
+function captureControllerLook(){
+  if(dialogPage!=='controller-look')return;
+  try{
+    controllerLookSamples.push(input.controllerSnapshot());
+    if(controllerLookSamples.length===5){
+      const saved=input.saveControllerLook(controllerLookSamples);showSettings();
+      toast(saved?'Right-stick look saved for this controller.':'Right-stick look is ready for this session. Browser settings could not be saved.');return;
+    }
+    const steps=['Hold the right stick LEFT.','Hold the right stick RIGHT.','Hold the right stick UP.','Hold the right stick DOWN.','Release the right stick and triggers, then choose SAVE.'];
+    $('#controller-look-step').textContent=`${controllerLookSamples.length+1} / 5 · ${steps[controllerLookSamples.length]}`;
+    $('#controller-look-next').textContent=controllerLookSamples.length===4?'SAVE':'NEXT';
+  }catch(error){controllerLookSamples=[];showSettings();toast(error.message);}
 }
 async function showAccount(mode='login'){
   await sessionReady;
@@ -450,6 +488,7 @@ function wireEvents(){
       else if(action==='reconnect'){if(simulation)await startGame(simulation.character);}
       else if(action==='journal-filter')showJournal(id);
       else if(action==='map-region')showMap(id==='basin'?'basin':'city');
+      else if(action==='ride-elevator'){act({type:'lift',id});closePanel();}
       else if(action==='quest-accept'||action==='quest-complete'){act({type:'quest',id,operation:action==='quest-accept'?'accept':'complete',...(action==='quest-complete'?{choice:button.dataset.choice}:{})});}
       else if(action==='moral-gear'){act({type:'moralGear',id});}
       else if(action==='learn-talent'){act({type:'talent',id});setTimeout(refreshPanel,250);}
@@ -479,6 +518,9 @@ function wireEvents(){
       else if(action==='reclaim-corpse'){act({type:'reclaimCorpse'});closePanel();}
       else if(action==='spirit-healer')showSpiritHealer();
       else if(action==='settings')showSettings();
+      else if(action==='controller-look')showControllerLook();
+      else if(action==='controller-look-next')captureControllerLook();
+      else if(action==='controller-look-reset'){const saved=input.resetControllerLook();toast(saved?'Default right-stick mapping restored.':'Default right-stick mapping restored for this session.');}
       else if(action==='close-panel')closePanel();
       else if(action==='guide')showGuide();
       else if(action==='lineages')showLineages();
@@ -603,7 +645,16 @@ function updateHUD(){
   $('#founder-xp-status').hidden=!founderBoostActive(c);
   const district=world.district(c.position),interior=world.interiorAt(c.position),rooftop=world.rooftopAt(c.position),floor=interior?Math.max(0,interior.levels.findIndex(y=>y>c.position[1])-1):0,training=!simulation.inDungeon&&world.inTutorial(c.position);
   $('#zone-name').textContent=training?data.world.tutorial.name.toUpperCase():rooftop?rooftop.rooftop.name:interior?interior.identity.name.split(' · ')[0]:district.name;
-  $('#zone-subtitle').textContent=training?'SAFE TRAINING AREA · MOVE / USE / SHOOT':rooftop?`${rooftop.rooftop.street} · STAIRS BACK TO STREET`:interior?`${interior.identity.address} · ${floor===0?'Shop / stairs inside':interior.identity.upper[floor-1]||'Stairs to '+interior.rooftop.name}`:district.subtitle;
+  $('#zone-subtitle').textContent=training?'SAFE TRAINING AREA · MOVE / USE / SHOOT':rooftop?rooftop.rooftop.venue?`${rooftop.rooftop.venue.view} · ELEVATOR TO STREET`:`${rooftop.rooftop.street} · STAIRS BACK TO STREET`:interior?`${interior.identity.address} · ${floor===0?'Shop / stairs inside':interior.identity.upper[floor-1]||'Stairs to '+interior.rooftop.name}`:district.subtitle;
+  const ride=simulation.elevator,elevator=ride&&world.elevators.find(e=>e.id===ride.id);
+  $('#elevator-status').hidden=!elevator;
+  if(elevator){
+    $('#elevator-destination').textContent=ride.to[1]>0?elevator.name:'Street level';
+    const phase=rideLabel(ride,simulation.time);if($('#elevator-phase').textContent!==phase)$('#elevator-phase').textContent=phase;
+    $('#elevator-height').textContent=`${Math.round(c.position[1])} M · FLOOR ${String(Math.round(c.position[1]/data.world.interiors.height)).padStart(2,'0')} / ${String(Math.round(elevator.stops.at(-1)/data.world.interiors.height)).padStart(2,'0')}`;
+    $('#elevator-look').textContent=prompt('HOLD RIGHT MOUSE TO LOOK AROUND','RIGHT STICK TO LOOK AROUND','DRAG TO LOOK AROUND');
+    $('#zone-name').textContent=elevator.name;$('#zone-subtitle').textContent='VELVET / BRASS / THE CITY BELOW';
+  }
   const neighborhood=cityLife.neighborhoods.get(district.id),street=$('#street-life');
   const incident=simulation.worldEvents.filter(e=>e.phase!=='idle'&&Math.abs(c.position[1]-e.position[1])<6&&distance(c.position,e.position)<data.events.rules.triggerRadius).sort((a,b)=>distance(c.position,a.position)-distance(c.position,b.position))[0];
   street.hidden=training||(!neighborhood&&!incident)||simulation.inDungeon;street.classList.toggle('has-incident',Boolean(incident));
@@ -679,6 +730,7 @@ function drawMap(canvas,full){
   }
   if(!simulation.inDungeon&&data.world.tutorial){const area=data.world.tutorial,[x,y]=p(area.center);ctx.strokeStyle=area.color;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,area.radius*scale,0,Math.PI*2);ctx.stroke();if(full&&mapRegion==='city'){ctx.fillStyle=area.color;ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('TUTORIAL COURTYARD',x,y-area.radius*scale-8);}}
   for(const lift of data.world.lifts){const [x,y]=p(lift.position);ctx.fillStyle='#77c4cd';ctx.fillRect(x-2,y-2,4,4);}
+  for(const elevator of world.elevators){const [x,y]=p(elevator.position);ctx.strokeStyle=elevator.venue.accent;ctx.lineWidth=1.5;ctx.strokeRect(x-3,y-3,6,6);if(full&&mapRegion==='city'){ctx.fillStyle=elevator.venue.accent;ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText(elevator.name,x,y-7);}}
   if(simulation.inDungeon){const r=data.dungeons.rules,run=simulation.dungeon.run,d=data.dungeons.entries.find(d=>d.id===run.dungeon);const [x,y]=p(r.arena);ctx.strokeStyle='#d3dbba';ctx.strokeRect(x-r.arenaRadius*scale,y-r.arenaRadius*scale,r.arenaRadius*scale*2,r.arenaRadius*scale*2);for(const point of [...d.chapters[run.chapter].evidence.map(e=>dungeonPosition(r,e.position)),r.recoveryPosition]){const [x,y]=p(point);ctx.fillStyle=d.color;ctx.fillRect(x-3,y-3,6,6);}for(const other of otherPlayers){const [x,y]=p(other.position);ctx.fillStyle=other.health>0?'#81dce0':'#ee9b9f';ctx.fillRect(x-2,y-2,4,4);}}
   for(const npc of data.npcs){if(!world.isDiscovered(npc.position))continue;const [x,y]=p(npc.position);ctx.fillStyle=npc.color;ctx.fillRect(x-1.5,y-1.5,3,3);}
   if(!simulation.inDungeon){
@@ -707,8 +759,14 @@ function updateLabels(){
   if(simulation.inDungeon){const run=simulation.dungeon.run,d=data.dungeons.entries.find(d=>d.id===run.dungeon),r=data.dungeons.rules;for(const e of [...d.chapters[run.chapter].evidence.map(e=>({...e,position:dungeonPosition(r,e.position)})),{name:`HEAL HERE · SELECT, THEN ${prompt('E','X','USE')}`,position:r.recoveryPosition}]){const p=renderer.project([e.position[0],e.position[1]+3,e.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(e.name)}</div>`;}for(const other of otherPlayers.filter(p=>p.health<=0)){const p=renderer.project([other.position[0],other.position[1]+1,other.position[2]]);if(p)html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px">${esc(other.name)}<small>DEAD · SELECT, THEN ${prompt('E','X','USE')} TO REVIVE</small></div>`;}}
   for(const npc of data.npcs){if(distance(c.position,npc.position)>75||!world.lineOfSight(c.position,npc.position))continue;const p=renderer.project([npc.position[0],npc.position[1]+3,npc.position[2]]);if(!p||p[2]>1)continue;const has=data.quests.some(q=>q.giver===npc.id&&(availableQuest(q,c)||c.activeQuests[q.id]>=q.objective.count));html+=`<div class="world-label" style="left:${p[0]}px;top:${p[1]}px;color:${npc.color}">${has?'<span class="quest-mark">!</span>':''}${esc(npc.name)}<small>${esc(npc.title)}</small></div>`;}
   if(!simulation.inDungeon){
+    for(const e of world.elevators){
+      const y=e.stops.reduce((a,b)=>Math.abs(a-c.position[1])<Math.abs(b-c.position[1])?a:b),position=[e.position[0],y,e.position[2]];
+      if(simulation.elevator||distance(c.position,position)>65||!world.lineOfSight(c.position,position))continue;
+      const p=renderer.project([position[0],y+6.5,position[2]]);
+      if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:${e.venue.accent}">${esc(e.name)}<small>${y?'ELEVATOR TO STREET':'TOP FLOOR · '+Math.round(e.stops.at(-1))+' M'} · SELECT, THEN ${prompt('E','X','USE')}</small></div>`;
+    }
     const shops=world.buildings.map(b=>({b,door:[b.x,0,b.z+(c.position[2]<b.z?-1:1)*(b.d/2+.9)]})).filter(({door})=>distance(c.position,door)<38).sort((a,b)=>distance(c.position,a.door)-distance(c.position,b.door)).slice(0,2);
-    for(const {b,door}of shops){if(!world.lineOfSight(c.position,door))continue;const p=renderer.project([door[0],4.9,door[2]]);if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:${b.identity.trim}">${esc(b.rooftop?.street||b.identity.name)}<small>${b.rooftop?`${esc(b.rooftop.name)} · ${Math.round(b.h)} M · STAIRS INSIDE`:b.interior?'OPEN · 3 FLOORS · STAIRS INSIDE':'SERVICE BUILDING · NO PUBLIC ENTRY'}</small></div>`;}
+    for(const {b,door}of shops){if(!world.lineOfSight(c.position,door))continue;const p=renderer.project([door[0],4.9,door[2]]);if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:${b.identity.trim}">${esc(b.rooftop?.street||b.identity.name)}<small>${b.rooftop?`${esc(b.rooftop.name)} · ${Math.round(b.h)} M · ${b.rooftop.venue?'OBSERVATION ELEVATOR':'STAIRS INSIDE'}`:b.interior?'OPEN · 3 FLOORS · STAIRS INSIDE':'SERVICE BUILDING · NO PUBLIC ENTRY'}</small></div>`;}
     for(const route of data.world.routes||[]){const end=distance(c.position,route.start)<distance(c.position,route.end)?route.start:route.end;if(distance(c.position,end)>30||!world.lineOfSight(c.position,end))continue;const p=renderer.project([end[0],end[1]+2.5,end[2]]),level=route.start[1]===route.end[1];if(p&&p[2]<=1)html+=`<div class="world-label street-site" style="left:${p[0]}px;top:${p[1]}px;color:#ddb27c">${esc(route.name)}<small>${level?`${Math.round(end[1])} M · ${route.kind==='street'?'UPPER STREET':'LOOKOUT'}`:`${Math.round(route.start[1])} M ↔ ${Math.round(route.end[1])} M · WALK TO CLIMB`}</small></div>`;}
     const overheard=!$('#panel-dialog').open&&cityLife.overheard(c.position,worldClock.now());
     const resident=target?.kind==='resident'?target.object:null;
@@ -738,6 +796,7 @@ function updateLabels(){
 }
 function gameCamera(dt){
   const c=simulation.character,p=c.position;const look=[p[0]-Math.sin(yaw)*8,p[1]+1.7-Math.sin(pitch)*8,p[2]-Math.cos(yaw)*8];
+  if(simulation.elevator)return{eye:[p[0],p[1]+1.8,p[2]-1.2],target:[look[0],look[1],look[2]-1.2],fov:1.15};
   if(!thirdPerson)return{eye:[p[0],p[1]+1.8,p[2]],target:look,fov:1.1};
   const desired=[p[0]+Math.sin(yaw)*8*Math.cos(pitch),p[1]+3.3+Math.sin(pitch)*6,p[2]+Math.cos(yaw)*8*Math.cos(pitch)];
   let eye=desired;for(let t=.05;t<=1;t+=.05){const sample=mix3([p[0],p[1]+1.8,p[2]],desired,t);if(world.collides(sample[0],sample[1]-.15,sample[2],.2,.3)){eye=mix3([p[0],p[1]+1.8,p[2]],desired,Math.max(0,t-.06));break;}}
@@ -769,9 +828,9 @@ function frame(timestamp){
   }else if(simulation){
     controls.yaw=yaw;simulation.tick(dt,controls);connection?.update(dt,controls);camera=gameCamera(dt);
     if(!simulation.inDungeon)world.reveal(simulation.character.position);
-    if(thirdPerson){const c=simulation.character;actors.push({...c,ghost:isSpirit(c),guild:myGuild,model:'humanoid',velocity:simulation.velocity,grounded:simulation.grounded,yaw:yaw+Math.PI,color:isSpirit(c)?'#bce8fa':data.races.find(r=>r.id===c.race).color});}
+    if(thirdPerson&&!simulation.elevator){const c=simulation.character;actors.push({...c,ghost:isSpirit(c),guild:myGuild,model:'humanoid',velocity:simulation.velocity,grounded:simulation.grounded,yaw:yaw+Math.PI,color:isSpirit(c)?'#bce8fa':data.races.find(r=>r.id===c.race).color});}
     if(simulation.character.death){const c=simulation.character,g=data.world.graveyards.find(g=>g.id===c.death.graveyard);actors.push({id:'fallen-body',model:'humanoid',race:c.race,forge:c.forge,position:c.death.corpse,corpse:true,color:'#9cb0bf'});if(isSpirit(c)&&g)actors.push({id:'spirit-keeper',model:'humanoid',position:g.position,ghost:true,color:'#bce8fa'});}
-    actors.push(...simulation.enemies,...otherPlayers.filter(p=>p.id!==simulation.character.id).map(p=>({...p,model:'humanoid',color:p.ghost?'#bce8fa':data.races.find(r=>r.id===p.race)?.color||'#c7ed99'})));
+    actors.push(...simulation.enemies,...otherPlayers.filter(p=>p.id!==simulation.character.id).map(p=>({...p,position:p.elevator?ridePosition(p.elevator,simulation.time):p.position,model:'humanoid',color:p.ghost?'#bce8fa':data.races.find(r=>r.id===p.race)?.color||'#c7ed99'})));
   }
   if(!camera)camera={eye:[135,81,165],target:[-45,36,-95]};
   if(state==='playing')for(const actor of actors){if(actor.health>0)actor.gesture=liveChat.feed.gesture(actor.id,worldClock.now());}
@@ -779,7 +838,7 @@ function frame(timestamp){
   else if(state!=='creation')actors.push(...cityLife.update(worldClock.now(),state==='playing'?simulation.character.position:[camera.target[0],0,camera.target[2]],{enemies:state==='playing'?simulation.enemies:[],incidents:state==='playing'?simulation.worldEvents:[],completed:state==='playing'?simulation.character.completed:[],morality:state==='playing'?simulation.character.morality:null,quality:renderer.quality,focus:dialogPage.startsWith('resident:')?dialogPage.slice(9):null}));
   if(state==='playing'){uiAccumulator+=dt;if(uiAccumulator>.1){uiAccumulator=0;updateHUD();}}
   effects=effects.filter(e=>time-e.time<e.duration);floaters=floaters.filter(f=>time-f.time<f.duration);
-  renderer.render(camera,actors,effects,time,worldClock.now(),state==='playing'?simulation.ghostlines:[],simulation?.time||0,state==='playing'&&simulation?.inDungeon?{catalog:data.dungeons,run:simulation.dungeon.run}:null,state==='playing'&&!simulation.inDungeon?{events:simulation.worldEvents,rules:data.events.rules}:null);updateLabels();frameForge.draw(timestamp);interfaceUI.render(timestamp);requestAnimationFrame(frame);
+  renderer.render(camera,actors,effects,time,worldClock.now(),state==='playing'?simulation.ghostlines:[],simulation?.time||0,state==='playing'&&simulation?.inDungeon?{catalog:data.dungeons,run:simulation.dungeon.run}:null,state==='playing'&&!simulation.inDungeon?{events:simulation.worldEvents,rules:data.events.rules}:null,state==='playing'?simulation.elevator:null);updateLabels();frameForge.draw(timestamp);interfaceUI.render(timestamp);requestAnimationFrame(frame);
 }
 async function boot(){
   const names=['rules','world','races','factions','quests','talents','abilities','enemies','npcs','intro','audio','lore','dungeons','citylife','events','economy','morality','forge'];

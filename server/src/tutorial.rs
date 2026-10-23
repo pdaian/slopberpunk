@@ -248,6 +248,7 @@ mod tests {
         s.players.insert(
             "new".into(),
             Player {
+                elevator: None,
                 live_social: live_social::Session::default(),
                 instance: None,
                 owner: "account".into(),
