@@ -4,8 +4,8 @@ import { clamp } from './math.js';
 
 export class Input {
   constructor(canvas,onAction,onLook) {
-    this.canvas=canvas;this.onAction=onAction;this.onLook=onLook;this.keys=new Set();this.edges=new Set();this.buttons=[];this.active=false;this.menu=true;this.drag=null;this.touchMove=[0,0];this.connected='';this.padTime=0;this.menuIndex=0;this.sensitivity=.0025;
-    this.lastDevice='keyboard';this.padIndex=null;this.padAxes=[];this.pointerPosition=null;
+    this.canvas=canvas;this.onAction=onAction;this.onLook=onLook;this.keys=new Set();this.edges=new Set();this.active=false;this.menu=true;this.drag=null;this.touchMove=[0,0];this.connected='';this.padTime=0;this.menuIndex=0;this.sensitivity=.0025;
+    this.lastDevice='keyboard';this.padIndex=null;this.padStates=new Map();this.pointerPosition=null;
     // Capture real activity in menus and text fields as well as in the world.
     // Controller menu navigation dispatches synthetic keys; those are not keyboard use.
     document.addEventListener('keydown',e=>{if(e.isTrusted!==false&&!e.repeat)this.lastDevice='keyboard';},true);
@@ -95,17 +95,29 @@ export class Input {
     forward+=this.touchMove[1];strafe+=this.touchMove[0];
     let jump=this.edges.has('Space'),dash=this.edges.has('KeyQ'),sprint=this.keys.has('ShiftLeft')||this.keys.has('ShiftRight');this.edges.clear();
     let pads=[];try{pads=navigator.getGamepads?.()||[];}catch{/* Disabled by browser policy. */}
-    const pad=Array.from(pads).find(p=>p&&p.mapping==='standard');
-    if(this.padIndex!==(pad?.index??null)||this.connected!==(pad?.id||'')){this.buttons=[];this.padAxes=[];}
-    this.connected=pad?pad.id:'';this.padIndex=pad?.index??null;
-    if(pad){
-      const axis=v=>Math.abs(v||0)<.17?0:Math.sign(v)*(Math.abs(v)-.17)/.83;
-      const pressed=pad.buttons.map(b=>b.pressed),edge=i=>pressed[i]&&!this.buttons[i];
-      // Held controls and stick drift must not reclaim prompts after mouse/keyboard use.
+    const axis=v=>Math.abs(v||0)<.17?0:Math.sign(v)*(Math.abs(v)-.17)/.83;
+    const states=new Map(),candidates=[];
+    for(const [slot,pad]of Array.from(pads).entries()){
+      if(!pad||pad.connected===false||pad.mapping!=='standard')continue;
+      const index=pad.index??slot,previous=this.padStates.get(index);
+      const buttons=previous?.id===pad.id?previous.buttons:[],previousAxes=previous?.id===pad.id?previous.axes:[];
+      const pressed=pad.buttons.map(b=>b.pressed),edge=i=>pressed[i]&&!buttons[i];
       const axes=pad.axes.slice(0,4).map(axis);
-      const moved=axes.some((value,i)=>value!==0&&Math.abs(value-(this.padAxes[i]||0))>.12);
-      if(pressed.some((_,i)=>edge(i))||moved)this.lastDevice='gamepad';
-      axes.forEach((value,i)=>{if(!value||Math.abs(value-(this.padAxes[i]||0))>.12)this.padAxes[i]=value;});
+      const moved=axes.some((value,i)=>value!==0&&Math.abs(value-(previousAxes[i]||0))>.12);
+      const activity=pressed.some((_,i)=>edge(i))||moved;
+      axes.forEach((value,i)=>{if(!value||Math.abs(value-(previousAxes[i]||0))>.12)previousAxes[i]=value;});
+      states.set(index,{id:pad.id,buttons:pressed,axes:previousAxes});
+      candidates.push({pad,index,pressed,edge,activity});
+    }
+    this.padStates=states;
+    // Follow deliberate input on any controller, including the right stick.
+    // Keep per-device history so drift and held controls cannot steal input or repeat actions.
+    const current=candidates.find(c=>c.index===this.padIndex&&c.pad.id===this.connected);
+    const selected=(current?.activity?current:candidates.find(c=>c.activity))||current||candidates[0];
+    this.connected=selected?.pad.id||'';this.padIndex=selected?.index??null;
+    if(selected){
+      const {pad,pressed,edge,activity}=selected;
+      if(activity)this.lastDevice='gamepad';
       if(this.menu){
         this.padTime-=dt;
         const direction=edge(13)||edge(15)||axis(pad.axes[1])>.6?1:edge(12)||edge(14)||axis(pad.axes[1])<-.6?-1:0;
@@ -124,8 +136,7 @@ export class Input {
         const alternate={12:'ability:breach',15:'ability:siphon',13:'ability:execute',14:'ability:nova'};
         for(const [i,action]of Object.entries(actions))if(edge(Number(i)))this.onAction(pressed[10]&&alternate[i]?alternate[i]:action);
       }
-      this.buttons=pressed;
-    }else{this.buttons=[];this.padAxes=[];if(this.lastDevice==='gamepad')this.lastDevice='keyboard';}
+    }else if(this.lastDevice==='gamepad')this.lastDevice='keyboard';
     return this.menu?{forward:0,strafe:0,jump:false,dash:false,sprint:false}:{forward:clamp(forward,-1,1),strafe:clamp(strafe,-1,1),jump,dash,sprint};
   }
 }

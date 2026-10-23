@@ -357,6 +357,73 @@ test('cancellation, focus loss, menus, and unrelated pointers cannot leave dragg
   emit('pointerdown',{pointerType:'touch'});emit('lostpointercapture');assert.equal(input.drag,null);
 });
 
+function standardPad(index=0) {
+  return {id:'Standard',index,connected:true,mapping:'standard',axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false}))};
+}
+function assertLook(looks,expected,message) {
+  const actual=looks.at(-1);
+  assert.ok(actual?.length===2&&actual.every((value,i)=>Math.abs(value-expected[i])<1e-12),message||`expected look ${expected}, got ${actual}`);
+}
+
+test('right stick looks continuously and independently of left-stick movement',t=>{
+  const {input,looks}=pointer(t),pad=standardPad();pad.axes=[0,0,1,-1];
+  navigator.getGamepads=()=>[pad];
+  const idle={forward:0,strafe:0,jump:false,dash:false,sprint:false};
+  assert.deepEqual(input.sample(.02),idle);
+  assertLook(looks,[.046,-.036]);
+  input.sample(.02);assertLook(looks,[.046,-.036],'holding the right stick keeps turning');
+  pad.axes=[1,-1,-1,1];
+  assert.deepEqual(input.sample(.02),{...idle,forward:1,strafe:1});
+  assertLook(looks,[-.046,.036],'moving and looking work together in both directions');
+  pad.axes=[1,-1,.16,-.16];input.sample(.02);
+  assert.deepEqual(looks.at(-1),[0,0],'left-stick movement and right-stick drift do not turn the camera');
+  pad.axes=[0,0,1,-1];looks.length=0;
+  for(let i=0;i<50;i++)input.sample(.02);
+  const slow=looks.reduce(([x,y],[dx,dy])=>[x+dx,y+dy],[0,0]);looks.length=0;
+  for(let i=0;i<100;i++)input.sample(.01);
+  const fast=looks.reduce(([x,y],[dx,dy])=>[x+dx,y+dy],[0,0]);
+  assert.ok(slow.every((value,i)=>Math.abs(value-fast[i])<1e-12),'turn speed is independent of frame rate');
+});
+
+test('right-stick activity selects a controller even when an idle controller appears first',t=>{
+  const {input,looks}=pointer(t);
+  const first=standardPad(),second=standardPad(2);
+  navigator.getGamepads=()=>[first,null,second];
+  input.sample(.02);assert.equal(input.padIndex,0);
+  second.axes[2]=1;input.sample(.02);
+  assert.equal(input.padIndex,2);assertLook(looks,[.046,0]);
+  second.axes[3]=-1;input.sample(.02);assertLook(looks,[.046,-.036]);
+  second.axes=[0,0,0,0];input.sample(.02);assert.equal(input.padIndex,2,'centering the stick retains the selected controller');
+  first.axes[0]=.19;input.sample(.02);assert.equal(input.padIndex,2,'drift on another controller cannot take over');
+  first.axes[2]=-1;input.sample(.02);
+  assert.equal(input.padIndex,0);assertLook(looks,[-.046,0]);
+});
+
+test('controller selection follows fresh input without repeating held actions',t=>{
+  const {input,actions,looks}=pointer(t);
+  const first=standardPad(),second=standardPad(1);
+  navigator.getGamepads=()=>[first,second];
+  first.buttons[7].pressed=true;input.sample(.02);assert.equal(actions.length,1);
+  second.axes[2]=1;input.sample(.02);assert.equal(input.padIndex,1,'fresh look input takes over from a held trigger');
+  input.lastDevice='keyboard';input.sample(.02);assert.equal(input.lastDevice,'keyboard','held controls are not new device activity');
+  first.axes[2]=-1;input.sample(.02);assert.equal(input.padIndex,0);
+  assert.equal(actions.length,1,'switching back must not fire the held trigger again');
+  first.connected=false;input.sample(.02);assert.equal(input.padIndex,1);assertLook(looks,[.046,0]);
+  navigator.getGamepads=()=>[];looks.length=0;
+  assert.equal(input.sample(.02).forward,0);assert.equal(input.connected,'');assert.equal(looks.length,0);
+  first.connected=true;first.buttons[7].pressed=false;first.axes=[0,0,0,0];navigator.getGamepads=()=>[first];
+  input.sample(.02);first.buttons[7].pressed=true;input.sample(.02);
+  assert.equal(actions.length,2,'reconnected controllers recognize new presses');
+});
+
+test('controller look pauses in menus and resumes when gameplay resumes',t=>{
+  const {input,looks}=pointer(t),pad=standardPad();pad.axes=[1,-1,1,-1];
+  navigator.getGamepads=()=>[pad];input.menu=true;
+  assert.deepEqual(input.sample(.02),{forward:0,strafe:0,jump:false,dash:false,sprint:false});
+  assert.equal(looks.length,0);
+  input.menu=false;assert.equal(input.sample(.02).forward,1);assertLook(looks,[.046,-.036]);
+});
+
 test('connected controllers, held buttons and released controls do not steal keyboard prompts',t=>{
   const {input,key,actions}=keyboard(t),buttons=Array.from({length:16},()=>({pressed:false}));
   const pad={id:'Standard',index:0,mapping:'standard',axes:[0,0,0,0],buttons};
