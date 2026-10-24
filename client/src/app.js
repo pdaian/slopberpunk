@@ -18,6 +18,7 @@ import { downloadCharacter } from './persistence.js';
 import { hasFounderHalo, founderBoostActive, founderXpReward, founderOfferView } from './founders.js';
 import { validateDungeons, dungeonPanel, dungeonPosition } from './dungeons.js';
 import { CityLife, validateCityLife, cityStage, cityEvent } from './citylife.js';
+import { npcIdentity, outfitDescription } from './npc-style.js';
 import { questView, questGuide, placeInfo, questProgressText, followedQuest, objectiveText, openingGuide } from './quests.js';
 import { localMapPlaces, mapLabelLayout } from './map.js';
 import { validateStory, questThread, campaignLead, campaignPanel, storyDialogue } from './story.js';
@@ -378,14 +379,14 @@ function talk(npc,narrate=true){
   if(npc.id==='merchant')return showShop();const c=simulation.character;
   const quests=data.quests.filter(q=>q.giver===npc.id&&((c.activeQuests[q.id]!==undefined)||availableQuest(q,c)));
   const dialogue=npcDialogue(npc);
-  panel(npc.name,`<div class="npc-quote">“${esc(dialogue)}”</div>${quests.length?quests.map(q=>questCard(q,c,true)).join(''):npc.neighborhood?'<p class="muted">The neighborhood journal records your work here. Take a walk through the block and talk to the people keeping it going.</p>':'<p class="muted">I have no new work for you yet. Your journal shows the level and previous quest you need.</p>'}<button class="small-button" data-do="speak" data-id="${npc.id}">HEAR ${esc(npc.name.toUpperCase())} ♫</button>`,npc.title.toUpperCase(),'npc:'+npc.id);
+  panel(npc.name,`<div class="npc-quote">“${esc(dialogue)}”</div><p class="muted">${esc(outfitDescription(npc.outfit))}</p>${quests.length?quests.map(q=>questCard(q,c,true)).join(''):npc.neighborhood?'<p class="muted">The neighborhood journal records your work here. Take a walk through the block and talk to the people keeping it going.</p>':'<p class="muted">I have no new work for you yet. Your journal shows the level and previous quest you need.</p>'}<button class="small-button" data-do="speak" data-id="${npc.id}">HEAR ${esc(npc.name.toUpperCase())} ♫</button>`,npc.title.toUpperCase(),'npc:'+npc.id);
   if(narrate)audio.speak(dialogue,npc.id);
 }
 function talkResident(actor){
   const conversation=cityLife.conversation(actor,worldClock.now()),n=conversation.neighborhood;
   if(actor.activity==='flee'){toast(`${actor.name}: ${actor.line}`);return;}
   const contact=n&&data.npcs.find(p=>p.id===n.contact);
-  panel(actor.name,`<p class="neighborhood-now">${esc(conversation.role)} · ${esc(actor.title)} · ${esc(conversation.treatment.label)}</p><div class="npc-quote">“${esc(conversation.personal)}”</div>${conversation.building?`<h3>${esc(conversation.building.name)}</h3><p>${esc(conversation.building.history)}</p>`:''}${n?`<h3>Life in ${esc(n.name)}</h3><p>“${esc(conversation.stage.line)}”</p><p class="muted">${esc(conversation.event.name)} · ${esc(conversation.event.detail)}</p><p>Talk to ${esc(contact.name)} about the work here. ${Math.round(distance(simulation.character.position,contact.position))} m${contact.position[1]?' · on the 24 m skyway':''}.</p><button class="small-button" data-do="journal-filter" data-id="neighborhoods">NEIGHBORHOOD JOURNAL ↗</button>`:''}`,n?.name.toUpperCase()||'VESPER / NEIGHBORS','resident:'+actor.id);
+  panel(actor.name,`<p class="neighborhood-now">${esc(conversation.role)} · ${esc(actor.title)} · ${esc(conversation.treatment.label)}</p><div class="npc-quote">“${esc(conversation.personal)}”</div><p>${esc(conversation.style)}</p><p class="muted">${esc(conversation.demeanor)}${conversation.interest?` Interested in ${esc(conversation.interest)}.`:''}</p>${conversation.interaction?`<p class="muted">You caught them ${esc(actor.title.toLowerCase())}.</p>`:''}${conversation.building?`<h3>${esc(conversation.building.name)}</h3><p>${esc(conversation.building.history)}</p>`:''}${n?`<h3>Life in ${esc(n.name)}</h3><p>“${esc(conversation.stage.line)}”</p><p class="muted">${esc(conversation.event.name)} · ${esc(conversation.event.detail)}</p><p>Talk to ${esc(contact.name)} about the work here. ${Math.round(distance(simulation.character.position,contact.position))} m${contact.position[1]?' · on the 24 m skyway':''}.</p><button class="small-button" data-do="journal-filter" data-id="neighborhoods">NEIGHBORHOOD JOURNAL ↗</button>`:''}`,n?.name.toUpperCase()||'VESPER / NEIGHBORS','resident:'+actor.id);
   audio.speak(conversation.personal);
 }
 function showTalents(){
@@ -790,7 +791,7 @@ function updateLabels(){
     for(const actor of [overheard,resident].filter((a,i,all)=>a&&all.findIndex(b=>b?.id===a.id)===i)){
       if(!world.lineOfSight(c.position,actor.position))continue;
       const p=renderer.project([actor.position[0],actor.position[1]+3,actor.position[2]]);
-      if(p&&p[2]<=1)html+=`<div class="world-label resident-label" style="left:${p[0]}px;top:${p[1]}px;color:${actor.color}">${esc(actor.name)}<small>${esc(actor.title)}</small>${actor===overheard?`<span class="street-speech">“${esc(Math.floor(worldClock.now()/23000)%2?actor.line:actor.personal||data.citylife.roles[actor.role].line)}”</span>`:''}</div>`;
+      if(p&&p[2]<=1)html+=`<div class="world-label resident-label" style="left:${p[0]}px;top:${p[1]}px;color:${actor.color}">${esc(actor.name)}<small>${esc(actor.title)}</small>${actor===overheard?`<span class="street-speech">“${esc(actor.speech||(Math.floor(worldClock.now()/23000)%2?actor.line:actor.personal||data.citylife.roles[actor.role].line))}”</span>`:''}</div>`;
     }
     for(const event of simulation.worldEvents){
       if(event.phase==='idle'||distance(c.position,event.position)>100||!world.lineOfSight(c.position,event.position))continue;
@@ -870,6 +871,7 @@ async function boot(){
   validateStory(data);
   validateMorality(data);
   validateForge(data.forge);
+  for(const npc of data.npcs)Object.assign(npc,npcIdentity(npc.id));
   const models=await fetch('/assets/models.json').then(r=>r.json());world=new World(data.world);validateWorldEvents(data.events,data,world);validateCityLife(data.citylife,data,world);cityLife=new CityLife(world,data.citylife,data);renderer=new Renderer($('#world'),world,models,cityLife);renderer.reducedMotion=reducedMotion;audio=new AudioEngine(data.audio);
   audio.onVoiceStatus=status=>{updateVoiceButton();if(['blocked','unavailable','error'].includes(status))toast(audio.voiceMessage);};
   audio.onCaption=caption=>{$('#voice-caption').hidden=!caption||state!=='playing'||$('#panel-dialog').open;if(caption){$('#voice-speaker').textContent=caption.speaker;$('#voice-line').textContent=caption.text;}};

@@ -7,6 +7,7 @@ import { Prediction, stats, availableQuest } from '../src/prediction.js';
 import { isSpirit, recoveryView, bearing } from '../src/death.js';
 import { Renderer } from '../src/renderer.js';
 import { CharacterMeshes } from '../src/character.js';
+import { npcIdentity, outfitDescription } from '../src/npc-style.js';
 import { runInNewContext } from 'node:vm';
 import { distance, mix3, clamp } from '../src/math.js';
 import { escapeHtml, icon } from '../src/icons.js';
@@ -24,6 +25,7 @@ import { collection, forgeRank } from '../src/forge.js';
 
 const read = name => JSON.parse(readFileSync(new URL(`../data/${name}.json`, import.meta.url)));
 const data = Object.fromEntries(['world', 'rules', 'races', 'factions', 'talents', 'dungeons', 'quests', 'npcs', 'events', 'abilities', 'lore', 'citylife', 'morality', 'forge'].map(n => [n, read(n)]));
+for (const npc of data.npcs) Object.assign(npc, npcIdentity(npc.id));
 const world = new World(data.world);
 const character = () => ({ id: 'runner', position: [0, 0, 64], yaw: 0, health: 0, energy: 0, gold: 95, level: 0, race: 'human', talents: {}, death: { corpse: [0, 0, 32], graveyard: 'commons-rest', released: false, releaseAt: 15, goldLost: 5 } });
 
@@ -138,7 +140,7 @@ function application(c) {
     matchMedia: () => ({ matches: true }), WorldClock: class { now() { return 18000; } sync() {} },
     distance, mix3, clamp, isSpirit, recoveryView, bearing, openingGuide, questView, questGuide, placeInfo, questProgressText, followedQuest, objectiveText, localMapPlaces, mapLabelLayout,
     storyDialogue, questThread, campaignLead, campaignPanel, controlLabel, inputText, inputPrompt, updateInputPrompts,
-    founderXpReward, decisionPanel, decisionOutcome, moralPrice, vendorPercent, collection, forgeRank, formatGold, icon,
+    founderXpReward, decisionPanel, decisionOutcome, moralPrice, vendorPercent, collection, forgeRank, formatGold, icon, outfitDescription,
     worldEventViews, collectTargets, targetProblem, elevatorTarget, targetBounds, visibleTargets, pickTarget, cycleTarget, availableQuest, esc: escapeHtml,
   };
   let source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8').replace(/^import .*;$/gm, '');

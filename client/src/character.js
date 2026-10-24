@@ -3,6 +3,7 @@ import { clamp, color } from './math.js';
 import { box, bevelBox, ellipsoid, transformMesh } from './geometry.js';
 import { appearanceKey, appearanceProblem } from './forge.js';
 import { frameParts } from './frame-parts.js';
+import { outfitParts, outfitKey } from './npc-style.js';
 
 function joint(parent, offset, pitch = 0) {
   const c=Math.cos(parent.pitch),s=Math.sin(parent.pitch);
@@ -47,6 +48,12 @@ export function activityPose(bones, activity, time) {
   else if (activity === 'serve') { arm('left', -.65, -.7);arm('right', -.8 + beat * .2, -.65); }
   else if (activity === 'eat') { arm('left', -.7, -1.05);arm('right', -.5 - (beat + 1) * .2, -1.6); }
   else if (activity === 'talk') arm('right', -.25, -.5 - (beat + 1) * .25);
+  else if (activity === 'listen') { arm('left', -.08, -.45);bones.head = joint(bones.body, [0, .77, 0], .06 + beat * .025); }
+  else if (activity === 'check') { arm('left', -.75, -1.2);arm('right', -.35, -.8);bones.head = joint(bones.body, [0, .77, 0], .2); }
+  else if (activity === 'adjust') { arm('right', -.35, -2);arm('left', -.2, -.5); }
+  else if (activity === 'stretch') for (const side of ['left', 'right']) arm(side, -2.2, -.8);
+  else if (activity === 'reassure') { arm('right', -.65, -.5);bones.head = joint(bones.body, [0, .77, 0], .08); }
+  else if (activity === 'argue') { arm('right', -.7, -.5 - beat * .12);arm('left', -.5, -.7); }
   else if (activity === 'tend') { arm('left', -.6, -.55);arm('right', -.55 + beat * .12, -.45); }
   else if (activity === 'flee') for (const side of ['left', 'right']) arm(side, -1.4, -1.2);
   if (['repair', 'work', 'eat', 'tend'].includes(activity)) bones.head = joint(bones.body, [0, .77, 0], .2);
@@ -67,7 +74,7 @@ export function gesturePose(bones, gesture, time) {
 }
 
 export class CharacterMeshes {
-  constructor(models) { this.models=models;this.meshes=new Map();this.motion=new Map();this.forgeMeshes=new Map(); }
+  constructor(models) { this.models=models;this.meshes=new Map();this.motion=new Map();this.forgeMeshes=new Map();this.outfitMeshes=new Map(); }
   pose(actor,time) {
     const key=`${actor.model}:${actor.id||actor.name||'preview'}`;
     let state=this.motion.get(key);
@@ -84,8 +91,8 @@ export class CharacterMeshes {
     const heading=actor.velocity&&Math.hypot(actor.velocity[0],actor.velocity[2])>.5&&actor.model!=='drone'?Math.atan2(actor.velocity[0],actor.velocity[2]):actor.yaw||0;
     state.yaw+=Math.atan2(Math.sin(heading-state.yaw),Math.cos(heading-state.yaw))*(1-Math.exp(-dt*14));
     const animationTime=this.reducedMotion?0:time;
-    const bones=activityPose(motionPose(state.speed,state.phase,actor.grounded!==false,actor.velocity?.[1]||0,animationTime),actor.activity,animationTime);
-    return {...gesturePose(bones,actor.gesture,animationTime),yaw:state.yaw};
+    const bones=activityPose(motionPose(state.speed,state.phase,actor.grounded!==false,actor.velocity?.[1]||0,animationTime),actor.socialPose||actor.activity,animationTime+(actor.personality?.phase||0));
+    return {...gesturePose(bones,actor.socialGesture||actor.gesture,animationTime),yaw:state.yaw};
   }
   parts(model,race,detail) {
     const key=`${model}:${race}:${detail}`;
@@ -106,11 +113,29 @@ export class CharacterMeshes {
     const appearance=model==='humanoid'&&this.forge&&actor.forge?.appearance;
     const custom=appearance&&!appearanceProblem(appearance,this.forge);
     const width=custom?this.forge.frames.find(f=>f.id===appearance.frame).width:1;
-    for(const part of custom?this.frame(appearance,detail):this.parts(model,actor.race,detail)) {
+    for(const part of custom?this.frame(appearance,detail):model==='humanoid'&&actor.outfit?this.outfit(actor.outfit,actor.race,detail):this.parts(model,actor.race,detail)) {
       const bone=pose[part.joint]||{position:[0,0,0],pitch:0};
       const [bx,y,z]=bone.position,x=bx*width,position=[actor.position[0]+(x*cs+z*sn)*scale,actor.position[1]+y*scale,actor.position[2]+(-x*sn+z*cs)*scale];
       transformMesh(v,part.mesh,position,yaw,bone.pitch,0,actor.ghost||part.color==='accent'?tint:null,actor.ghost?.8:null,scale);
     }
+  }
+  outfit(outfit,race,detail) {
+    const key=`${outfitKey(outfit)}:${race}:${Boolean(detail)}`;
+    if(this.outfitMeshes.has(key)) {
+      const parts=this.outfitMeshes.get(key);this.outfitMeshes.delete(key);this.outfitMeshes.set(key,parts);return parts;
+    }
+    const parts=[...outfitParts(outfit,race),...this.models.lineages?.[race]||[]].filter(p=>detail||!p.detailOnly).map(part=>{
+      const source=[],mesh=[],shade=part.color==='accent'?'#ffffff':part.color;
+      const shape=!detail||part.shape==='box'?box:part.shape==='round'?ellipsoid:bevelBox;
+      if(shape===bevelBox)shape(source,[0,0,0],part.size,shade,part.emissive||0,0,.035,part.taper||1);
+      else if(shape===ellipsoid)shape(source,[0,0,0],part.size,shade,part.emissive||0,0,8);
+      else shape(source,[0,0,0],part.size,shade,part.emissive||0);
+      transformMesh(mesh,source,part.center,part.yaw||0,part.pitch||0,part.roll||0);
+      return {...part,mesh:new Float32Array(mesh)};
+    });
+    // Both LODs for the bounded crowd and fixed contacts; never retain the city.
+    if(this.outfitMeshes.size>=160)this.outfitMeshes.delete(this.outfitMeshes.keys().next().value);
+    this.outfitMeshes.set(key,parts);return parts;
   }
   frame(appearance,detail) {
     const key=appearanceKey(appearance)+':'+Boolean(detail);

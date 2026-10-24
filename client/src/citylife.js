@@ -3,10 +3,12 @@
 import { distance, mix3 } from './math.js';
 import { routeHeight } from './world.js';
 import { residentTreatment, neighborhoodOutcome } from './morality.js';
+import { npcIdentity, outfitDescription } from './npc-style.js';
+import { StreetSocial, residentMood } from './street-social.js';
 
 const mod = (n, d) => ((n % d) + d) % d;
 const races = ['human', 'lattice', 'revenant', 'bloom'];
-export const CITY_ACTIVITIES = ['walk', 'carry', 'serve', 'repair', 'work', 'talk', 'eat', 'tend', 'wait', 'flee'];
+export const CITY_ACTIVITIES = ['walk', 'carry', 'serve', 'repair', 'work', 'talk', 'eat', 'tend', 'wait', 'flee', 'listen', 'check', 'adjust', 'stretch', 'reassure', 'argue'];
 
 export function cityStage(neighborhood, completed = []) {
   return neighborhood.stages.reduce((stage, next) => !next.quest || completed.includes(next.quest) ? next : stage, neighborhood.stages[0]);
@@ -43,7 +45,7 @@ export function routineAt(routine, seconds) {
   const position = mix3(segment.from, segment.to, (t - segment.start) / (segment.end - segment.start));
   if(segment.route)position[1]=routeHeight(segment.route,position[0],position[2])??position[1];
   const velocity = segment.to.map((n, i) => (n - segment.from[i]) / (segment.end - segment.start));
-  return { position, velocity, yaw: segment.yaw, activity: segment.activity };
+  return { position, velocity, yaw: segment.yaw, activity: segment.activity, elapsed: t - segment.start, remaining: segment.end - t };
 }
 
 // Workspace X runs along the deck; positive Z faces inward from its edge.
@@ -138,6 +140,7 @@ export class CityLife {
     this.lastTime = null;
     this.completed = [];
     this.incidents = [];
+    this.social = new StreetSocial();
     const stop = (position, activity = 'wait', seconds = 0, yaw = 0) => ({ position, activity, seconds, yaw });
     for (const n of content.neighborhoods) {
       const center = world.data.districts.find(d => d.id === n.id).center;
@@ -169,7 +172,7 @@ export class CityLife {
     });
   }
   resident(id, name, role, neighborhood, seed, routine, local = false) {
-    return { id, name, role, neighborhood, seed: Math.abs(seed), routine, local, model: 'humanoid', race: races[mod(seed, races.length)], color: this.neighborhoods.get(neighborhood)?.color || '#95aab6' };
+    return { id, name, role, neighborhood, seed: Math.abs(seed), routine, local, model: 'humanoid', race: races[mod(seed, races.length)], color: this.neighborhoods.get(neighborhood)?.color || '#95aab6', ...npcIdentity(id, role) };
   }
   streetResidents(b) {
     if(this.upperBlocks.has(b))return this.upperBlocks.get(b);
@@ -245,6 +248,7 @@ export class CityLife {
     this.incidents = [];
     this.morality = null;
     this.outcomes.clear();
+    this.social.clear();
   }
   update(epoch, origin, { enemies = [], incidents = [], completed = [], morality = null, quality = 1, focus = null } = {}) {
     const seconds = epoch / 1000, dt = Math.max(0, Math.min(.1, seconds - (this.lastTime ?? seconds)));
@@ -296,7 +300,7 @@ export class CityLife {
       const threat = threats.filter(e => e.health > 0 && distance(position, e.position) < (e.radius || 13) && this.world.lineOfSight(position, e.position)).sort((a, b) => distance(position, a.position) - distance(position, b.position))[0];
       if (threat) {
         if (!state.position) state.position = [...position];
-        state.until = seconds + 5;
+        state.until = seconds + 4 + resident.personality.patience * 2;
       }
       if (state.position) {
         if (interrupted) state.delay += elapsed;
@@ -304,7 +308,8 @@ export class CityLife {
         if (seconds < state.until) {
           if (threat && state.trail.length < 640) {
             const dx = position[0] - threat.position[0], dz = position[2] - threat.position[2], length = Math.hypot(dx, dz) || 1;
-            const step = [dx / length * 4.2 * dt, 0, dz / length * 4.2 * dt];
+            const speed = 3.4 + resident.personality.assertiveness * .9;
+            const step = [dx / length * speed * dt, 0, dz / length * speed * dt];
             for (let part = 0; part < 2; part++) for (const axis of [0, 2]) {
               const next = [...state.position];next[axis] += step[axis] / 2;
               if (distance(next, state.position) > .001 && !this.world.collides(...next, .55) && this.world.floorAt(next[0], next[2], next[1] + .1, next[1] - .2) >= next[1] - .1) {
@@ -340,27 +345,30 @@ export class CityLife {
         if (treatment.wary) { if (activity === 'talk') activity = 'wait';yaw = Math.atan2(position[0]-origin[0],position[2]-origin[2]); }
         else if (treatment.warm) { greeting = 'nod';yaw = Math.atan2(origin[0]-position[0],origin[2]-position[2]); }
       }
-      actors.push({ ...resident, position, velocity, yaw, activity, title: treatment.wary && nearby && stopped ? 'Keeping their distance' : title, gesture: greeting, treatment, line: activity === 'flee' ? incident?.hazard ? 'Get out of the marked circle. The line is about to discharge!' : 'Keep back from the machines. Get behind a wall!' : incidentLine || (nearby && treatment.line) || this.outcomes.get(resident.neighborhood) || (base.activity==='scene'?event.detail:resident.local?stage?.line:resident.personal) || role.line });
+      actors.push({ ...resident, position, velocity, yaw, activity, title: treatment.wary && nearby && stopped ? 'Keeping their distance' : title, gesture: greeting, treatment,
+        mood: residentMood(resident.personality, epoch, resident.role, incident), incidentPhase: incident?.phase,
+        socialAvailable: !state.position && !interrupted && activity !== 'flee' && !['story', 'scene'].includes(base.activity) && !['active', 'warning', 'failed'].includes(incident?.phase),
+        stopStarted: seconds - base.elapsed, stopEnds: seconds + base.remaining,
+        line: activity === 'flee' ? incident?.hazard ? 'Get out of the marked circle. The line is about to discharge!' : resident.personality.care > .65 ? 'Keep back from the machines. Check that your neighbor is with you!' : 'Keep back from the machines. Get behind a wall!' : incidentLine || (nearby && treatment.line) || this.outcomes.get(resident.neighborhood) || (base.activity==='scene'?event.detail:resident.local?stage?.line:resident.personal) || role.line });
     }
     for (const [id, state] of this.states) if (seconds - state.seen > 20 || seconds < state.seen) this.states.delete(id);
     // Preserve conversations, then spend the crowd budget on the viewer's floor first.
     actors.sort((a, b) => Number(b.id === focus) - Number(a.id === focus) || Number(Math.abs(b.position[1]-origin[1])<3)-Number(Math.abs(a.position[1]-origin[1])<3) || Number(b.local) - Number(a.local) || distance(origin, a.position) - distance(origin, b.position) || a.id.localeCompare(b.id));
     this.actors = actors.slice(0, limit);
-    for (const actor of this.actors) if (actor.activity === 'talk' && actor.id !== focus && !actor.gesture) {
-      const partner = this.actors.find(other => other.id !== actor.id && other.activity !== 'flee' && Math.hypot(other.velocity[0], other.velocity[2]) < .1 && distance(actor.position, other.position) < 5 && this.world.lineOfSight(actor.position, other.position));
-      if (partner) actor.yaw = Math.atan2(partner.position[0] - actor.position[0], partner.position[2] - actor.position[2]);
-      else { actor.activity = 'wait';actor.title = 'Waiting for a neighbor'; }
-    }
+    this.social.update(this.actors, epoch, this.world, focus);
     return this.actors;
   }
   conversation(actor, epoch) {
     const n = this.neighborhoods.get(actor.neighborhood), role = this.content.roles[actor.role];
     const incident = this.incidents.find(e => e.neighborhood === n?.id && e.phase !== 'idle');
     const treatment = residentTreatment(this.morality,actor.neighborhood,actor.role), stage = n && cityStage(n,this.completed);
-    return { role: role.title, treatment, personal: treatment.wary ? treatment.line : [treatment.line,actor.personal||role.line].filter(Boolean).join(' '), building: treatment.wary ? null : actor.building, neighborhood: n, stage: stage && this.outcomes.get(n.id) ? { ...stage,line: this.outcomes.get(n.id) } : stage, event: incident ? { name: incident.name, detail: actor.line } : n && cityEvent(n, epoch) };
+    return { role: role.title, treatment, style: outfitDescription(actor.outfit), demeanor: `${actor.personality.temperament}; ${actor.mood || 'unhurried'}; ${actor.personality.habit}.`,
+      personal: treatment.wary ? treatment.line : [treatment.line,actor.personal||role.line,actor.personality.ambition].filter(Boolean).join(' '),
+      interest: treatment.wary ? '' : actor.personality.interest.name, interaction: actor.interaction,
+      building: treatment.wary ? null : actor.building, neighborhood: n, stage: stage && this.outcomes.get(n.id) ? { ...stage,line: this.outcomes.get(n.id) } : stage, event: incident ? { name: incident.name, detail: actor.line } : n && cityEvent(n, epoch) };
   }
   overheard(origin, epoch) {
     const seconds = epoch / 1000;
-    return this.actors.filter(a => distance(origin, a.position) < 24 && Math.hypot(a.velocity[0], a.velocity[2]) < .1 && mod(seconds + a.seed, 23) < 5 && this.world.lineOfSight(origin, a.position)).sort((a, b) => distance(origin, a.position) - distance(origin, b.position))[0] || null;
+    return this.actors.filter(a => distance(origin, a.position) < 24 && Math.hypot(a.velocity[0], a.velocity[2]) < .1 && (a.interaction ? a.interaction.speaking : mod(seconds + a.seed, 23) < 5) && this.world.lineOfSight(origin, a.position)).sort((a, b) => Number(Boolean(b.interaction)) - Number(Boolean(a.interaction)) || distance(origin, a.position) - distance(origin, b.position))[0] || null;
   }
 }

@@ -17,18 +17,19 @@ export { box } from './geometry.js';
 const vertexSource = `
 attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aGlow;
 uniform mat4 uMatrix; uniform mediump vec3 uEye; uniform mediump vec3 uSun; uniform mediump float uDay; uniform mediump float uTime; uniform mediump float uWindowLight;
-varying mediump vec3 vColor; varying mediump float vGlow; varying mediump vec3 vPosition; varying mediump vec3 vNormal;
+varying mediump vec3 vColor; varying mediump float vGlow; varying mediump float vMaterial; varying mediump vec3 vPosition; varying mediump vec3 vNormal;
 void main(){
-  // [2,4) marks rooted plants; >= 4 marks glazing lit only after dusk.
-  bool windowPane=aGlow>=4.0,plant=aGlow>=2.0&&aGlow<4.0;
-  vGlow=windowPane?(aGlow-4.0)*uWindowLight:plant?aGlow-2.0:aGlow;
+  // [2,4) plants, [4,8) dusk glazing, [8,13) opaque clothing finishes.
+  bool clothing=aGlow>=8.0,windowPane=aGlow>=4.0&&aGlow<8.0,plant=aGlow>=2.0&&aGlow<4.0;
+  vMaterial=clothing?aGlow-7.0:0.0;
+  vGlow=clothing?0.0:windowPane?(aGlow-4.0)*uWindowLight:plant?aGlow-2.0:aGlow;
   vec3 position=aPosition;
   if(plant){float bend=sin(uTime*.8+aPosition.x*.12+aPosition.z*.07)*.055*clamp(aPosition.y,0.,15.);position.x+=bend;position.z+=bend*.4;}
   vColor=windowPane?mix(vec3(.106,.169,.224),aColor,uWindowLight):aColor;
   vPosition=position; vNormal=aNormal; gl_Position=uMatrix*vec4(position,1.0);
 }`;
 const fragmentSource = `
-precision mediump float; varying mediump vec3 vColor; varying mediump float vGlow; varying mediump vec3 vPosition; varying mediump vec3 vNormal;
+precision mediump float; varying mediump vec3 vColor; varying mediump float vGlow; varying mediump float vMaterial; varying mediump vec3 vPosition; varying mediump vec3 vNormal;
 uniform vec3 uFog; uniform mediump vec3 uEye; uniform mediump vec3 uSun; uniform mediump float uDay; uniform float uVolume; uniform float uTime; uniform float uDetail; uniform vec4 uRoom; uniform float uRoomHeight;
 uniform vec4 uLightPosition[LIGHT_COUNT]; uniform vec4 uLightColor[LIGHT_COUNT];
 float hash(vec2 p){p=mod(p,251.0);return fract(sin(dot(p,vec2(12.9898,78.233)))*437.585);}
@@ -60,6 +61,14 @@ void main(){
   float d=length(offset)*1000.0;vec3 ray=normalize(offset),normal=normalize(vNormal);
   float ambient=mix(.115+.055*max(normal.y,0.0)+.04*max(normal.z,0.0),.58,uDay)+max(dot(normal,normalize(uSun)),0.0)*.46*uDay;
   vec3 surface=vColor*mix(ambient,2.3,max(0.0,vGlow));float wet=0.0,wetBreakup=1.0;
+  float gloss=vMaterial<1.5?0.0:vMaterial<2.5?.3:vMaterial<3.5?.65:.85;
+  float shine=vMaterial<2.5?16.0:vMaterial<3.5?48.0:32.0;
+  vec3 finishColor=mix(vec3(1.),vColor,vMaterial>3.5?.65:.15);
+  if(gloss>0.0){
+    float rim=pow(1.0-max(0.0,dot(normal,-ray)),3.0);
+    if(vMaterial>4.5)finishColor=mix(finishColor,.55+.45*cos(vec3(0.,2.1,4.2)+dot(normal,-ray)*9.),.65);
+    surface+=finishColor*gloss*(rim*mix(.3,.55,uDay)+pow(max(dot(reflect(-normalize(uSun),normal),-ray),0.0),shine)*uDay*.9);
+  }
   // Inset the room mask so interpolation at an exterior wall cannot alternate
   // between indoor and outdoor light on adjacent fragments.
   float indoors=step(abs(vPosition.x-uRoom.x),uRoom.z-.08)*step(abs(vPosition.z-uRoom.y),uRoom.w-.08)*(1.0-step(uRoomHeight,vPosition.y));
@@ -72,7 +81,7 @@ void main(){
   vec3 fogColor=mix(uFog,mix(vec3(.07,.095,.12),vec3(.43,.36,.29),uDay),smog*.3);
   float fog=1.0-exp(-d*(.0015+weather*.0011)*density*(.85+bank*.5+smog*.65));
   fog=clamp(fog-max(0.0,vGlow)*.12,0.0,1.0);
-  if(normal.y>.85&&vPosition.y<.25&&vGlow>=0.0){
+  if(normal.y>.85&&vPosition.y<.25&&vGlow>=0.0&&vMaterial<.5){
     vec2 p=vPosition.xz;float city=1.0-step(1120.0,max(abs(p.x),abs(p.y)));
     vec2 street=abs(mod(p+40.0,80.0)-40.0);
     float plaza=1.0-step(46.0,max(abs(p.x),abs(p.y)));
@@ -103,7 +112,7 @@ void main(){
   }else if(vGlow<.2){
     float rim=pow(1.0-abs(dot(normal,-ray)),3.0);
     surface+=vec3(.015,.03,.05)*rim*(1.0-uDay*.5);
-    if(uDetail>.5&&abs(normal.y)<.35&&d<150.0){
+    if(vMaterial<.5&&uDetail>.5&&abs(normal.y)<.35&&d<150.0){
       vec2 wall=vec2(abs(normal.x)>.5?vPosition.z:vPosition.x,vPosition.y);
       float runoff=noise(wall*vec2(.65,.055));
       float soot=smoothstep(.38,.78,runoff)*(1.0-smoothstep(0.,32.,wall.y));
@@ -126,6 +135,7 @@ void main(){
       mistLight+=radiance*.65;
       if(uVolume>.5)scattering+=uLightColor[i].rgb*shaft(ray,d,uLightPosition[i].xyz,radius,direction)*(1.0-uDay*.5)*1.7;
       surface+=vColor*radiance*(.12+max(dot(normal,L),0.0))*4.2*(1.0-clamp(vGlow,0.,1.));
+      if(gloss>0.0)surface+=finishColor*radiance*pow(max(dot(reflect(-L,normal),-ray),0.0),shine)*gloss*4.0;
       if(wet>.01){
         float specular=pow(max(dot(reflect(-L,normal),-ray),0.0),mix(12.,36.,wet));
         float reflected=pow(max(0.0,1.0-ld/(radius*3.0)),2.0)*facing*(1.0-indoors);
