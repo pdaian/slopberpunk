@@ -151,7 +151,7 @@ export class WebGLUI {
     return used;
   }
   control(node,style,r,opacity) {
-    const ink=rgba(style.color,opacity),accent=rgba('#8ce7d0',opacity),size=number(style.fontSize);
+    const ink=rgba(style.color,opacity),accent=rgba('#39ffb6',opacity),size=number(style.fontSize);
     if(node.type==='checkbox'||node.type==='radio') {
       this.quad(r,rgba('#09131b',opacity));this.line(r,accent);
       if(node.checked)this.string('✓',r.x+3,r.y+1,style,accent);return;
@@ -248,7 +248,7 @@ export class WebGLUI {
     if(/auto|scroll/.test(style.overflowY)&&node.scrollHeight>node.clientHeight+1) {
       const h=Math.max(24,r.h*node.clientHeight/node.scrollHeight),y=r.y+(r.h-h)*node.scrollTop/(node.scrollHeight-node.clientHeight);
       this.quad({x:r.x+r.w-7,y:r.y,w:5,h:r.h},rgba('#1d303d',opacity));
-      this.quad({x:r.x+r.w-7,y,w:5,h},rgba('#7eabae',opacity));
+      this.quad({x:r.x+r.w-7,y,w:5,h},rgba('#00eaff',opacity));
     }
   }
   roots() {

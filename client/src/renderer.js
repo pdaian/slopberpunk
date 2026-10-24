@@ -59,7 +59,7 @@ void main(){
   vec3 offset=(vPosition-uEye)*.001;
   float d=length(offset)*1000.0;vec3 ray=normalize(offset),normal=normalize(vNormal);
   float ambient=mix(.115+.055*max(normal.y,0.0)+.04*max(normal.z,0.0),.58,uDay)+max(dot(normal,normalize(uSun)),0.0)*.46*uDay;
-  vec3 surface=vColor*mix(ambient,1.55,max(0.0,vGlow));float wet=0.0,wetBreakup=1.0;
+  vec3 surface=vColor*mix(ambient,2.3,max(0.0,vGlow));float wet=0.0,wetBreakup=1.0;
   // Inset the room mask so interpolation at an exterior wall cannot alternate
   // between indoor and outdoor light on adjacent fragments.
   float indoors=step(abs(vPosition.x-uRoom.x),uRoom.z-.08)*step(abs(vPosition.z-uRoom.y),uRoom.w-.08)*(1.0-step(uRoomHeight,vPosition.y));
@@ -71,7 +71,7 @@ void main(){
   float smog=cityHaze*exp(-max(0.,air.y)*.015)*(.4+.6*noise(air.xz*.013+vec2(uTime*.004,0.)));
   vec3 fogColor=mix(uFog,mix(vec3(.07,.095,.12),vec3(.43,.36,.29),uDay),smog*.3);
   float fog=1.0-exp(-d*(.0015+weather*.0011)*density*(.85+bank*.5+smog*.65));
-  fog=clamp(fog-max(0.0,vGlow)*.045,0.0,1.0);
+  fog=clamp(fog-max(0.0,vGlow)*.12,0.0,1.0);
   if(normal.y>.85&&vPosition.y<.25&&vGlow>=0.0){
     vec2 p=vPosition.xz;float city=1.0-step(1120.0,max(abs(p.x),abs(p.y)));
     vec2 street=abs(mod(p+40.0,80.0)-40.0);
@@ -122,14 +122,14 @@ void main(){
       float ld=length(delta);vec3 L=delta/max(ld,.001);float direction=uLightColor[i].w;
       float facing=abs(direction)<.5?1.0:abs(direction)>1.5?smoothstep(-.3,.1,-delta.z*sign(direction)):smoothstep(-.3,.1,-delta.x*sign(direction));
       float falloff=pow(max(0.0,1.0-ld/radius),2.0)*facing*(1.0-indoors);
-      vec3 radiance=uLightColor[i].rgb*falloff*(1.0-uDay*.7);
-      mistLight+=radiance*.35;
-      if(uVolume>.5)scattering+=uLightColor[i].rgb*shaft(ray,d,uLightPosition[i].xyz,radius,direction)*(1.0-uDay*.5);
-      surface+=vColor*radiance*(.12+max(dot(normal,L),0.0))*2.6*(1.0-clamp(vGlow,0.,1.));
+      vec3 radiance=uLightColor[i].rgb*falloff*(1.0-uDay*.55);
+      mistLight+=radiance*.65;
+      if(uVolume>.5)scattering+=uLightColor[i].rgb*shaft(ray,d,uLightPosition[i].xyz,radius,direction)*(1.0-uDay*.5)*1.7;
+      surface+=vColor*radiance*(.12+max(dot(normal,L),0.0))*4.2*(1.0-clamp(vGlow,0.,1.));
       if(wet>.01){
-        float specular=pow(max(dot(reflect(-L,normal),-ray),0.0),mix(18.,55.,wet));
+        float specular=pow(max(dot(reflect(-L,normal),-ray),0.0),mix(12.,36.,wet));
         float reflected=pow(max(0.0,1.0-ld/(radius*3.0)),2.0)*facing*(1.0-indoors);
-        surface+=uLightColor[i].rgb*reflected*specular*wet*wetBreakup*1.8*(1.0-uDay*.7);
+        surface+=uLightColor[i].rgb*reflected*specular*wet*wetBreakup*3.6*(1.0-uDay*.55);
       }
     }
   }
@@ -174,15 +174,15 @@ varying mediump vec3 vTint;
 void main(){
  vec3 delta=uEye-aLight.xyz;float d=max(length(delta),.01);
  gl_Position=uMatrix*vec4(aLight.xyz+delta/d*.26,1.);
- gl_PointSize=clamp(aLight.w*uHeight/d,2.,90.);
- vTint=aTint.rgb*aTint.w*(1.-smoothstep(160.,600.,d))*mix(1.,.12,uDay)*(.94+.06*sin(uTime*.8+aLight.x+aLight.z));
+ gl_PointSize=clamp(aLight.w*uHeight*1.65/d,2.,160.);
+ vTint=aTint.rgb*aTint.w*(1.-smoothstep(160.,600.,d))*mix(1.,.45,uDay)*(.94+.06*sin(uTime*.8+aLight.x+aLight.z));
 }`;
 const glowFragment = `precision mediump float; varying mediump vec3 vTint; uniform float uDetail;
 void main(){
  vec2 p=gl_PointCoord*2.-1.;float r=dot(p,p);
- float halo=exp(-r*5.)*(1.-smoothstep(.2,1.,r))*.4;
+ float halo=exp(-r*3.2)*(1.-smoothstep(.2,1.,r))*.75;
  float core=exp(-r*85.);
- float star=(exp(-abs(p.x)*65.-abs(p.y)*5.)+exp(-abs(p.y)*65.-abs(p.x)*5.))*.12*uDetail;
+ float star=(exp(-abs(p.x)*65.-abs(p.y)*5.)+exp(-abs(p.y)*65.-abs(p.x)*5.))*.24*uDetail;
  gl_FragColor=vec4(vTint,halo+core+star);
 }`;
 
@@ -361,7 +361,7 @@ export class Renderer {
       for(const side of [-1,1]) {
         const pos=[...p.position], size=[...p.size]; pos[1]+=.15;
         pos[alongX?2:0]+=side*(size[alongX?2:0]/2-.2); size[1]=.2; size[alongX?2:0]=.25;
-        box(ground,pos,size,'#86c5b1',.8);
+        box(ground,pos,size,side>0?'#00efff':'#ff30c8',.95);
       }
     }
     for(const lift of data.lifts) {
@@ -393,13 +393,14 @@ export class Renderer {
       this.lights.push({position:[p[0],p[1]+1.9,p[2]+.7],color:l.color,radius:5,direction:2,size:1.1,strength:.55});
     }
     for(const [x,z] of [[-32,32],[32,32],[-32,-32],[32,-32],[-8,60],[8,60]]) {
+      const neon=x<0?'#ff18b7':'#00f5ff';
       box(props,[x,5,z],[.3,10,.3],'#46615b');
-      box(props,[x,9.6,z],[4,.35,.35],'#bce1b4',.95);
+      box(props,[x,9.6,z],[4,.35,.35],neon,.95);
       box(props,[x,.1,z],[4,.2,4],'#3c5650');
-      this.lights.push({position:[x,9.39,z],color:'#bce1b4',radius:19,direction:0,size:4,strength:1.1});
+      this.lights.push({position:[x,9.39,z],color:neon,radius:24,direction:0,size:5,strength:1.4});
     }
     // A freestanding signal monument; all geometry is original and editable here.
-    for(let i=0;i<7;i++) box(props,[0,4+i*2.2,-42],[18-i*1.5,.35,1.1],'#a1cfa3',.65,i*.16);
+    for(let i=0;i<7;i++) box(props,[0,4+i*2.2,-42],[18-i*1.5,.35,1.1],i%2?'#ff18b7':'#00f5ff',.95,i*.16);
     box(props,[0,1,-42],[5,2,5],'#4e6255');
     this.upload(props,[0,20,0],4000);
     for(const neighborhood of this.cityLife?.content.neighborhoods||[]){

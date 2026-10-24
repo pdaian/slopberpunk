@@ -9,12 +9,12 @@ export function routeGeometry(v, route, accent='#8bc6bb') {
   if(route.kind==='street'){
     slope(v,start,end,width,'#303b49');
     const rise=end[1]-start[1],pitch=-Math.atan2(rise,length),span=Math.hypot(length,rise),paint=[];
-    const color=Math.max(start[1],end[1])>=48?'#dab587':'#81c9ca';
+    const color=Math.max(start[1],end[1])>=48?'#ff30c8':'#00efff';
     // Flush markings leave junctions open; broad edge lanes serve as sidewalks.
     for(const side of [-1,1]){
       pane(paint,[side*(width/2-1.15),.012,0],[2.3,0,span],'#536270',0,2);
-      pane(paint,[side*(width/2-.2),.02,0],[.16,0,span],color,.65,2);
-      pane(paint,[side*(width/2-2.5),.02,0],[.12,0,span],color,.15,2);
+      pane(paint,[side*(width/2-.2),.02,0],[.2,0,span],color,.95,2);
+      pane(paint,[side*(width/2-2.5),.02,0],[.12,0,span],color,.65,2);
     }
     for(let d=4;d<length-4;d+=12)pane(paint,[0,.02,(d/length-.5)*span],[.18,0,Math.min(4,length-4-d)*span/length],'#dbcaa0',.15,2);
     transformMesh(v,paint,start.map((n,i)=>(n+end[i])/2),yaw,pitch);
@@ -65,11 +65,11 @@ export function tutorialGeometry(v, data) {
 }
 
 const districtLights = {
-  market: ['#ffba62','#ff6095','#6ce8cd','#ffe2ab'],
-  archive: ['#a99aff','#6ac9ff','#e7b7f5','#8ce5ec'],
-  furnace: ['#ff914f','#efc567','#f26667','#91d8ce'],
-  quiet: ['#b4d789','#75cbb9','#d4a4cf','#e4c49a'],
-  skybridge: ['#64deed','#809dff','#f579af','#d9e9ff']
+  market: ['#ff18b7','#00f5ff','#ff9d00','#faff00'],
+  archive: ['#ac35ff','#00eaff','#ff1ad9','#3165ff'],
+  furnace: ['#ff5c00','#ffdf00','#ff126b','#00ffc3'],
+  quiet: ['#70ff00','#00ffb3','#f438ff','#eaff00'],
+  skybridge: ['#00efff','#3d52ff','#ff19a8','#a94dff']
 };
 
 const districtAds = {
@@ -90,7 +90,7 @@ export function buildingAds(b) {
     return {kind:'advert',position:[b.x+(i===2?-1:1)*b.w*.27,y,b.z+side*(b.d/2+.65)],
       width,height,variant,yaw:side<0?Math.PI:0,message:messages[(Math.floor(b.seed/3)+i)%messages.length],
       color:i%2?style.secondary:style.neon,secondary:i%2?style.neon:style.secondary,
-      radius:16,direction:side*2,size:3.5,strength:.95};
+      radius:24,direction:side*2,size:5.5,strength:1.35};
   });
 }
 
@@ -104,8 +104,8 @@ function advertisement(v,ad,detail=false) {
     box(mesh,[0,0,-.04],[w,h,.3],'#14202c');
     pane(mesh,[0,0,.12],[w-.3,h-.3,0],'#26314b',.12,4);
     for(const side of [-1,1]){
-      pane(mesh,[side*(w/2-.12),0,.15],[.12,h,0],c,.95,4);
-      pane(mesh,[0,side*(h/2-.12),.15],[w,.12,0],side>0?c:ad.secondary,.9,4);
+      pane(mesh,[side*(w/2-.12),0,.15],[.2,h,0],c,.95,4);
+      pane(mesh,[0,side*(h/2-.12),.15],[w,.2,0],side>0?c:ad.secondary,.95,4);
     }
     if(ad.variant===1){
       // Circuit-like diamonds and a divided display distinguish the tall panels.
@@ -133,9 +133,9 @@ export function buildingLights(b) {
   for(const wing of [-1,1])if((b.seed+(wing+1)*3)%5>1)lights.push({kind:'lamp',
     position:[b.x+wing*(b.w/2+2),7,b.z-b.d/2-2],color:style.lamp,radius:13,direction:0,size:2.8,strength:.85});
   lights.push({kind:'entry',position:[b.x,b.interior?4.35:5.25,b.z+b.d/2+(b.interior?1.56:.3)],
-    color:b.interior?.color||style.neon,radius:14,direction:2,size:3.5,strength:.7});
+    color:b.interior?.color||style.neon,radius:18,direction:2,size:4.5,strength:1.1});
   lights.push({kind:'sign',position:[b.x+side*(b.w/2+1.34),b.h*.58,b.z],
-    color:style.neon,radius:17,direction:side,size:3,strength:.8});
+    color:style.neon,radius:25,direction:side,size:4.8,strength:1.4});
   if(b.rooftop)for(const side of [-1,1])lights.push({kind:'roof',position:[b.x,b.h+3.5,b.z+side*(b.d/2-1.5)],color:b.rooftop.venue?.accent||style.neon,radius:16,direction:0,size:2.5,strength:.8});
   else lights.push({kind:'beacon',position:[b.x,b.h+[14.6,5.4,9.2,2.8][style.roof],b.z],
     color:b.seed%2?'#ff7967':'#a4e4ef',radius:5,direction:0,size:1.8,strength:.65});
@@ -152,9 +152,15 @@ export function buildingExterior(v,b,data,lights=null) {
   const split=b.interior?data.interiors.height*3+(b.h-data.interiors.height*3)*.55:b.h;
   if(!b.rooftop)box(v,[b.x,b.h-.15,b.z],[roof[0]+.6,.3,roof[2]+.6],'#182232');
   for(const side of [-1,1]) {
-    box(v,[b.x+side*(b.w/2-.15),split/2,b.z+b.d/2+.07],[.3,split,.14],'#657080');
-    if(style.pattern!==3)box(v,[b.x,b.h+.15,b.z+side*roof[2]/2],[roof[0]*(style.pattern===1?.6:1),.15,.25],style.secondary,.7);
+    // Neon tubes follow both building tiers without crossing doors or roof access.
+    for(const wing of [-1,1]){
+      box(v,[b.x+wing*(b.w/2+.06),split/2,b.z+side*(b.d/2+.06)],[.4,split,.4],wing===side?neon:style.secondary,.95);
+      if(split<b.h)box(v,[b.x+wing*(roof[0]/2+.06),(split+b.h)/2,b.z+side*(roof[2]/2+.06)],[.4,b.h-split,.4],wing===side?neon:style.secondary,.95);
+    }
+    box(v,[b.x,b.h+.15,b.z+side*roof[2]/2],[roof[0],.32,.32],style.secondary,.95);
+    box(v,[b.x+side*roof[0]/2,b.h+.15,b.z],[.32,.32,roof[2]],neon,.95);
     box(v,[b.x,6.65,b.z+side*(b.d/2+.7)],[b.w+1,.35,1.6],'#182232');
+    pane(v,[b.x,6.65,b.z+side*(b.d/2+1.51)],[b.w+1,.3,0],neon,.95,side>0?4:5);
     if(b.interior){
       const door=data.interiors.doorWidth;
       box(v,[b.x,4.55,b.z+side*(b.d/2+.7)],[door+1,.32,1.6],'#192331');
@@ -190,7 +196,11 @@ export function buildingExterior(v,b,data,lights=null) {
       const lit=rand()<style.occupancy*.55;
       pane(v,[b.x+side*(width/2+.06),y,b.z+z],[0,style.pattern===2?1.2:2.6,2.3],lit?style.window:'#172633',lit?4.35+rand()*.35:0,side>0?0:1);
     }
-    if(Math.round(y)%18===10)for(const side of [-1,1])box(v,[b.x,y-2,b.z+side*(depth/2+.25)],[width,.24,.5],'#526071');
+    // Thin facade ribbons add color on every side using single-face geometry.
+    if(Math.round(y)%12===10)for(const side of [-1,1]){
+      pane(v,[b.x,y-2,b.z+side*(depth/2+.28)],[width,.36,0],style.secondary,.9,side>0?4:5);
+      pane(v,[b.x+side*(width/2+.28),y-2,b.z],[0,.36,depth],neon,.9,side>0?0:1);
+    }
   }
   const side=b.x>0?-1:1;
   for(const ad of buildingAds(b))advertisement(v,ad);
@@ -329,7 +339,7 @@ export function rooftopGeometry(v,b) {
 
 export function vendorLight(position,kind,seed) {
   return {kind:'stall',position:[position[0],position[1]+3.65,position[2]+.45],
-    color:districtLights[kind][(seed+1)%4],radius:10,direction:0,size:2.2,strength:.85};
+    color:districtLights[kind][(seed+1)%4],radius:15,direction:0,size:3.2,strength:1.25};
 }
 
 // Dress the existing counters, keeping all merchandise above their solid tops.

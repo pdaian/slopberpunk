@@ -1,8 +1,8 @@
 /* Vesper field terminal. Layout/semantics for the WebGL interface. GPL-3.0-or-later. */
 :root {
   color-scheme: dark;
-  --bg: #070e16; --panel: #101d29f5; --line: #3c5363; --ink: #e6eee7;
-  --muted: #a6b8c4; --green: #8ce7d0; --cyan: #8acbea; --orange: #efbd7d;
+  --bg: #080918; --panel: #101329f5; --line: #286d89; --ink: #edfaff;
+  --muted: #afc5d5; --green: #39ffb6; --cyan: #00eaff; --orange: #ffcd38; --pink: #ff30c8;
   --mono: ui-monospace, 'Cascadia Mono', 'Liberation Mono', monospace; --sans: var(--mono);
 }
 * { box-sizing: border-box; scrollbar-width: none; }
@@ -45,7 +45,7 @@ kbd { display: inline-block; padding: 2px 6px; min-width: 24px; border: 1px soli
 .eyebrow { display: flex; gap: 10px; align-items: center; color: var(--green); font-size: 14px; }
 .tiny-square, .status-dot { display: inline-block; width: 6px; height: 6px; flex-shrink: 0; background: var(--green); }
 .button { display: inline-flex; align-items: center; justify-content: space-between; gap: 22px; padding: 14px 20px; min-height: 48px; font-size: 16px; }
-.button.primary, .tabs button.selected { color: #071a20; background: var(--green); border-color: #b4ffde; }
+.button.primary, .tabs button.selected { color: #071a20; background: var(--cyan); border-color: #a5ffff; }
 .button.primary:hover, .tabs button.selected:hover { background: #b4ffde; }
 .text-button, .small-button { font-size: 14px; }
 .danger, .form-error { color: #f7a18d; }
@@ -56,7 +56,7 @@ kbd { display: inline-block; padding: 2px 6px; min-width: 24px; border: 1px soli
 /* Title screen: a game menu over the living city. */
 #landing { position: absolute; inset: 0; overflow: auto; display: grid; grid-template-columns: minmax(0,1fr) 320px; grid-template-rows: 74px 1fr auto; gap: 24px 48px; padding: 0 5vw; background: #06101a50; }
 .masthead { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 74px; border-bottom: 1px solid var(--line); }
-#landing .masthead { grid-column: 1/-1; }
+#landing .masthead { grid-column: 1/-1; border-color: var(--cyan); }
 .brand { display: flex; align-items: center; gap: 14px; color: var(--ink); }
 .brand img { width: 32px; height: 32px; }
 .brand > span { font-size: 16px; }
@@ -66,20 +66,20 @@ kbd { display: inline-block; padding: 2px 6px; min-width: 24px; border: 1px soli
 .masthead nav button span { color: var(--green); }
 .account-link { display: flex; align-items: center; gap: 10px; font-size: 14px; max-width: 250px; overflow-wrap: anywhere; }
 .hero { align-self: center; padding: 24px 0 44px; max-width: 760px; }
-.hero .eyebrow { color: var(--orange); }
-h1 { font-size: clamp(48px,7vw,106px); line-height: 1; margin: 24px 0 20px; color: #e9e2c8; }
-h1 > span { color: var(--green); }
+.hero .eyebrow { color: var(--cyan); }
+h1 { font-size: clamp(48px,7vw,106px); line-height: 1; margin: 24px 0 20px; color: var(--cyan); }
+h1 > span { color: var(--pink); }
 .hero-copy { color: #c5d2d7; font-size: 18px; max-width: 470px; margin-bottom: 30px; }
 .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .hero-actions > button { width: min(100%,340px); text-align: left; }
 .hero-actions .compact-factions { display: none; }
 .entry-note { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); margin-top: 22px; }
 .edition { display: none; }
-.founder-offer { align-self: center; background: #0d1925ed; border: 1px solid var(--line); margin: 12px 0 36px; }
+.founder-offer { align-self: center; background: #160d29ed; border: 1px solid var(--pink); margin: 12px 0 36px; }
 .founder-edition { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); color: var(--orange); font-size: 14px; }
 .founder-art { display: block; width: 100%; height: auto; }
 .founder-copy { padding: 0 18px 18px; }
-.founder-copy h2 { color: #e9c1db; font-size: 24px; }
+.founder-copy h2 { color: var(--pink); font-size: 24px; }
 .founder-copy p, .founder-copy small { font-size: 14px; color: var(--muted); }
 .founder-copy .founder-status { color: var(--green); }
 .founder-kicker { color: var(--orange) !important; }
@@ -87,9 +87,9 @@ h1 > span { color: var(--green); }
 .founder-perks span { color: #ecd1aa; font-size: 12px; border: 1px solid var(--line); padding: 5px 8px; }
 .founder-copy details { margin-bottom: 16px; }
 .founder-copy summary { font-size: 14px; }
-.founder-button { width: 100%; justify-content: center; color: #0a1b20; background: #e1bcdb; font-size: 14px; }
+.founder-button { width: 100%; justify-content: center; color: #14091c; background: var(--pink); border-color: #ff97e5; font-size: 14px; }
 .founder-copy > small { display: block; margin-top: 12px; }
-.landing-footer { grid-column: 1/-1; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); padding: 14px 0; }
+.landing-footer { grid-column: 1/-1; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid var(--pink); padding: 14px 0; }
 .world-facts { display: flex; gap: 24px; font-size: 12px; color: var(--muted); }
 .world-facts strong { color: var(--green); margin-right: 6px; }
 .footer-right { display: flex; align-items: center; gap: 20px; font-size: 12px; color: var(--muted); }

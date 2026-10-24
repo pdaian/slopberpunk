@@ -1,14 +1,13 @@
-// Keyboard, pointer, touch and standard USB/Bluetooth controller input.
+// Keyboard, pointer, touch and USB/Bluetooth controller input.
 // GPL-3.0-or-later. See LICENSE.
 import { clamp } from './math.js';
-import { controllerLookStorage, controllerLookKey, controllerSnapshot, calibrateControllerLook, readControllerLook } from './controller-look.js';
+import { Controllers } from './controllers.js';
 
 export class Input {
   constructor(canvas,onAction,onLook) {
-    this.canvas=canvas;this.onAction=onAction;this.onLook=onLook;this.keys=new Set();this.edges=new Set();this.active=false;this.menu=true;this.drag=null;this.touchMove=[0,0];this.connected='';this.padTime=0;this.menuIndex=0;this.sensitivity=.0025;
-    this.lastDevice='keyboard';this.padIndex=null;this.padStates=new Map();this.pointerPosition=null;
-    this.calibratingLook=false;this.padLookProfiles=new Map();
-    try{const saved=JSON.parse(localStorage.getItem(controllerLookStorage));if(Array.isArray(saved))this.padLookProfiles=new Map(saved);}catch{/* Preferences may be unavailable. */}
+    this.canvas=canvas;this.onAction=onAction;this.onLook=onLook;this.keys=new Set();this.edges=new Set();this.active=false;this.menu=true;this.drag=null;this.touchMove=[0,0];this.sensitivity=.0025;
+    this.lastDevice='keyboard';this.controllers=new Controllers();this.pointerPosition=null;
+    this.focused=document.hasFocus?.()??true;this.generation=0;this.padTime=0;this.menuDirection='';this.menuContainer=null;this.menuPad=null;
     // Capture real activity in menus and text fields as well as in the world.
     // Controller menu navigation dispatches synthetic keys; those are not keyboard use.
     document.addEventListener('keydown',e=>{if(e.isTrusted!==false&&!e.repeat)this.lastDevice='keyboard';},true);
@@ -40,8 +39,10 @@ export class Input {
       if(bindings[e.code]&&this.active)this.onAction(bindings[e.code]);
     });
     window.addEventListener('keyup',e=>this.keys.delete(e.code));
-    window.addEventListener('blur',()=>this.clear());
-    document.addEventListener('visibilitychange',()=>{if(document.hidden)this.clear();});
+    window.addEventListener('blur',()=>{this.focused=false;this.controllers.suspend();this.clear();});
+    window.addEventListener('focus',()=>{this.focused=true;});
+    document.addEventListener('visibilitychange',()=>{if(document.hidden){this.controllers.suspend();this.clear();}});
+    window.addEventListener('gamepaddisconnected',e=>this.controllers.disconnect(e.gamepad.index));
     canvas.addEventListener('contextmenu',e=>e.preventDefault());
     canvas.addEventListener('pointerdown',e=>{
       if(!this.active||this.menu)return;
@@ -73,23 +74,11 @@ export class Input {
     });
     this.setupTouch();
   }
+  get connected(){return this.controllers.connected;}
+  get padIndex(){return this.controllers.index;}
+  get controllerStatus(){return this.controllers.status;}
   clearPointer(){const drag=this.drag;this.drag=null;if(drag&&this.canvas.hasPointerCapture?.(drag.id))this.canvas.releasePointerCapture(drag.id);}
-  clear(){this.keys.clear();this.edges.clear();this.touchMove=[0,0];this.clearPointer();}
-  controllerSnapshot(){
-    let pad;try{pad=Array.from(navigator.getGamepads?.()||[]).find((pad,slot)=>pad&&pad.connected!==false&&(pad.index??slot)===this.padIndex&&pad.id===this.connected);}catch{/* Disabled by browser policy. */}
-    if(!pad)throw new Error('Connect your controller and press a button, then try right-stick setup again.');
-    return controllerSnapshot(pad);
-  }
-  saveControllerLook(samples){
-    const current=this.controllerSnapshot();
-    if(current.key!==samples[0]?.key||current.index!==samples[0]?.index)throw new Error('The controller changed. Restart right-stick setup.');
-    this.padLookProfiles.set(current.key,calibrateControllerLook(samples));
-    return this.storeControllerLook();
-  }
-  resetControllerLook(){this.padLookProfiles.delete(this.controllerSnapshot().key);return this.storeControllerLook();}
-  storeControllerLook(){
-    try{localStorage.setItem(controllerLookStorage,JSON.stringify([...this.padLookProfiles]));return true;}catch{return false;}
-  }
+  clear(){this.keys.clear();this.edges.clear();this.touchMove=[0,0];this.clearPointer();this.generation++;this.padTime=0;this.menuDirection='';}
   setupTouch(){
     const stick=document.querySelector('#touch-stick');if(!stick)return;
     let touchId=null;
@@ -107,58 +96,54 @@ export class Input {
       if(a==='jump')this.edges.add('Space');else if(a==='dash')this.edges.add('KeyQ');else this.onAction(a);
     }));
   }
+  controllerMenu(pad,dt){
+    const {axes,pressed,edge}=pad;
+    const select=document.querySelector('.ui-select');
+    const container=select||document.querySelector('dialog[open]')||document.querySelector('#live-chat[data-expanded="true"]')||document.querySelector('#death-screen:not([hidden])')||document.querySelector('#creation:not([hidden])')||document.querySelector('#landing:not([hidden])');
+    const focusables=container?Array.from(container.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled):not([type="hidden"]),textarea:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(e=>!e.disabled&&e.getClientRects().length):[];
+    if(edge(1)||edge(9)){
+      if(select)document.activeElement?.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true}));
+      else this.onAction('escape');
+      return;
+    }
+    const y=(pressed[13]?1:0)-(pressed[12]?1:0)||(Math.abs(axes[1])>.6?Math.sign(axes[1]):0);
+    const x=(pressed[15]?1:0)-(pressed[14]?1:0)||(Math.abs(axes[0])>.6?Math.sign(axes[0]):0);
+    const direction=y?`y${y}`:x?`x${x}`:'';
+    const fresh=direction!==this.menuDirection||container!==this.menuContainer||pad.index!==this.menuPad||[12,13,14,15].some(edge);
+    this.padTime-=dt;this.menuDirection=direction;this.menuContainer=container;this.menuPad=pad.index;
+    if(direction&&(fresh||this.padTime<=0)&&focusables.length){
+      const current=focusables.indexOf(document.activeElement),control=focusables[current];
+      if(!y&&control?.tagName==='INPUT'&&control.type==='range'){
+        const before=control.value,min=control.min===''?0:Number(control.min),max=control.max===''?100:Number(control.max),step=Number(control.step)||1;
+        control.value=String(clamp(Number(before)+x*step,min,max));
+        if(control.value!==before){control.dispatchEvent(new Event('input',{bubbles:true}));control.dispatchEvent(new Event('change',{bubbles:true}));}
+      }else focusables[current<0?((y||x)>0?0:focusables.length-1):(current+(y||x)+focusables.length)%focusables.length].focus();
+      this.padTime=fresh ? .35 : .12;
+    }
+    if(edge(0)&&focusables.length){const control=focusables.includes(document.activeElement)?document.activeElement:focusables[0];control.focus();control.click();}
+  }
   sample(dt){
+    dt=Number.isFinite(dt)?Math.max(0,dt):0;
+    const idle={forward:0,strafe:0,jump:false,dash:false,sprint:false},generation=this.generation;
+    const enabled=this.focused&&!document.hidden,pad=this.controllers.poll(enabled);
+    if(pad?.activity)this.lastDevice='gamepad';else if(!pad&&this.lastDevice==='gamepad')this.lastDevice='keyboard';
+    if(!enabled){this.clear();return idle;}
+    if(this.menu){this.edges.clear();if(pad)this.controllerMenu(pad,dt);return idle;}
+    if(!this.active){this.clear();return idle;}
     let forward=(this.keys.has('KeyW')||this.keys.has('ArrowUp')?1:0)-(this.keys.has('KeyS')||this.keys.has('ArrowDown')?1:0),strafe=(this.keys.has('KeyD')?1:0)-(this.keys.has('KeyA')?1:0);
-    if(!this.menu){if(this.keys.has('ArrowLeft'))this.onLook(-dt*1.7,0);if(this.keys.has('ArrowRight'))this.onLook(dt*1.7,0);}
+    if(this.keys.has('ArrowLeft'))this.onLook(-dt*1.7,0);if(this.keys.has('ArrowRight'))this.onLook(dt*1.7,0);
     forward+=this.touchMove[1];strafe+=this.touchMove[0];
     let jump=this.edges.has('Space'),dash=this.edges.has('KeyQ'),sprint=this.keys.has('ShiftLeft')||this.keys.has('ShiftRight');this.edges.clear();
-    let pads=[];try{pads=navigator.getGamepads?.()||[];}catch{/* Disabled by browser policy. */}
-    const axis=v=>Math.abs(v||0)<.17?0:Math.sign(v)*(Math.abs(v)-.17)/.83;
-    const states=new Map(),candidates=[];
-    for(const [slot,pad]of Array.from(pads).entries()){
-      if(!pad||pad.connected===false||pad.mapping!=='standard')continue;
-      const index=pad.index??slot,previous=this.padStates.get(index);
-      const buttons=previous?.id===pad.id?previous.buttons:[],previousAxes=previous?.id===pad.id?previous.axes:[];
-      const profile=this.padLookProfiles.get(controllerLookKey(pad)),look=readControllerLook(pad,profile);
-      // A restored analog-button mapping may initially report zero before its
-      // first event. Require a centered stick once per connection/profile.
-      const lookReady=Boolean(look&&(previous?.id===pad.id&&previous.lookProfile===profile&&previous.lookReady||look.axes.every(v=>Math.abs(v)<.17)));
-      const pressed=pad.buttons.map((b,i)=>b.pressed&&!look?.buttons.includes(i)),edge=i=>pressed[i]&&!buttons[i];
-      const axes=[pad.axes[0],pad.axes[1],...(look?(lookReady?look.axes:[0,0]):[pad.axes[2],pad.axes[3]])].map(axis);
-      const moved=axes.some((value,i)=>value!==0&&Math.abs(value-(previousAxes[i]||0))>.12);
-      const activity=pressed.some((_,i)=>edge(i))||moved;
-      axes.forEach((value,i)=>{if(!value||Math.abs(value-(previousAxes[i]||0))>.12)previousAxes[i]=value;});
-      states.set(index,{id:pad.id,buttons:pressed,axes:previousAxes,lookProfile:profile,lookReady});
-      candidates.push({pad,index,axes,pressed,edge,activity});
+    if(pad){
+      const {axes,pressed,edge}=pad;
+      // Open panels first, and stop dispatching this frame when an action
+      // changes context. A held confirm/trigger must not leak into gameplay.
+      const actions=[[9,'settings'],[8,'journal'],[13,pressed[10]?'ability:execute':'map'],[2,'interact'],[3,'target'],[4,'ability:surge'],[5,'ability:mend'],[6,'ability:aegis'],[7,'ability:arc'],[12,pressed[10]?'ability:breach':'medkit'],[14,pressed[10]?'ability:nova':'ability:lance'],[15,pressed[10]?'ability:siphon':'ability:echo']];
+      for(const [i,action]of actions)if(edge(i)){this.onAction(action);if(this.menu||!this.active||this.generation!==generation)return idle;}
+      forward-=axes[1];strafe+=axes[0];
+      const speed=this.sensitivity/.0025;this.onLook(axes[2]*dt*2.3*speed,axes[3]*dt*1.8*speed);
+      jump ||=edge(0);dash ||=edge(1);sprint ||=pressed[10];
     }
-    this.padStates=states;
-    // Follow deliberate input on any controller, including the right stick.
-    // Keep per-device history so drift and held controls cannot steal input or repeat actions.
-    const current=candidates.find(c=>c.index===this.padIndex&&c.pad.id===this.connected);
-    const selected=(current?.activity?current:candidates.find(c=>c.activity))||current||candidates[0];
-    this.connected=selected?.pad.id||'';this.padIndex=selected?.index??null;
-    if(selected){
-      const {axes,pressed,edge,activity}=selected;
-      if(activity)this.lastDevice='gamepad';
-      if(this.menu){
-        this.padTime-=dt;
-        const direction=edge(13)||edge(15)||axes[1]>.6?1:edge(12)||edge(14)||axes[1]<-.6?-1:0;
-        const container=document.querySelector('.ui-select')||document.querySelector('dialog[open]')||document.querySelector('#live-chat[data-expanded="true"]')||document.querySelector('#death-screen:not([hidden])')||document.querySelector('#creation:not([hidden])')||document.querySelector('#landing:not([hidden])');
-        const focusables=container?Array.from(container.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled):not([type="hidden"]),textarea:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(e=>e.getClientRects().length):[];
-        if(!this.calibratingLook&&direction&&this.padTime<=0&&focusables.length){const current=focusables.indexOf(document.activeElement);this.menuIndex=(current+direction+focusables.length)%focusables.length;focusables[this.menuIndex].focus();this.padTime=.22;}
-        if(edge(0))document.activeElement?.click();
-        if(edge(1)||edge(9)){
-          if(document.querySelector('.ui-select'))document.activeElement?.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true}));
-          else this.onAction('escape');
-        }
-      }else{
-        forward-=axes[1];strafe+=axes[0];this.onLook(axes[2]*dt*2.3,axes[3]*dt*1.8);
-        jump ||=edge(0);dash ||=edge(1);sprint ||=pressed[10];
-        const actions={2:'interact',3:'target',4:'ability:surge',5:'ability:mend',6:'ability:aegis',7:'ability:arc',8:'journal',9:'settings',12:'medkit',13:'map',14:'ability:lance',15:'ability:echo'};
-        const alternate={12:'ability:breach',15:'ability:siphon',13:'ability:execute',14:'ability:nova'};
-        for(const [i,action]of Object.entries(actions))if(edge(Number(i)))this.onAction(pressed[10]&&alternate[i]?alternate[i]:action);
-      }
-    }else if(this.lastDevice==='gamepad')this.lastDevice='keyboard';
-    return this.menu?{forward:0,strafe:0,jump:false,dash:false,sprint:false}:{forward:clamp(forward,-1,1),strafe:clamp(strafe,-1,1),jump,dash,sprint};
+    return {forward:clamp(forward,-1,1),strafe:clamp(strafe,-1,1),jump,dash,sprint};
   }
 }

@@ -51,7 +51,7 @@ Touch controls and standard-mapped gamepads are also supported. Open **HOW TO PL
 
 If your character gets stuck, open **Escape → UNSTUCK** (press Escape again if it first clears your target). This returns you to the Commons, the training courtyard during the tutorial, or your current dungeon's entrance. It preserves progress, health, and energy and can be used every 30 seconds.
 
-If the right stick does not look around or casts an ability, open **Settings → SET UP RIGHT STICK** and follow the five prompts. The game saves the camera mapping for that controller in your browser. **RESET RIGHT STICK** restores the default mapping.
+Controller mappings are applied automatically, including the native Backbone One layouts on desktop Linux in Chrome and Firefox. **Settings → Camera turn speed** adjusts mouse, touch, and right-stick turning. Settings also shows controller connection or access problems. No right-stick calibration is needed; previously saved calibration settings are ignored. See [compatibility](docs/COMPATIBILITY.md#input-targets) for the supported layouts and verification limits.
 
 ## Server data
 

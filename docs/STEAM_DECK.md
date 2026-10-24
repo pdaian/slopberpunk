@@ -27,7 +27,7 @@ The desktop installation and shortcut steps follow [Valve's Desktop FAQ](https:/
 
 Firefox can also be added as a Steam shortcut. The `--app` flag and Chrome Flatpak ID in this guide apply only to Chrome. Sign in to the same server to access your characters in either browser.
 
-If the sticks or buttons do nothing, first check that the page is focused, the URL is HTTPS or Deck-local localhost, and the Steam layout sends gamepad inputs. Open Settings using the on-screen menu button; a detected standard gamepad produces **Standard controller connected.** If Chrome's Flatpak still cannot see it, quit Chrome and run this in Desktop Mode's **Konsole**, then relaunch through Steam:
+If the sticks or buttons do nothing, first check that the page is focused, the URL is HTTPS or Deck-local localhost, and the Steam layout sends gamepad inputs. Open Settings using the on-screen menu button; a recognized gamepad produces **Controller connected.** The status also reports blocked access or an unsupported layout. If Chrome's Flatpak still cannot see it, quit Chrome and run this in Desktop Mode's **Konsole**, then relaunch through Steam:
 
 ```sh
 flatpak override --user --filesystem=/run/udev:ro com.google.Chrome
