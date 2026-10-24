@@ -6,7 +6,7 @@ import { hasFounderHalo, founderHaloParts } from './founders.js';
 import { dungeonZones, dungeonPosition } from './dungeons.js';
 import { box, pane, bevelBox, ellipsoid, transformMesh } from './geometry.js';
 import { CharacterMeshes } from './character.js';
-import { buildingExterior, buildingInterior, buildingLights, buildingStyle, vendorLight, streetDetails, neighborhoodDetails, upperStreetDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry } from './scenery.js';
+import { buildingExterior, buildingInterior, buildingLights, buildingStyle, vendorLight, streetDetails, neighborhoodDetails, upperStreetDetails, civilianProps, routeGeometry, streetScene, tutorialGeometry, streetCanopies, canopyGeometry, commonsMonument } from './scenery.js';
 import { cityStage, streetPoint } from './citylife.js';
 import { incidentGeometry } from './events.js';
 import { enemyAttackGeometry } from './enemy-attacks.js';
@@ -294,7 +294,7 @@ export class Renderer {
     for(const b of this.world.buildings){
       const center=[b.x,b.rooftop?b.h/2:9,b.z];if(distance(eye,center)>210||this.details.has(b))continue;
       const v=[];streetDetails(v,b);if(b.interior)buildingInterior(v,b,this.world.data);
-      this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d,b.rooftop?b.h:20)/2,150,false));
+      this.details.set(b,this.upload(v,center,Math.hypot(b.w,b.d,b.rooftop?b.h:32)/2,150,false));
     }
     for(const b of this.cityLife?.streetBlocks||[]){
       if(distance(eye,b.position)>150||this.details.has(b))continue;
@@ -342,13 +342,18 @@ export class Renderer {
   }
   build() {
     const { data, buildings } = this.world, groups = new Map();
+    const group=(x,z)=>{
+      const key=`${Math.floor(x/240)},${Math.floor(z/240)}`;
+      if(!groups.has(key))groups.set(key,{center:[Math.floor(x/240)*240+120,50,Math.floor(z/240)*240+120],v:[]});
+      return groups.get(key);
+    };
     for (const b of buildings) {
-      const key = `${Math.floor(b.x / 240)},${Math.floor(b.z / 240)}`;
-      if (!groups.has(key)) groups.set(key, { center: [Math.floor(b.x / 240) * 240 + 120, 50, Math.floor(b.z / 240) * 240 + 120], v: [] });
-      buildingExterior(groups.get(key).v,b,data,this.lights);
+      buildingExterior(group(b.x,b.z).v,b,data,this.lights);
       this.lights.push(...buildingLights(b));
     }
-    for (const g of groups.values()) this.upload(g.v, g.center, 180);
+    for(const canopy of streetCanopies(this.world))canopyGeometry(group((canopy.start[0]+canopy.end[0])/2,(canopy.start[2]+canopy.end[2])/2).v,canopy,this.lights);
+    // Include the projecting crowns and suspended fixtures in each chunk's bounds.
+    for (const g of groups.values()) this.upload(g.v, g.center, 210);
     const ground = [];
     // Four basin slabs meet the city edge without coplanar faces. Street paint
     // and paving are shaded on the surface, avoiding distant depth flicker.
@@ -409,9 +414,7 @@ export class Renderer {
       box(props,[x,.1,z],[4,.2,4],'#3c5650');
       this.lights.push({position:[x,9.39,z],color:neon,radius:24,direction:0,size:5,strength:1.4});
     }
-    // A freestanding signal monument; all geometry is original and editable here.
-    for(let i=0;i<7;i++) box(props,[0,4+i*2.2,-42],[18-i*1.5,.35,1.1],i%2?'#ff18b7':'#00f5ff',.95,i*.16);
-    box(props,[0,1,-42],[5,2,5],'#4e6255');
+    commonsMonument(props,this.lights);
     this.upload(props,[0,20,0],4000);
     for(const neighborhood of this.cityLife?.content.neighborhoods||[]){
       const v=[],center=data.districts.find(d=>d.id===neighborhood.id).center;
@@ -523,7 +526,7 @@ export class Renderer {
         }
       }
       if(this.quality>.5&&!b.rooftop&&buildingStyle(b).roof===2){
-        const source=[b.x+3,b.h+10.2,b.z];
+        const source=[b.x+3,b.h+16.3,b.z];
         if(distance(eye,source)<180)for(let i=0;i<4;i++){
           const age=(sceneTime*.065+i/4+b.seed%13/13)%1;
           ellipsoid(mist,[source[0]+age*6,source[1]+age*15,source[2]+age*2],[2+age*8,2+age*9,2+age*7],b.identity.district==='furnace'?'#756353':'#8e9694',-Math.max(.001,.9*Math.sin(age*Math.PI)),0,8);

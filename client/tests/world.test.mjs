@@ -8,7 +8,7 @@ import { CharacterMeshes, motionPose } from '../src/character.js';
 import { box, bevelBox, ellipsoid, slope, transformMesh } from '../src/geometry.js';
 import { Renderer } from '../src/renderer.js';
 import { CityLife } from '../src/citylife.js';
-import { rooftopGeometry, streetDestination, routeGeometry, buildingExterior, buildingAds, buildingLights } from '../src/scenery.js';
+import { rooftopGeometry, streetDestination, routeGeometry, buildingExterior, buildingAds, buildingLights, streetCanopies, canopyGeometry } from '../src/scenery.js';
 import { rideDuration, ridePosition } from '../src/elevators.js';
 import { daylight, DAY_MS } from '../src/clock.js';
 
@@ -68,6 +68,32 @@ test('daytime glow sprites exclude windows while retaining neon and vendor light
     near(points[offset],1);near(points[offset+7],.8);near(points[offset+15],.8);
     if(hour!==12)near(points[7],.8*light.windows);
   }
+});
+
+test('suspended street fixtures are deterministic, bounded, and leave route headroom clear',()=>{
+  const canopies=streetCanopies(world),kinds=new Set();
+  assert.deepEqual(canopies,streetCanopies(world));
+  assert.ok(canopies.length>100&&canopies.length<world.buildings.length/2);
+  for(const canopy of canopies){
+    const mesh=[],lights=[];canopyGeometry(mesh,canopy,lights);kinds.add(canopy.kind);
+    assert.ok(mesh.length>0&&mesh.length<40000&&mesh.length%30===0);
+    assert.ok(mesh.every(Number.isFinite));
+    for(let i=1;i<mesh.length;i+=10)assert.ok(mesh[i]>5.9,'hanging fixtures must clear the ground-floor camera');
+    assert.ok(lights.length>0&&lights.length<=5);
+  }
+  assert.equal(kinds.size,5);
+  const south=canopy=>canopy.start[0]===-32&&canopy.start[2]===32&&canopy.end[0]===32;
+  assert.ok(canopies.some(south),'Commons lamps must carry the lantern strings');
+  for(const y of [0,5,24]){
+    const route={start:[0,y,16],end:[0,y,48],width:6};
+    const platform={position:[0,y,32],size:[8,1.4,8]};
+    for(const obstruction of [{routes:[route],platforms:[]},{routes:[],platforms:[platform]}]){
+      const decorated={...world,data:{...data.world,...obstruction}};
+      assert.equal(streetCanopies(decorated).some(south),y!==5,'fixtures must avoid walking headroom while allowing clear space above and below');
+    }
+  }
+  const ramp={start:[0,0,16],end:[0,10,48],width:6};
+  assert.equal(streetCanopies({...world,data:{...data.world,routes:[ramp]}}).some(south),false,'sloping approaches must also stay clear');
 });
 
 test('interiors preserve the original deterministic city footprint',()=>{

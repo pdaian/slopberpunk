@@ -80,6 +80,148 @@ const districtAds = {
   skybridge: ['SKY EXPRESS','BOOST','OFF WORLD','NEXT STOP']
 };
 
+function bar(v,start,end,width,hex,glow=0) {
+  const dx=end[0]-start[0],dy=end[1]-start[1],dz=end[2]-start[2],mesh=[];
+  box(mesh,[0,0,0],[width,width,Math.hypot(dx,dy,dz)],hex,glow);
+  transformMesh(v,mesh,start.map((n,i)=>(n+end[i])/2),Math.atan2(dx,dz),-Math.atan2(dy,Math.hypot(dx,dz)));
+}
+
+function ring(v,center,radius,width,hex,glow=0,segments=20) {
+  for(let i=0;i<segments;i++){
+    const point=n=>[center[0]+Math.sin(n/segments*Math.PI*2)*radius,center[1]+Math.cos(n/segments*Math.PI*2)*radius,center[2]];
+    bar(v,point(i),point(i+1),width,hex,glow);
+  }
+}
+
+// Suspend decoration from existing walls and Commons lamps. Conservative bounds
+// exclude decks and the full headroom of sloping routes, including their ends.
+export function streetCanopies(world) {
+  const canopies=[],{data}=world,spacing=data.buildingGrid.spacing;
+  const add=(start,end,kind,seed)=>{
+    const low=start.map((n,i)=>Math.min(n,end[i])-(i===1?3.5:1.2));
+    const high=start.map((n,i)=>Math.max(n,end[i])+(i===1?.2:1.2));
+    const overlaps=(a,b)=>a.every((n,i)=>n<=high[i]&&b[i]>=low[i]);
+    if((data.platforms||[]).some(p=>overlaps(
+      [p.position[0]-p.size[0]/2,p.position[1]-p.size[1],p.position[2]-p.size[2]/2],
+      [p.position[0]+p.size[0]/2,p.position[1]+3.2,p.position[2]+p.size[2]/2])))return;
+    if((data.routes||[]).some(r=>overlaps(
+      r.start.map((n,i)=>Math.min(n,r.end[i])-(i===1?.4:r.width/2)),
+      r.start.map((n,i)=>Math.max(n,r.end[i])+(i===1?3.2:r.width/2)))))return;
+    canopies.push({start,end,kind,seed});
+  };
+  for(const side of [-1,1]){
+    add([-32,9.5,side*32],[32,9.5,side*32],'market',side+2);
+    add([side*32,9.5,-32],[side*32,9.5,32],'market',side+5);
+  }
+  for(const b of world.buildings){
+    if(b.seed%3!==0)continue;
+    const ix=Math.floor(b.x/spacing),iz=Math.floor(b.z/spacing),axis=b.seed%2?0:2;
+    const neighbor=world.cells.get(`${ix+(axis===0?1:0)},${iz+(axis===2?1:0)}`);
+    if(!neighbor)continue;
+    const start=axis===0?[b.x+b.w/2+.2,10.5,b.z+8]:[b.x-8,10.5,b.z+b.d/2+.2];
+    const end=axis===0?[neighbor.x-neighbor.w/2-.2,10.5,neighbor.z+8]:[neighbor.x-8,10.5,neighbor.z-neighbor.d/2-.2];
+    add(start,end,b.identity.district,b.seed);
+  }
+  return canopies;
+}
+
+export function canopyGeometry(v,canopy,lights) {
+  const {start,end,kind,seed}=canopy,palette=districtLights[kind]||districtLights.skybridge;
+  const point=t=>start.map((n,i)=>n+(end[i]-n)*t-(i===1?Math.sin(t*Math.PI)*1.5:0));
+  for(let i=0;i<12;i++)bar(v,point(i/12),point((i+1)/12),.045,'#6c777c');
+  const count=Math.max(4,Math.floor(Math.hypot(end[0]-start[0],end[2]-start[2])/7));
+  for(let i=1;i<=count;i++){
+    const [x,y,z]=point(i/(count+1)),tint=kind==='market'?['#ffc383','#ff729f','#79ddd6'][(seed+i)%3]:kind==='quiet'?'#d9e6ad':palette[(seed+i)%4];
+    box(v,[x,y-.3,z],[.035,.6,.035],'#8c9593');
+    if(kind==='market'){
+      ellipsoid(v,[x,y-.95,z],[1.05,1.25,1.05],tint,.5,0,8);
+      for(const offset of [-.59,.59])box(v,[x,y-.95+offset,z],[.5,.09,.5],'#4e3d40');
+      box(v,[x,y-1.7,z],[.08,.35,.08],tint,.3);
+    }else if(kind==='furnace'){
+      box(v,[x,y-.75,z],[1.4,.35,.9],'#53565a');
+      box(v,[x,y-.95,z],[1.1,.08,.7],'#ffd6a0',.85);
+      for(const side of [-1,1])bar(v,[x+side*.7,y-.6,z],[x+side*.4,y-1.35,z],.12,tint,.4);
+    }else{
+      box(v,[x,y-1.1,z],[.9,1.4,.16],kind==='quiet'?'#60715c':'#253447');
+      for(const side of [-1,1]){
+        box(v,[x+side*.43,y-1.1,z],[.055,1.4,.2],tint,.75);
+        for(let line=0;line<3;line++)pane(v,[x,y-.7-line*.35,z+side*.09],[.55-line*.1,.12,0],tint,.65,side>0?4:5);
+      }
+    }
+    if(i%2===1)lights.push({kind:'canopy',position:[x,y-.95,z],color:tint,radius:12,direction:0,size:1.6,strength:.55});
+  }
+}
+
+export function commonsMonument(v,lights) {
+  box(v,[0,1,-42],[5,2,5],'#4e6255');
+  for(const side of [-1,1])bar(v,[side*1.7,2,-42],[side*4.8,7,-42],.5,'#7d858b');
+  for(const [radius,yaw,pitch,tint]of [[5.8,0,.12,'#6ee8e2'],[4.8,1.1,-.4,'#ff729f'],[3.5,-.5,1.1,'#ffcc8e']]){
+    const mesh=[];ring(mesh,[0,0,0],radius,.24,tint,.8,28);
+    transformMesh(v,mesh,[0,10,-42],yaw,pitch);
+  }
+  bevelBox(v,[0,9.5,-42],[1.2,8,1.2],'#abcbd0',.35,Math.PI/4,.18);
+  for(const side of [-1,1])lights.push({kind:'monument',position:[side*5.5,10,-42],color:side>0?'#6ee8e2':'#ff729f',radius:23,direction:0,size:3,strength:1});
+}
+
+function buildingCrown(v,b,style,roof) {
+  const w=roof[0],d=roof[2],metal='#556575',trim='#a2adb0';
+  if(style.roof===0){
+    for(let tier=0;tier<3;tier++){
+      const width=w*(.7-tier*.18),depth=d*(.65-tier*.17),y=b.h+tier*3.6;
+      bevelBox(v,[b.x,y+1.8,b.z],[width,3.6,depth],metal,0,0,.35);
+      for(const side of [-1,1])box(v,[b.x,y+3.4,b.z+side*depth/2],[width,.16,.16],style.secondary,.65);
+    }
+    bar(v,[b.x,b.h+10.8,b.z],[b.x,b.h+22,b.z],.22,trim);
+    for(const side of [-1,1])bar(v,[b.x+side*w*.25,b.h,b.z],[b.x,b.h+15,b.z],.12,trim);
+  }else if(style.roof===1){
+    for(const side of [-1,1])bar(v,[b.x+side*5,b.h,b.z],[b.x+side*2.8,b.h+10,b.z],.55,metal);
+    const mesh=[];ring(mesh,[0,0,0],7,.36,style.neon,.75,16);
+    ring(mesh,[0,0,0],5.7,.16,trim,0,16);
+    for(const side of [-1,1])bar(mesh,[side*-5,-4,0],[side*5,4,0],.25,trim);
+    transformMesh(v,mesh,[b.x,b.h+13,b.z],b.seed%4*Math.PI/4);
+    bar(v,[b.x,b.h+13,b.z],[b.x,b.h+22,b.z],.18,trim);
+  }else if(style.roof===2){
+    for(let i=0;i<3;i++){
+      const x=b.x+(i-1)*3,height=8+i*4;
+      bevelBox(v,[x,b.h+height/2,b.z],[2.2,height,2.2],'#746357',0,0,.25);
+      for(const y of [height*.5,height])box(v,[x,b.h+y,b.z],[2.7,.4,2.7],metal);
+      box(v,[x,b.h+height+.24,b.z],[1.7,.08,1.7],'#ffb56a',.65);
+    }
+    bar(v,[b.x,b.h,b.z+3],[b.x,b.h+17.5,b.z+3],.2,trim);
+  }else{
+    for(let i=-2;i<=2;i++){
+      const mesh=[],height=6+(2-Math.abs(i))*2;
+      box(mesh,[0,0,0],[2,height,d*.42],metal);
+      box(mesh,[0,height/2+.08,0],[2.1,.16,d*.44],style.secondary,.65);
+      transformMesh(v,mesh,[b.x+i*3,b.h+height/2,b.z],0,0,-.16);
+    }
+  }
+}
+
+function facadeArtwork(v,b,style) {
+  const mesh=[],w=Math.min(10,b.d*.3),h=Math.min(16,b.h*.34),district=b.identity.district;
+  box(mesh,[0,0,0],[w,h,.12],'#243648');
+  for(const side of [-1,1])box(mesh,[side*(w/2-.15),0,.1],[.12,h,.12],style.secondary,.55);
+  if(district==='furnace'||district==='skybridge'){
+    for(let i=0;i<3;i++){
+      const y=(i-1)*h*.25;
+      bar(mesh,[-w*.32,y-1,.13],[0,y+1,.13],.45,style.neon,.3);
+      bar(mesh,[0,y+1,.13],[w*.32,y-1,.13],.45,style.secondary,.3);
+    }
+  }else{
+    ring(mesh,[0,h*.1,.13],w*.32,.22,district==='quiet'?'#cde0a6':style.neon,.35);
+    if(district==='quiet'){
+      bar(mesh,[0,-h*.35,.15],[0,h*.32,.15],.18,'#b8d7a1',.15);
+      for(const side of [-1,1])for(let i=0;i<3;i++)bar(mesh,[0,(i-1)*1.5,.15],[side*w*.25,(i-1)*1.5+1.4,.15],.3,'#91bea3',.15);
+    }else{
+      for(let i=0;i<4;i++)box(mesh,[0,-h*.22-i*.7,.14],[w*(.7-i*.12),.2,.08],style.secondary,.25);
+      if(district==='archive')bar(mesh,[-w*.35,-h*.15,.18],[w*.35,h*.35,.18],.25,'#e6c7a0',.25);
+    }
+  }
+  const side=b.x>0?-1:1;
+  transformMesh(v,mesh,[b.x+side*(b.w/2+.18),8+h/2,b.z+b.d*.24],side*Math.PI/2);
+}
+
 // Shared placement keeps the illuminated panels, lettering and local light in sync.
 export function buildingAds(b) {
   const style=buildingStyle(b),messages=districtAds[b.identity.district]||districtAds.skybridge;
@@ -137,7 +279,7 @@ export function buildingLights(b) {
   lights.push({kind:'sign',position:[b.x+side*(b.w/2+1.34),b.h*.58,b.z],
     color:style.neon,radius:25,direction:side,size:4.8,strength:1.4});
   if(b.rooftop)for(const side of [-1,1])lights.push({kind:'roof',position:[b.x,b.h+3.5,b.z+side*(b.d/2-1.5)],color:b.rooftop.venue?.accent||style.neon,radius:16,direction:0,size:2.5,strength:.8});
-  else lights.push({kind:'beacon',position:[b.x,b.h+[14.6,5.4,9.2,2.8][style.roof],b.z],
+  else lights.push({kind:'beacon',position:[b.x,b.h+[22,22,17.5,10.3][style.roof],b.z+(style.roof===2?3:0)],
     color:b.seed%2?'#ff7967':'#a4e4ef',radius:5,direction:0,size:1.8,strength:.65});
   if(b.rooftop?.venue)for(const y of [0,b.h])lights.push({kind:'elevator',position:[b.x,y+4.3,b.z+b.d/2+4],color:b.rooftop.venue.accent,radius:12,direction:0,size:2,strength:.9});
   lights.push(...buildingAds(b));
@@ -152,13 +294,16 @@ export function buildingExterior(v,b,data,lights=null) {
   const split=b.interior?data.interiors.height*3+(b.h-data.interiors.height*3)*.55:b.h;
   if(!b.rooftop)box(v,[b.x,b.h-.15,b.z],[roof[0]+.6,.3,roof[2]+.6],'#182232');
   for(const side of [-1,1]) {
-    // Neon tubes follow both building tiers without crossing doors or roof access.
+    // Structural ribs and selective lighting give each elevation a different rhythm.
     for(const wing of [-1,1]){
-      box(v,[b.x+wing*(b.w/2+.06),split/2,b.z+side*(b.d/2+.06)],[.4,split,.4],wing===side?neon:style.secondary,.95);
-      if(split<b.h)box(v,[b.x+wing*(roof[0]/2+.06),(split+b.h)/2,b.z+side*(roof[2]/2+.06)],[.4,b.h-split,.4],wing===side?neon:style.secondary,.95);
+      const lit=style.pattern===0?wing===side:style.pattern===1?side<0&&wing>0:style.pattern===2?wing>0&&side>0:wing<0;
+      for(const [width,depth,low,high]of [[b.w,b.d,6.8,split],...(split<b.h?[[roof[0],roof[2],split,b.h]]:[])]){
+        box(v,[b.x+wing*(width/2-.05),(low+high)/2,b.z+side*(depth/2-.05)],[1.1,high-low,1.1],b.identity.trim||'#566776');
+        if(lit)box(v,[b.x+wing*(width/2+.52),(low+high)/2,b.z+side*(depth/2+.52)],[.13,high-low,.13],wing===side?neon:style.secondary,.75);
+      }
     }
-    box(v,[b.x,b.h+.15,b.z+side*roof[2]/2],[roof[0],.32,.32],style.secondary,.95);
-    box(v,[b.x+side*roof[0]/2,b.h+.15,b.z],[.32,.32,roof[2]],neon,.95);
+    box(v,[b.x,b.h+.15,b.z+side*roof[2]/2],[roof[0],.32,.32],style.secondary,.55);
+    box(v,[b.x+side*roof[0]/2,b.h+.15,b.z],[.32,.32,roof[2]],neon,.55);
     box(v,[b.x,6.65,b.z+side*(b.d/2+.7)],[b.w+1,.35,1.6],'#182232');
     pane(v,[b.x,6.65,b.z+side*(b.d/2+1.51)],[b.w+1,.3,0],neon,.95,side>0?4:5);
     if(b.interior){
@@ -196,10 +341,15 @@ export function buildingExterior(v,b,data,lights=null) {
       const lit=rand()<style.occupancy*.55;
       pane(v,[b.x+side*(width/2+.06),y,b.z+z],[0,style.pattern===2?1.2:2.6,2.3],lit?style.window:'#172633',lit?4.35+rand()*.35:0,side>0?0:1);
     }
-    // Thin facade ribbons add color on every side using single-face geometry.
-    if(Math.round(y)%12===10)for(const side of [-1,1]){
-      pane(v,[b.x,y-2,b.z+side*(depth/2+.28)],[width,.36,0],style.secondary,.9,side>0?4:5);
-      pane(v,[b.x+side*(width/2+.28),y-2,b.z],[0,.36,depth],neon,.9,side>0?0:1);
+    // Banded blocks alternate with vertical and quieter service facades.
+    if(Math.round(y)%12===10&&(style.pattern===1||style.pattern===3&&y<32))for(const side of [-1,1]){
+      if(style.pattern===1){
+        box(v,[b.x,y-2,b.z+side*(depth/2+.12)],[width+1.6,.45,1.3],'#596875');
+        box(v,[b.x+side*(width/2+.12),y-2,b.z],[1.3,.45,depth+1.6],'#596875');
+      }
+      const inset=style.pattern===1?.8:.28;
+      pane(v,[b.x,y-2,b.z+side*(depth/2+inset)],[width,.16,0],style.secondary,.7,side>0?4:5);
+      pane(v,[b.x+side*(width/2+inset),y-2,b.z],[0,.16,depth],neon,.7,side>0?0:1);
     }
   }
   const side=b.x>0?-1:1;
@@ -208,19 +358,7 @@ export function buildingExterior(v,b,data,lights=null) {
   const length=Math.min(29,b.h*.35),segments=style.pattern===0?1:style.pattern===1?5:3;
   for(let i=0;i<segments;i++)box(v,[b.x+side*(b.w/2+1.28),b.h*.58+(i-(segments-1)/2)*length/segments,b.z],[.06,length/segments-.25,style.pattern===2?2.5:.6],i%2?style.secondary:neon,.95);
   if(b.rooftop)rooftopGeometry(v,b);
-  else if(style.roof===0){
-    bevelBox(v,[b.x,b.h+3,b.z],[b.w*.46,6,b.d*.48],'#465060',0,0,.7);
-    box(v,[b.x,b.h+10,b.z],[.3,9,.3],'#88969e');
-  }else if(style.roof===1){
-    for(const wing of [-1,1]){box(v,[b.x+wing*3,b.h+1,b.z],[.3,2,5],'#51565d');bevelBox(v,[b.x+wing*3,b.h+3,b.z],[4.4,3,6],'#667377',0,0,.4);}
-    box(v,[b.x,b.h+3,b.z],[.16,5,.16],'#8c989f');
-  }else if(style.roof===2){
-    for(let i=0;i<3;i++){box(v,[b.x+(i-1)*3,b.h+3+i,b.z],[1.5,6+i*2,1.5],'#65574f');box(v,[b.x+(i-1)*3,b.h+6+i*2,b.z],[2,.3,2],'#29313a');}
-    box(v,[b.x,b.h+8.5,b.z],[.15,1.4,.15],'#88969e');
-  }else{
-    box(v,[b.x,b.h+1.2,b.z],[b.w*.45,2.4,3],'#4b5a62');
-    for(let i=-2;i<=2;i++)box(v,[b.x+i*2,b.h+2.5,b.z],[.2,.15,3],style.secondary,.45);
-  }
+  else buildingCrown(v,b,style,roof);
   for(const lamp of buildingLights(b))if(lamp.kind==='beacon')ellipsoid(v,lamp.position,[.42,.42,.42],lamp.color,1,0,6);
   for(const wing of [-1,1]){
     const x=b.x+wing*(b.w/2+2),z=b.z-b.d/2-2,lit=(b.seed+(wing+1)*3)%5>1;
@@ -404,6 +542,7 @@ export function streetDestination(v,b) {
 
 export function streetDetails(v,b) {
   const rand=random(b.seed+21),style=buildingStyle(b),x=b.x-b.w/2-2,z=b.z;
+  if(b.seed%3===0)facadeArtwork(v,b,style);
   bevelBox(v,[x,.45,z],[1.3,.9,3.8],'#3a4655');
   for(let i=0;i<3;i++){
     const px=b.x-b.w/2-1.2,pz=b.z+b.d/2-4-i*3;
