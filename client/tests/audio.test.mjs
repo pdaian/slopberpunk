@@ -272,7 +272,7 @@ function application(audio) {
     if (!nodes.has(selector)) nodes.set(selector, {
       listeners: new Map(), open: false, checked: true, textContent: '', innerHTML: '', dataset: {}, querySelectorAll: () => [],
       addEventListener(key, fn) { this.listeners.set(key, fn); }, setAttribute() {},
-      showModal() { this.open = true; }, close() { this.open = false; },
+      showModal() { this.open = true; }, close() { this.open = false; }, focus() { context.document.activeElement = this; },
     });
     return nodes.get(selector);
   };

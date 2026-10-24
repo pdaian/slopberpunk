@@ -37,7 +37,6 @@ async fn static_file(State(client): State<PathBuf>, uri: axum::http::Uri) -> Res
     let path = client.join(relative);
     let allowed = relative == "index.html"
         || relative == "play.html"
-        || relative == "landing.css"
         || relative == "style.css"
         || relative.starts_with("data/")
         || relative.starts_with("src/")
@@ -125,7 +124,6 @@ mod tests {
         for (path, mime, text) in [
             ("/", "text/html; charset=utf-8", "play.html"),
             ("/play.html", "text/html; charset=utf-8", "/src/app.js"),
-            ("/landing.css", "text/css; charset=utf-8", "body"),
             ("/style.css", "text/css; charset=utf-8", "body"),
             (
                 "/src/app.js",
@@ -201,6 +199,7 @@ mod tests {
             "/package.json",
             "/tools/serve.mjs",
             "/src/simulation.js",
+            "/landing.css",
         ] {
             assert_eq!(
                 request("GET", path).await.status(),

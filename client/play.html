@@ -15,18 +15,17 @@
   <canvas id="interface" aria-hidden="true"></canvas>
   <!-- Unpainted controls retain native text entry, keyboard focus and accessibility. -->
   <div id="interface-source">
-  <div id="loading"><img src="/assets/mark.svg" alt=""><span>LOADING GAME<span class="loading-dots">...</span></span></div>
-  <section id="landing" aria-label="Welcome to Sloperberpunk">
+  <div id="loading" role="status"><img src="/assets/mark.svg" alt=""><span>Loading game…</span></div>
+  <section id="landing" hidden aria-label="Welcome to Sloperberpunk">
     <header class="masthead">
       <a class="brand" href="/" aria-label="Sloperberpunk home"><img src="/assets/mark.svg" alt=""><span>SLOPERBERPUNK<small>THE AFTERLIGHT CHRONICLES</small></span></a>
-      <nav aria-label="Main navigation"><button data-page="world">ABOUT THE WORLD</button><button data-page="factions">FACTIONS <span>04</span></button><button data-page="guide">HOW TO PLAY</button></nav>
       <button class="account-link" id="account-button"><span class="status-dot"></span><span id="account-label">ACCOUNT</span><span>↗</span></button>
     </header>
     <main class="hero">
       <div class="eyebrow"><span class="tiny-square"></span> VESPER / THE AFTERLIGHT CHRONICLES</div>
       <h1>SLOPER<br><span>BERPUNK</span></h1>
       <p class="hero-copy">Fourteen people are missing from Nella’s kitchen.<br>Restore the water, help her neighbors, and find out what happened.</p>
-      <div class="hero-actions"><button id="enter-button" class="button primary">PLAY <span>→</span></button><button class="text-button" data-page="guide">HOW TO PLAY <span>+</span></button><button class="text-button" data-page="world">ABOUT THE WORLD <span>+</span></button><button class="text-button compact-factions" data-page="factions">FACTIONS <span>04</span></button></div>
+      <div class="hero-actions"><button id="enter-button" class="button primary">PLAY <span aria-hidden="true">→</span></button><button class="text-button" data-page="guide">HOW TO PLAY</button><details class="world-menu"><summary>Explore the world</summary><button class="text-button" data-page="world">ABOUT THE WORLD</button><button class="text-button" data-page="factions">FACTIONS</button></details></div>
       <div class="entry-note"><span class="status-dot"></span> FREE TO PLAY / OPEN SOURCE / EARLY VERSION</div>
     </main>
     <aside class="founder-offer" aria-labelledby="founder-title">
@@ -48,9 +47,9 @@
       <form id="character-form">
         <label class="field-label" for="character-name">CALLSIGN · CHARACTER NAME</label><input id="character-name" name="name" minlength="2" maxlength="24" required placeholder="Choose a unique character name" aria-describedby="character-name-help character-error" autocomplete="off" spellcheck="false">
         <p id="character-name-help" class="form-note">Your callsign is your character’s name, visible to other players. Use 2–24 letters, numbers, spaces, hyphens, or underscores. It must be unique across this server; capitalization does not make a name different.</p>
-        <fieldset><legend>CHARACTER TYPE</legend><div id="race-options" class="choice-grid"></div></fieldset>
+        <fieldset aria-describedby="race-description"><legend>CHARACTER TYPE</legend><div id="race-options" class="choice-grid"></div></fieldset>
         <p id="race-description" class="choice-description"></p>
-        <fieldset><legend>FACTION · THE GROUP YOU JOIN</legend><div id="faction-options" class="choice-grid faction-choices"></div></fieldset>
+        <fieldset aria-describedby="faction-description"><legend>FACTION · THE GROUP YOU JOIN</legend><div id="faction-options" class="choice-grid faction-choices"></div></fieldset>
         <p id="faction-description" class="choice-description"></p>
         <div id="creation-forge"></div>
         <div id="character-error" class="form-error" role="alert"></div>
@@ -75,7 +74,7 @@
     <aside id="recovery-panel" class="panel" aria-label="Return to life" hidden><strong id="corpse-direction"></strong><p id="recovery-description"></p><button id="reclaim-corpse" class="small-button">RETURN TO LIFE</button><button id="spirit-healer" class="small-button">TALK TO HEALER</button><button id="return-graveyard" class="small-button">BACK TO GRAVEYARD</button><button class="small-button" data-action="map">LOCATE BODY · M</button></aside>
     <div id="world-labels" aria-hidden="true"></div>
     <button id="interaction" hidden><kbd id="interaction-key">E</kbd><span id="interaction-text">Use selected target</span></button>
-    <div id="combat-log" class="combat-log" aria-live="polite"></div>
+    <div id="combat-log" class="combat-log" role="log" aria-label="Recent combat events" aria-live="off" tabindex="0"></div>
     <aside id="live-chat" class="panel chat-window" data-expanded="false" aria-label="Nearby and zone chat">
       <div class="chat-heading"><strong>PLAYER CHAT</strong><button type="button" data-chat-action="open" aria-label="Write a chat message"><span data-input-keyboard="ENTER ↗" data-input-gamepad="WRITE ↗" data-input-touch="WRITE ↗">ENTER ↗</span></button><button type="button" data-chat-action="close" aria-label="Return to play" hidden><span data-input-keyboard="ESC ×" data-input-gamepad="B ×" data-input-touch="CLOSE ×">ESC ×</span></button></div>
       <div class="chat-channels" role="group" aria-label="Chat audience"><button type="button" data-chat-channel="nearby" aria-pressed="true">NEARBY</button><button type="button" data-chat-channel="zone" aria-pressed="false">ZONE</button><button type="button" data-chat-action="gestures" aria-label="Open gestures">GESTURES</button></div>
@@ -97,7 +96,7 @@
     <div id="touch-controls"><div id="touch-stick" aria-label="Movement joystick"><span></span></div><div class="touch-actions"><button data-touch="target">TARGET</button><button data-touch="interact">USE</button><button data-touch="dash">DASH</button><button data-touch="jump">JUMP</button></div></div>
     <div id="death-screen" tabindex="-1" aria-labelledby="death-title" hidden><span>YOU DIED</span><h2 id="death-title">Get back into the game.</h2><p id="death-description">Become a ghost, then follow the marker back to your body to return to life.</p><button id="respawn" class="button primary">BECOME A GHOST ↗</button><button id="death-dungeons" data-action="dungeons" class="small-button" hidden>OPEN DUNGEON DETAILS</button></div>
   </section>
-  <dialog id="panel-dialog"><div class="dialog-header"><div><span id="dialog-eyebrow" class="eyebrow">SLOPERBERPUNK</span><h2 id="dialog-title"></h2></div><button id="close-dialog" class="close-button" aria-label="Close panel">×</button></div><div id="dialog-content"></div></dialog>
+  <dialog id="panel-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><div><span id="dialog-eyebrow" class="eyebrow">SLOPERBERPUNK</span><h2 id="dialog-title" tabindex="-1"></h2></div><button id="close-dialog" class="close-button" aria-label="Close panel">×</button></div><div id="dialog-content"></div></dialog>
   <div id="toast" role="status" aria-live="polite" hidden></div>
   </div>
   <noscript><div class="fatal">Sloperberpunk needs JavaScript to run. Enable JavaScript in your browser, then reload the page.</div></noscript>

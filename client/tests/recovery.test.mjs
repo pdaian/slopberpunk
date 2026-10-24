@@ -125,7 +125,7 @@ function application(c) {
       const classes = new Set();
       nodes.set(selector, { hidden: true, open: false, textContent: '', innerHTML: '', scrollTop: 0, dataset: {}, querySelectorAll: () => [],
         classList: { toggle: (key, on) => on ? classes.add(key) : classes.delete(key), remove: key => classes.delete(key) },
-        focus() {}, showModal() { this.open = true; }, close() { this.open = false; }, setAttribute() {},
+        focus() { context.document.activeElement = this; }, showModal() { this.open = true; }, close() { this.open = false; }, setAttribute() {},
         width: 900, height: 720, getContext: () => canvasContext,
         listeners: {}, addEventListener(type, listener) { (this.listeners[type] ||= []).push(listener); },
       });
@@ -146,8 +146,25 @@ function application(c) {
   let source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8').replace(/^import .*;$/gm, '');
   source = source.slice(0, source.lastIndexOf('boot().catch'));
   runInNewContext(source + `\ndata=fixtureData;world=fixtureWorld;simulation=fixtureSimulation;renderer={quality:1,volumetric:true};audio={stopVoice(){},effect(){},speak(...args){spoken.push(args);}};input={lastDevice:'keyboard',clear(){}};connection={send(action){sent.push(action);}};cityLife={actors:[],neighborhoods:new Map(),overheard(){return null;}};state='playing';globalThis.harness={inputBlocked,wireEvents,connection,setChat(value){liveChat=value;},setScreen(value){state=value;},setDevice(value){input.lastDevice=value;},menu(){return input.menu;},perform,showJournal,showShop,showGuide,onEvent,questCard,nextQuestGuide,showMap,drawMap,updateLabels,selectedTarget,targetCandidates,updateRecoveryUI,updateStoryGuide,onSnapshot,panel,closePanel,select(key){targetKey=key;},setRenderer(value){renderer=value;},setPlayers(value){otherPlayers=value;}};`, context);
-  return { ...context.harness, node, sent, spoken, drawing, simulation, prompts(selector,values){promptNodes.set(selector,values);}, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
+  return { ...context.harness, node, sent, spoken, drawing, simulation, focused:()=>context.document.activeElement, prompts(selector,values){promptNodes.set(selector,values);}, sections(before, after, focus) { sectionReads = [before, after]; context.document.activeElement = focus; } };
 }
+
+test('panel navigation focuses its heading and restores a visible opener after closing',()=>{
+  const app=application({...character(),health:100,death:undefined}),opener=app.node('#quest-map');
+  Object.assign(opener,{isConnected:true,getClientRects:()=>[{}]});opener.focus();
+  app.panel('Quests','Quest content','JOURNAL','journal');
+  assert.equal(app.focused(),app.node('#dialog-title'));
+  app.node('#panel-dialog').scrollTop=240;
+  app.node('#close-dialog').focus();
+  app.panel('Quests','Updated quests','JOURNAL','journal');
+  assert.equal(app.node('#panel-dialog').scrollTop,240,'live updates retain the reading position');
+  assert.equal(app.focused(),app.node('#close-dialog'),'live updates do not move focus from the close button');
+  app.panel('Map','Map content','MAP','map');
+  assert.equal(app.node('#panel-dialog').scrollTop,0);assert.equal(app.focused(),app.node('#dialog-title'));
+  app.closePanel();assert.equal(app.focused(),opener);
+  opener.focus();app.panel('Quests','','JOURNAL','journal');opener.getClientRects=()=>[];
+  app.closePanel();assert.equal(app.focused(),app.node('#world'),'hidden openers cannot trap focus');
+});
 
 test('chat focus and death independently keep gameplay input blocked across panel closing', () => {
   const c = { ...character(), health: 100, death: undefined }, app = application(c);

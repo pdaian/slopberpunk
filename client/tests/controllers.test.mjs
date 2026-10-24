@@ -239,7 +239,7 @@ test('camera speed respects Settings and elapsed time; legacy calibration storag
 
 test('Settings renders connection status and camera speed without a calibration workflow',t=>{
   const {input,setPads}=harness(t),nodes=new Map();setPads([standard()]);input.sample(.02);
-  const node=selector=>{if(!nodes.has(selector))nodes.set(selector,{open:false,innerHTML:'',textContent:'',dataset:{},querySelectorAll:()=>[],setAttribute(){},showModal(){this.open=true;}});return nodes.get(selector);};
+  const node=selector=>{if(!nodes.has(selector))nodes.set(selector,{open:false,innerHTML:'',textContent:'',dataset:{},querySelectorAll:()=>[],setAttribute(){},focus(){document.activeElement=this;},showModal(){this.open=true;}});return nodes.get(selector);};
   document.querySelector=node;document.querySelectorAll=()=>[];
   const context={fixtureInput:input,document,inputPrompt,updateInputPrompts,esc:s=>s,matchMedia:()=>({matches:false}),WorldClock:class{}};
   let source=readFileSync(new URL('../src/app.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');source=source.slice(0,source.lastIndexOf('boot().catch'));

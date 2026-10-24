@@ -8,6 +8,7 @@ import { Input } from './input.js';
 import { controlLabel, inputText, inputPrompt, updateInputPrompts } from './input-prompts.js';
 import { AudioEngine } from './audio.js';
 import { Connection,api } from './network.js';
+import { submitForm } from './forms.js';
 import { icon,escapeHtml as esc } from './icons.js';
 import { formatGold } from './currency.js';
 import { clamp,distance,mix3,lerp } from './math.js';
@@ -39,6 +40,7 @@ let data,world,renderer,interfaceUI,input,audio,cityLife,simulation=null,connect
 let state='landing',selectedRace='human',selectedFaction='relay',targetKey=null;
 let time=0,lastFrame=0,uiAccumulator=0,yaw=0,pitch=.15,thirdPerson=true,introTime=0,introShot=-1;
 let toastTimer,dialogPage='',journalFilter='next',otherPlayers=[],effects=[],floaters=[],log=[],deleteArmed=null;
+let panelOpener=null;
 let community,liveChat,frameForge,myGuild=null,founderOffer=null;
 let sessionReady=Promise.resolve();
 let dungeonPanelKey='';
@@ -56,20 +58,38 @@ const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,4500);}
 function inputBlocked(){return state!=='playing'||$('#panel-dialog').open||Boolean(liveChat?.expanded)||Boolean(simulation&&simulation.character.health<=0&&!isSpirit(simulation.character));}
+function focusScreen(){
+  const selector={landing:'#enter-button',creation:'#character-name',cinematic:'#skip-intro',playing:'#world'}[state];
+  if(selector)$(selector).focus({preventScroll:true});
+}
 function setState(next){
   if(next!=='playing')liveChat?.close();
   if(next!=='playing'){audio?.stopVoice();$('#world').classList.remove('spirit-world');}
   state=next;for(const name of ['landing','creation','cinematic','hud'])$(`#${name}`).hidden=next!==(name==='hud'?'playing':name);
   if(input){input.active=next==='playing'||next==='cinematic';input.menu=inputBlocked();input.clear();}
+  if(!$('#panel-dialog').open)focusScreen();
 }
-function closePanel(){interfaceUI?.closeSelect();if($('#panel-dialog').open)$('#panel-dialog').close();dialogPage='';audio?.stopVoice();if(input){input.menu=inputBlocked();input.clear();}}
+function closePanel(){
+  interfaceUI?.closeSelect();interfaceUI?.hideTooltip();
+  if($('#panel-dialog').open){
+    $('#panel-dialog').close();
+    if(panelOpener?.isConnected&&!panelOpener.disabled&&panelOpener.getClientRects().length)panelOpener.focus({preventScroll:true});
+    else focusScreen();
+  }
+  panelOpener=null;deleteArmed=null;dialogPage='';audio?.stopVoice();
+  if(input){input.menu=inputBlocked();input.clear();}
+}
 function panel(title,html,eyebrow='SLOPERBERPUNK / MENU',page=''){
+  const dialog=$('#panel-dialog'),changed=dialogPage!==page;
+  if(!dialog.open)panelOpener=document.activeElement;
   liveChat?.close();
-  if(dialogPage!==page)audio?.stopVoice();
-  interfaceUI?.closeSelect();
+  if(changed)audio?.stopVoice();
+  interfaceUI?.closeSelect();interfaceUI?.hideTooltip();
   $('#dialog-title').textContent=title;$('#dialog-eyebrow').textContent=eyebrow;$('#dialog-content').innerHTML=html;dialogPage=page;
   updateInputPrompts($('#dialog-content'),input?.lastDevice||'keyboard');
-  if(!$('#panel-dialog').open)$('#panel-dialog').showModal();
+  const opening=!dialog.open;
+  if(opening)dialog.showModal();
+  if(opening||changed){dialog.scrollTop=0;$('#dialog-title').focus({preventScroll:true});}
   if(input){input.menu=true;input.clear();}
 }
 function initialUI(){
@@ -102,7 +122,7 @@ function openCreation(){
   if(!account)return showAccount().catch(e=>toast(e.message));
   closePanel();$('#character-error').textContent='';$('#creation-storage').textContent=`Progress saved to account ${account.username}`;
   if(hasFounderHalo(account))$('#creation-storage').textContent+=' · First Signal Halo included.';
-  setState('creation');frameForge.mountCreation();$('#character-name').focus();
+  setState('creation');frameForge.mountCreation();
 }
 async function enter(){
   await sessionReady;
@@ -307,7 +327,7 @@ function showLineages(){
 }
 function showGuide(){
   const controls=[['Move','W A S D'],['Look around','HOLD RIGHT MOUSE + DRAG'],['Select a person, enemy, or object','CLICK'],['Use the selected target','E / RIGHT CLICK'],['Select the next target','TAB'],['Jump','SPACE'],['Sprint','SHIFT'],['Dash forward','Q'],['Use abilities','1–0'],['Use a medkit','H'],['Quests / talents','J / T'],['Gear / map','I / M'],['Dungeons / find a group','G'],['Social / guild','C / U'],['Chat with nearby players','ENTER'],['Wave and other gestures','B'],['Clear target, then open menu','ESC'],['Switch camera view','V']];
-  panel('How to play.',`<article class="info-card"><h3>Start here</h3><ol><li>New characters start in the First Steps Courtyard. Walk to the cyan square, try the terminal on the west side, then shoot the orange practice target on the east side. Use the Commons gate when ready, or use it early to skip training.</li><li>Find your faction contact beside the Commons exchange. The journal describes their corner of the square. ${inputPrompt("Click them, then press E to talk.","Press Y to select them, then X to talk.","Tap them, then USE to talk.")}</li><li>Choose ACCEPT QUEST. The journal shows one next action and a description of the place. Choose FOLLOW QUEST on any quest to keep it in view.</li><li>Talk to Oru on the north side of the exchange for your welcome quest. Both opening quests share the kitchen repair, so take them before setting out.</li><li>When the steps are done, return to the person who gave you the quest. Read the choices, then choose an ending to earn XP and gold.</li></ol><p>Lost? ${inputPrompt("Press J for your next step. Press M for the map.","Press View for your next step. Press D-pad down for the map.","Tap QUESTS for your next step. Tap MAP for the map.")} You can complete the main story alone.</p></article><section data-input-device="keyboard"><h3>Keyboard and mouse</h3><div class="guide-grid">${controls.map(([a,b])=>`<div class="guide-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><p class="guide-note">Select a target to talk to a person, attack an enemy, read a record, or use a lift with E. Inside observation elevators, press E anywhere in the cabin to ride. Move closer if it is out of reach. Click empty space or press Esc to clear your selection.</p></section><section class="info-card" data-input-device="gamepad"><h3>Controller controls</h3><p>Left stick: move. Right stick: look. A: jump. B: dash. Y: select the next target. X: use the target, or ride from anywhere inside an observation elevator. RT: shoot. LB: stun shot. RB: heal. LT: shield.</p><p>D-pad up: medkit. D-pad down: map. D-pad left/right: unlocked attacks. Hold the left stick button and press D-pad up/right/down/left for Weaken, Drain health, Finishing shot, and Weaken area. View: quests. Menu: settings. In menus, use the D-pad or left stick to choose a control and A to activate it; left/right adjusts sliders. B closes the menu. Camera turn speed in Settings also adjusts the right stick.</p></section><section class="info-card" data-input-device="touch"><h3>Touch controls</h3><p>Move with the pad on the left. Drag the world to look around. Tap a person, enemy, or object to select it, or tap TARGET to select the next one. Tap USE to act on it, or to ride from anywhere inside an observation elevator. Tap an ability at the bottom to use it. Tap CHAT to talk to players.</p></section><div class="card-grid"><article class="info-card"><h3>Fighting and healing</h3><p>${inputPrompt("Click an enemy, then press 1 to shoot. Press 2 to damage and stun it, 3 to heal yourself and nearby players, or 4 to protect yourself with a shield. H uses a medkit.","Press Y to select an enemy, then RT to shoot. LB damages and stuns it, RB heals you and nearby players, and LT protects you with a shield. D-pad up uses a medkit.","Tap an enemy, then SHOOT. STUN damages and stuns it, HEAL heals you and nearby players, and SHIELD protects you. Tap MEDKIT to heal.")} Buy more medkits from Patch.</p><p>Health keeps you alive. Energy powers abilities and refills over time. A countdown on an ability shows how many seconds until you can use it again. Attacks can miss; critical hits deal extra damage. Enemy attacks lock onto marked lanes, cones, circles, or rings before they strike. Leave the filled area, move into a ring’s clear center, or interrupt the attack with Stun shot. A burst or combo can strike more than once. Drones circle and bombard, Wirejacks flank and lunge, and wardens charge and send out shockwaves. Shield before a hit and attack during their recovery. Fighting stops passive health recovery.</p><h3>Quests, levels, and talents</h3><p>Quests are jobs. Finish them and defeat enemies to earn experience, called XP. Fill the XP bar to gain a level. Gold buys supplies and upgrades. Early rewards are small fractions of gold; they add up as you progress.</p><p>Talents are permanent bonuses you choose with points. Start with six points and earn one more every quarter of a level. ${inputPrompt("Press T to spend them.","Choose TALENTS to spend them.","Tap TALENTS to spend them.")} You can mix all six groups. Each talent lists what you must learn first. Visit Patch to pay for a reset and spend your points again.</p></article><article class="info-card"><h3>Street emergencies</h3><p>The quest names the next control to repair. Select and use both controls, defeat any enemy machines, then stay near the main control until service returns. Avoid striped danger areas. Other players can help. If you fail, wait nearby and try again; completed quest steps stay saved.</p><h3>Your choices matter</h3><p>Each quest ends with a permanent choice. Read who benefits, who loses out, and how much gold you receive. Every choice gives the full quest XP. ${inputPrompt("Press J","Press View","Tap QUESTS")} and open More → Reputation &amp; Choices to see how people feel about you.</p><h3>Playing with others</h3><p>${inputPrompt("Press Enter to chat.","Choose CHAT to chat.","Tap CHAT to chat.")} Nearby reaches players within 35 m. Zone reaches players in your area and copy of the world, or just your group inside a dungeon. ${inputPrompt("Press B to wave. Press C","Choose CHAT → GESTURES to wave. Choose SOCIAL","Tap CHAT → GESTURES to wave. Tap SOCIAL")} for private messages, player groups, guilds, and trading. A party is a group of players; a guild is a lasting player club.</p></article></div><details class="info-card"><summary>Combining attacks</summary><p>Weaken makes an enemy take 20% more damage for 8 seconds. Area blast uses the weakening damage bonus, then ends that effect. Power shot deals 35% extra damage to stunned enemies and ends their stun. Finishing shot deals 60% extra damage to enemies at 30% health or less. Drain health heals you for 40% of the damage it deals.</p><p>Armor reduces damage taken. Armor penetration ignores some enemy armor. Damage returned as health heals you when you attack. Combo bonuses increase the extra damage from attack combinations. A percentage point adds directly to a chance: +3 points changes a 5% critical-hit chance to 8%.</p></details><details class="info-card"><summary>What happens when you die?</summary><p>Outside dungeons, you lose ${data.rules.death.goldLossFraction*100}% of your gold, rounded up to the next 0.001 gold and capped at ${formatGold(data.rules.death.goldLossCap)} gold. After five seconds, choose BECOME A GHOST. Follow the marker back to your body and get within 12 m with nothing blocking your view. Choose RETURN TO LIFE to recover at 50% health and energy, with no extra cost.</p><p>The graveyard healer offers a shortcut. It costs another ${data.rules.death.healerLossFraction*100}% of your remaining gold, rounded up to the next 0.001 gold and capped at ${formatGold(data.rules.death.healerLossCap)} gold. You return at 25% health and energy. For 60 seconds while alive and playing, you deal half damage and move 25% slower. As a ghost, you are safe from damage and can use lifts. ${inputPrompt("Esc opens recovery options.","Menu opens recovery options.","The menu opens recovery options.")}</p><p>In a dungeon, another player can revive you. If everyone dies, the current chapter restarts after five seconds.</p></details><p class="guide-note">VOICES turns spoken dialogue on or off. Written dialogue stays visible. Use Settings → TEST VOICE to check speech playback. Some browser voices need an internet connection.</p>`,'HELP / CONTROLS','guide');
+  panel('How to play.',`<article class="info-card"><h3>Start here</h3><ol><li>New characters start in the First Steps Courtyard. Walk to the cyan square, try the terminal on the west side, then shoot the orange practice target on the east side. Use the Commons gate when ready, or use it early to skip training.</li><li>Find your faction contact beside the Commons exchange. The journal describes their corner of the square. ${inputPrompt("Click them, then press E to talk.","Press Y to select them, then X to talk.","Tap them, then USE to talk.")}</li><li>Choose ACCEPT QUEST. The journal shows one next action and a description of the place. Choose FOLLOW QUEST on any quest to keep it in view.</li><li>Talk to Oru on the north side of the exchange for your welcome quest. Both opening quests share the kitchen repair, so take them before setting out.</li><li>When the steps are done, return to the person who gave you the quest. Read the choices, then choose an ending to earn XP and gold.</li></ol><p>Lost? ${inputPrompt("Press J for your next step. Press M for the map.","Press View for your next step. Press D-pad down for the map.","Tap QUESTS for your next step. Tap MAP for the map.")} You can complete the main story alone.</p></article><section data-input-device="keyboard"><h3>Keyboard and mouse</h3><div class="guide-grid">${controls.map(([a,b])=>`<div class="guide-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><p class="guide-note">Select a target to talk to a person, attack an enemy, read a record, or use a lift with E. Inside observation elevators, press E anywhere in the cabin to ride. Move closer if it is out of reach. Click empty space or press Esc to clear your selection. In menus and on interface buttons, use Tab or Shift+Tab to navigate and Enter or Space to activate. Click the world to return to game controls.</p></section><section class="info-card" data-input-device="gamepad"><h3>Controller controls</h3><p>Left stick: move. Right stick: look. A: jump. B: dash. Y: select the next target. X: use the target, or ride from anywhere inside an observation elevator. RT: shoot. LB: stun shot. RB: heal. LT: shield.</p><p>D-pad up: medkit. D-pad down: map. D-pad left/right: unlocked attacks. Hold the left stick button and press D-pad up/right/down/left for Weaken, Drain health, Finishing shot, and Weaken area. View: quests. Menu: settings. In menus, use the D-pad or left stick to choose a control and A to activate it; left/right adjusts sliders. B closes the menu. Camera turn speed in Settings also adjusts the right stick.</p></section><section class="info-card" data-input-device="touch"><h3>Touch controls</h3><p>Move with the pad on the left. Drag the world to look around. Tap a person, enemy, or object to select it, or tap TARGET to select the next one. Tap USE to act on it, or to ride from anywhere inside an observation elevator. Tap an ability at the bottom to use it. Tap CHAT to talk to players.</p></section><div class="card-grid"><article class="info-card"><h3>Fighting and healing</h3><p>${inputPrompt("Click an enemy, then press 1 to shoot. Press 2 to damage and stun it, 3 to heal yourself and nearby players, or 4 to protect yourself with a shield. H uses a medkit.","Press Y to select an enemy, then RT to shoot. LB damages and stuns it, RB heals you and nearby players, and LT protects you with a shield. D-pad up uses a medkit.","Tap an enemy, then SHOOT. STUN damages and stuns it, HEAL heals you and nearby players, and SHIELD protects you. Tap MEDKIT to heal.")} Buy more medkits from Patch.</p><p>Health keeps you alive. Energy powers abilities and refills over time. A countdown on an ability shows how many seconds until you can use it again. Attacks can miss; critical hits deal extra damage. Enemy attacks lock onto marked lanes, cones, circles, or rings before they strike. Leave the filled area, move into a ring’s clear center, or interrupt the attack with Stun shot. A burst or combo can strike more than once. Drones circle and bombard, Wirejacks flank and lunge, and wardens charge and send out shockwaves. Shield before a hit and attack during their recovery. Fighting stops passive health recovery.</p><h3>Quests, levels, and talents</h3><p>Quests are jobs. Finish them and defeat enemies to earn experience, called XP. Fill the XP bar to gain a level. Gold buys supplies and upgrades. Early rewards are small fractions of gold; they add up as you progress.</p><p>Talents are permanent bonuses you choose with points. Start with six points and earn one more every quarter of a level. ${inputPrompt("Press T to spend them.","Choose TALENTS to spend them.","Tap TALENTS to spend them.")} You can mix all six groups. Each talent lists what you must learn first. Visit Patch to pay for a reset and spend your points again.</p></article><article class="info-card"><h3>Street emergencies</h3><p>The quest names the next control to repair. Select and use both controls, defeat any enemy machines, then stay near the main control until service returns. Avoid striped danger areas. Other players can help. If you fail, wait nearby and try again; completed quest steps stay saved.</p><h3>Your choices matter</h3><p>Each quest ends with a permanent choice. Read who benefits, who loses out, and how much gold you receive. Every choice gives the full quest XP. ${inputPrompt("Press J","Press View","Tap QUESTS")} and open More → Reputation &amp; Choices to see how people feel about you.</p><h3>Playing with others</h3><p>${inputPrompt("Press Enter to chat.","Choose CHAT to chat.","Tap CHAT to chat.")} Nearby reaches players within 35 m. Zone reaches players in your area and copy of the world, or just your group inside a dungeon. ${inputPrompt("Press B to wave. Press C","Choose CHAT → GESTURES to wave. Choose SOCIAL","Tap CHAT → GESTURES to wave. Tap SOCIAL")} for private messages, player groups, guilds, and trading. A party is a group of players; a guild is a lasting player club.</p></article></div><details class="info-card"><summary>Combining attacks</summary><p>Weaken makes an enemy take 20% more damage for 8 seconds. Area blast uses the weakening damage bonus, then ends that effect. Power shot deals 35% extra damage to stunned enemies and ends their stun. Finishing shot deals 60% extra damage to enemies at 30% health or less. Drain health heals you for 40% of the damage it deals.</p><p>Armor reduces damage taken. Armor penetration ignores some enemy armor. Damage returned as health heals you when you attack. Combo bonuses increase the extra damage from attack combinations. A percentage point adds directly to a chance: +3 points changes a 5% critical-hit chance to 8%.</p></details><details class="info-card"><summary>What happens when you die?</summary><p>Outside dungeons, you lose ${data.rules.death.goldLossFraction*100}% of your gold, rounded up to the next 0.001 gold and capped at ${formatGold(data.rules.death.goldLossCap)} gold. After five seconds, choose BECOME A GHOST. Follow the marker back to your body and get within 12 m with nothing blocking your view. Choose RETURN TO LIFE to recover at 50% health and energy, with no extra cost.</p><p>The graveyard healer offers a shortcut. It costs another ${data.rules.death.healerLossFraction*100}% of your remaining gold, rounded up to the next 0.001 gold and capped at ${formatGold(data.rules.death.healerLossCap)} gold. You return at 25% health and energy. For 60 seconds while alive and playing, you deal half damage and move 25% slower. As a ghost, you are safe from damage and can use lifts. ${inputPrompt("Esc opens recovery options.","Menu opens recovery options.","The menu opens recovery options.")}</p><p>In a dungeon, another player can revive you. If everyone dies, the current chapter restarts after five seconds.</p></details><p class="guide-note">VOICES turns spoken dialogue on or off. Written dialogue stays visible. Use Settings → TEST VOICE to check speech playback. Some browser voices need an internet connection.</p>`,'HELP / CONTROLS','guide');
 }
 function nextQuestGuide(){
   const c=simulation.character;
@@ -434,7 +454,16 @@ async function showAccount(mode='login'){
   await sessionReady;
   if(account)return enter();
   refreshFounderOffer();
-  panel(mode==='register'?'Create an account.':'Sign in.',`<div class="tabs"><button class="${mode==='login'?'selected':''}" data-do="account-login">SIGN IN</button><button class="${mode==='register'?'selected':''}" data-do="account-register">CREATE ACCOUNT</button></div>${mode==='register'?`<p class="founder-account-note"><strong>First Signal Halo · first 1,000 accounts.</strong><br>Exclusive permanent cosmetic. +5% combat &amp; quest XP from level 1 until level 10.<br><span data-founder-status>${esc(founderOfferView(founderOffer,account).status)}</span></p>`:''}<form id="account-form" data-mode="${mode}"><div class="form-row"><label for="username">USERNAME</label><input id="username" name="username" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" required placeholder="Your username"></div><div class="form-row"><label for="password">PASSWORD / 12–128 CHARACTERS</label><input id="password" name="password" type="password" autocomplete="${mode==='register'?'new-password':'current-password'}" minlength="12" maxlength="128" required></div><div id="account-error" class="form-error" role="alert"></div><button type="submit" class="button primary">${mode==='register'?'CREATE ACCOUNT':'SIGN IN'} ↗</button></form><p class="form-note">Your characters and progress are saved on the server. Sign in to play from any device.</p>`,'YOUR ACCOUNT', 'account');
+  panel(mode==='register'?'Create an account.':'Sign in.',`
+    <div class="tabs" role="group" aria-label="Account access"><button class="${mode==='login'?'selected':''}" aria-pressed="${mode==='login'}" data-do="account-login">SIGN IN</button><button class="${mode==='register'?'selected':''}" aria-pressed="${mode==='register'}" data-do="account-register">CREATE ACCOUNT</button></div>
+    ${mode==='register'?`<p class="founder-account-note"><strong>First Signal Halo · first 1,000 accounts.</strong><br><span data-founder-status>${esc(founderOfferView(founderOffer,account).status)}</span></p>`:''}
+    <form id="account-form" data-mode="${mode}">
+      <div class="form-row"><label for="username">USERNAME</label><input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" aria-describedby="username-help account-error" required><small id="username-help">Use 3–24 letters (A–Z), numbers, or underscores.</small></div>
+      <div class="form-row"><label for="password">PASSWORD</label><input id="password" name="password" type="password" autocapitalize="none" spellcheck="false" autocomplete="${mode==='register'?'new-password':'current-password'}" minlength="12" maxlength="128" aria-describedby="password-help account-error" required><small id="password-help">Use 12–128 characters.</small></div>
+      <button type="button" class="small-button" data-do="toggle-password" aria-controls="password" aria-pressed="false">SHOW PASSWORD</button>
+      <div id="account-error" class="form-error" role="alert"></div><button type="submit" class="button primary">${mode==='register'?'CREATE ACCOUNT':'SIGN IN'} ↗</button>
+    </form><p class="form-note">Your characters and progress are saved on the server. Sign in to play from any device.</p>`,'YOUR ACCOUNT', 'account');
+  $('#username').focus();
 }
 
 function refreshPanel(){
@@ -460,9 +489,9 @@ function wireEvents(){
   $('#interaction').onclick=()=>perform('interact');
   $('#character-form').addEventListener('change',()=>{selectedRace=$('input[name="race"]:checked').value;selectedFaction=$('input[name="faction"]:checked').value;updateChoices();});
   $('#character-form').addEventListener('submit',async e=>{
-    e.preventDefault();audio.unlock().catch(()=>{});const button=e.submitter;button.disabled=true;$('#character-error').textContent='';
-    try{const name=$('#character-name').value.trim();const c=(await api('/characters',{name,race:selectedRace,faction:selectedFaction,appearance:frameForge.creationAppearance()})).character;await startGame(c,true);}
-    catch(error){$('#character-error').textContent=error.message;$('#character-name').focus();}finally{button.disabled=false;}
+    e.preventDefault();
+    try{await submitForm(e.target,async()=>{audio.unlock().catch(()=>{});const name=$('#character-name').value.trim();const c=(await api('/characters',{name,race:selectedRace,faction:selectedFaction,appearance:frameForge.creationAppearance()})).character;await startGame(c,true);});}
+    catch(error){$('#character-error').textContent=error.message;if(state==='creation')$('#character-name').focus();}
   });
   $('#dialog-content').addEventListener('submit',e=>{
     const view=e.target.dataset.economyForm;if(!view)return;e.preventDefault();const query=Object.fromEntries(new FormData(e.target));if(view==='bestiary'){bestiaryQuery=query;showBestiary();}else if(view in catalogQueries){catalogQueries[view]=query;view==='inventory'?showInventory():showCrafting();}
@@ -473,6 +502,7 @@ function wireEvents(){
       if(action==='enter'){closePanel();await enter();}
       else if(action==='new-character')openCreation();
       else if(action==='account-login')await showAccount('login');else if(action==='account-register')await showAccount('register');
+      else if(action==='toggle-password'){const field=$('#password'),show=field.type==='password';field.type=show?'text':'password';button.textContent=show?'HIDE PASSWORD':'SHOW PASSWORD';button.setAttribute('aria-pressed',String(show));}
       else if(action==='play-character'){const chars=(await api('/characters')).characters;const c=chars.find(c=>c.id===id);if(c)await startGame(c);}
       else if(action==='delete-character'){
         if(deleteArmed!==id){deleteArmed=id;button.textContent='CONFIRM DELETE';return;}
@@ -537,9 +567,15 @@ function wireEvents(){
     }catch(error){toast(error.message);}
   });
   $('#dialog-content').addEventListener('submit',async e=>{
-    if(e.target.id!=='account-form')return;e.preventDefault();const form=e.target,button=e.submitter,fields=new FormData(form);button.disabled=true;
-    try{const result=await api('/'+form.dataset.mode,{username:fields.get('username'),password:fields.get('password')});account={username:result.username,founderHalo:result.founderHalo};$('#account-label').textContent=account.username;updateFounderOffer();refreshFounderOffer();showCharacters((await api('/characters')).characters);if(form.dataset.mode==='register'&&hasFounderHalo(account))toast('First Signal Halo unlocked · your permanent early-signup reward.');}
-    catch(error){const field=$('#account-error');if(field)field.textContent=error.message;else toast(error.message);}finally{button.disabled=false;}
+    if(e.target.id!=='account-form')return;e.preventDefault();const form=e.target;
+    try{await submitForm(form,async()=>{
+      const fields=new FormData(form),result=await api('/'+form.dataset.mode,{username:fields.get('username'),password:fields.get('password')});
+      account={username:result.username,founderHalo:result.founderHalo};$('#account-label').textContent=account.username;updateFounderOffer();refreshFounderOffer();
+      const chars=(await api('/characters')).characters;
+      if(form.isConnected&&$('#panel-dialog').open&&dialogPage==='account')showCharacters(chars);
+      if(form.dataset.mode==='register'&&hasFounderHalo(account))toast('First Signal Halo unlocked · your permanent early-signup reward.');
+    });}
+    catch(error){const field=form.isConnected&&$('#panel-dialog').open?form.querySelector('.form-error'):null;if(field)field.textContent=error.message;else toast(error.message);}
   });
   $('#dialog-content').addEventListener('change',async e=>{
     const t=e.target;
@@ -840,7 +876,7 @@ function frame(timestamp){
     connection?.update(dt,{forward:0,strafe:0,yaw,jump:false,dash:false,sprint:false});
     introTime+=dt;const index=data.intro.shots.findIndex(s=>introTime>=s.start&&introTime<s.end),shot=data.intro.shots[Math.max(0,index)];
     if(index<0){finishIntro();camera=gameCamera(dt);}else{
-      const t=clamp((introTime-shot.start)/(shot.end-shot.start),0,1),eased=t*t*(3-2*t);camera={eye:mix3(shot.from,shot.to,eased),target:mix3(shot.lookFrom,shot.lookTo,eased),fov:.88};
+      const t=clamp((introTime-shot.start)/(shot.end-shot.start),0,1),eased=reducedMotion?0:t*t*(3-2*t);camera={eye:mix3(shot.from,shot.to,eased),target:mix3(shot.lookFrom,shot.lookTo,eased),fov:.88};
       if(introShot!==index){introShot=index;$('#cinema-label').textContent=shot.label;$('#cinema-subtitle').textContent=shot.caption;audio.speak(shot.caption);}
       $('#cinema-progress').style.width=`${introTime/data.intro.duration*100}%`;
     }
@@ -885,4 +921,9 @@ async function boot(){
   api('/health').then(health=>worldClock.sync(health.serverTime)).catch(()=>{});
   sessionReady=api('/session').then(session=>{account={username:session.username,founderHalo:session.founderHalo};$('#account-label').textContent=account.username;updateFounderOffer();}).catch(error=>{if(error.status!==401)toast('The server is unavailable. Try signing in again when your connection returns.');});
 }
-boot().catch(error=>{console.error(error);$('#loading').innerHTML='';const box=document.createElement('div');box.className='fatal';box.textContent=`Unable to load the game. ${error.message}`;$('#loading').append(box);});
+boot().catch(error=>{
+  console.error(error);document.body.classList.remove('webgl-ui');$('#interface').hidden=true;
+  const loading=$('#loading');loading.hidden=false;loading.removeAttribute('role');
+  loading.innerHTML=`<div class="fatal" role="alert"><h2>Unable to load the game.</h2><p>${esc(error.message)}</p><button type="button" class="button primary">TRY AGAIN</button></div>`;
+  const retry=loading.querySelector('button');retry.onclick=()=>location.reload();retry.focus();
+});

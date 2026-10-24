@@ -2,7 +2,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { runInNewContext } from 'node:vm';
 import { glyphs, pixelGlyph, GlyphAtlas } from '../src/pixel-font.js';
 import { WebGLUI, rgba, intersection, clippedQuad, wrapLines } from '../src/webgl-ui.js';
 import { Input } from '../src/input.js';
@@ -242,12 +241,86 @@ test('wheel handling preserves browser zoom, canceled events and native recovery
   ui.lost=false;wheel(panel);assert.equal(panel.scrollTop,60);
 });
 
+function controlSurface(t){
+  const listeners=new Map(),nodes=[],timers=new Map(),classes=new Set();let timerId=0;
+  const element=tag=>{
+    const attributes=new Map();
+    const node={tagName:tag.toUpperCase(),dataset:{},style:{},children:[],isConnected:true,
+      setAttribute:(key,value)=>attributes.set(key,value),getAttribute:key=>attributes.get(key)||null,removeAttribute:key=>attributes.delete(key),
+      append(child){this.children.push(child);child.parentElement=this;},remove(){this.isConnected=false;},
+      focus(){document.activeElement=this;},contains(other){return this===other||this.children.some(child=>child.contains(other));},
+      closest(){return this.dataset.tooltip?this:null;},getBoundingClientRect:()=>({x:30,y:80,width:200,height:44,bottom:124}),
+      querySelectorAll(){return this.children.filter(child=>child.tagName==='BUTTON'&&!child.disabled);},
+      querySelector(selector){return this.querySelectorAll().find(child=>!selector.includes('aria-selected')||child.getAttribute('aria-selected')==='true');},
+    };
+    nodes.push(node);return node;
+  };
+  const source=element('div');
+  source.addEventListener=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);};
+  source.querySelectorAll=selector=>nodes.filter(node=>selector==='[title]'?node.getAttribute('title'):node.dataset.tooltip);
+  globals(t,{innerWidth:800,innerHeight:600,document:{createElement:element,body:{classList:{toggle:(key,on)=>on?classes.add(key):classes.delete(key)}}},
+    setTimeout:fn=>{timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id)});
+  const ui=Object.create(WebGLUI.prototype);Object.assign(ui,{source,canvas:{},lost:false,forcedColors:{matches:false}});ui.bindControls();
+  const emit=(type,target,extra={})=>{const event={target,preventDefault(){this.prevented=true;},stopPropagation(){this.stopped=true;},...extra};for(const fn of listeners.get(type)||[])fn(event);return event;};
+  const tick=()=>{const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();};
+  return {ui,source,element,emit,classes,tick,tooltip:source.children.find(node=>node.id==='ui-tooltip')};
+}
+
+test('high contrast and graphics recovery expose native controls without intercepting selects or validation',t=>{
+  const {ui,element,emit,classes}=controlSurface(t),select=element('select');
+  select.dataset.tooltip='Graphics quality';
+  ui.updatePresentation();assert.equal(classes.has('webgl-ui'),true);assert.equal(ui.canvas.hidden,false);
+  for(const reason of ['forcedColors','lost']){
+    ui.forcedColors.matches=reason==='forcedColors';ui.lost=reason==='lost';ui.updatePresentation();
+    assert.equal(classes.has('webgl-ui'),false);assert.equal(ui.canvas.hidden,true);assert.equal(select.getAttribute('title'),'Graphics quality');
+    for(const [type,extra] of [['pointerdown',{}],['click',{detail:0}],['keydown',{key:'Enter'}],['invalid',{}]])assert.equal(emit(type,select,extra).prevented,undefined);
+    assert.doesNotThrow(()=>ui.render(),'native mode does not need the WebGL painter');
+  }
+  ui.lost=false;ui.forcedColors.matches=false;ui.updatePresentation();assert.equal(classes.has('webgl-ui'),true);assert.equal(select.getAttribute('title'),null);assert.equal(ui.allDirty,true);
+});
+
+test('select menus respect disabled groups and close before native Tab navigation',t=>{
+  const {ui,element,emit}=controlSurface(t),select=element('select');
+  select.options=[{textContent:'Unavailable',value:'off',selected:true,parentElement:{disabled:true}},{textContent:'Available',value:'on'}];
+  select.labels=[{textContent:'Graphics quality'}];
+  ui.openSelect(select);
+  assert.equal(ui.selectMenu.children[0].disabled,true);assert.equal(document.activeElement,ui.selectMenu.children[1]);
+  const event=emit('keydown',document.activeElement,{key:'Tab'});
+  assert.equal(event.prevented,undefined);assert.equal(ui.selectMenu,null);assert.equal(document.activeElement,select);assert.equal(select.getAttribute('aria-expanded'),null);
+  ui.openSelect(select);const escape=emit('keydown',document.activeElement,{key:'Escape'});
+  assert.equal(escape.prevented,true);assert.equal(escape.stopped,true);assert.equal(document.activeElement,select);
+});
+
+test('each failed validation focuses and describes the first invalid field, including retries',async t=>{
+  const {element,emit}=controlSurface(t),form=element('form'),error=element('p'),fields=[element('input'),element('input')];
+  form.querySelectorAll=()=>fields.filter(field=>field.getAttribute('aria-invalid')==='true');
+  form.querySelector=selector=>selector==='.form-error'?error:form.querySelectorAll()[0];
+  for(const [index,field]of fields.entries()){field.form=form;field.validationMessage=`Fix field ${index+1}`;}
+  for(const field of fields)assert.equal(emit('invalid',field).prevented,true);
+  assert.equal(document.activeElement,fields[0]);assert.equal(error.textContent,'Fix field 1');assert.equal(fields[0].getAttribute('aria-errormessage'),error.id);
+  await Promise.resolve();
+  fields[0].validationMessage='This field is still invalid';emit('invalid',fields[0]);
+  assert.equal(error.textContent,'This field is still invalid','an existing invalid marker cannot suppress a new validation error');
+  emit('input',fields[0]);assert.equal(error.textContent,'');assert.equal(fields[0].getAttribute('aria-invalid'),null);
+  await Promise.resolve();emit('invalid',fields[1]);assert.equal(document.activeElement,fields[1]);assert.equal(error.textContent,'Fix field 2');
+});
+
+test('tooltips support keyboard focus, hover, and Escape without replacing existing descriptions',t=>{
+  const {element,emit,tick,tooltip}=controlSurface(t),button=element('button');
+  button.dataset.tooltip='Restore health with a medkit';button.setAttribute('aria-describedby','medkit-help');
+  emit('focusin',button);tick();assert.equal(tooltip.hidden,false);assert.equal(tooltip.textContent,button.dataset.tooltip);
+  assert.equal(button.getAttribute('aria-describedby'),'medkit-help ui-tooltip');
+  emit('pointerout',button,{relatedTarget:tooltip});assert.equal(tooltip.hidden,false,'help stays visible while moving onto it');
+  const event=emit('keydown',button,{key:'Escape'});assert.equal(event.prevented,true);assert.equal(event.stopped,true);assert.equal(tooltip.hidden,true);
+  assert.equal(button.getAttribute('aria-describedby'),'medkit-help');
+});
+
 function keyboard(t) {
   const listeners=new Map(),documentEvents=new Map(),actions=[];
   globals(t,{window:{addEventListener:(name,fn)=>listeners.set(name,fn)},document:{addEventListener:(name,fn)=>documentEvents.set(name,fn),querySelector:()=>null},navigator:{getGamepads:()=>[]}});
   const input=new Input({addEventListener(){}},a=>actions.push(a),()=>{});
   input.active=true;
-  const key=(code,extra={})=>{const e={code,target:{tagName:'BUTTON'},preventDefault(){this.prevented=true;},...extra};documentEvents.get('keydown')(e);listeners.get('keydown')(e);return e;};
+  const key=(code,extra={})=>{const e={code,target:input.canvas,preventDefault(){this.prevented=true;},...extra};documentEvents.get('keydown')(e);listeners.get('keydown')(e);return e;};
   return {input,actions,key,listeners,documentEvents};
 }
 
@@ -281,7 +354,7 @@ test('R and right-stick click are unassigned during gameplay',t=>{
   assert.deepEqual(actions,['medkit','ability:arc']);
 });
 
-test('chat and gestures open without submitting a focused HUD button or firing gameplay keys',t=>{
+test('chat and gestures open from the world without firing gameplay keys while typing',t=>{
   const {input,actions,key}=keyboard(t);input.menu=false;
   assert.equal(key('Enter').prevented,true);key('KeyB');assert.deepEqual(actions,['chat','gestures']);
   for(const code of ['Enter','KeyB','Digit1','KeyW'])key(code,{target:{tagName:'INPUT'}});
@@ -289,6 +362,41 @@ test('chat and gestures open without submitting a focused HUD button or firing g
   input.menu=true;
   for(const code of ['Enter','KeyB','Digit1','KeyW'])key(code);
   assert.deepEqual(actions,['chat','gestures']);assert.equal(input.sample(.016).forward,0);
+});
+
+test('focused HUD controls keep native navigation and activation without moving or casting',t=>{
+  const {input,actions,key}=keyboard(t);input.menu=false;
+  for(const target of [{tagName:'BUTTON'},{tagName:'SUMMARY'},{tagName:'A'},{tagName:'SPAN',closest:()=>({tagName:'BUTTON'})}]){
+    for(const code of ['Tab','Space','Enter','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End'])assert.equal(key(code,{target}).prevented,undefined);
+  }
+  assert.equal(key('Tab',{shiftKey:true}).prevented,undefined,'Shift+Tab can always leave the world');
+  assert.deepEqual(actions,[]);assert.equal(input.keys.size,0);
+  assert.deepEqual(input.sample(.016),{forward:0,strafe:0,jump:false,dash:false,sprint:false});
+  assert.equal(key('Tab').prevented,true);assert.deepEqual(actions,['target']);
+});
+
+test('focusing text entry clears held movement and ignores editable keyboard shortcuts',t=>{
+  const {input,actions,key,documentEvents}=keyboard(t);input.menu=false;
+  key('KeyW');assert.equal(input.sample(.016).forward,1);
+  const target={tagName:'DIV',isContentEditable:true};
+  documentEvents.get('focusin')({target});
+  for(const code of ['KeyW','Enter','KeyH','Tab','Space'])assert.equal(key(code,{target}).prevented,undefined);
+  assert.deepEqual(actions,[]);assert.equal(input.sample(.016).forward,0);
+});
+
+test('touch movement resets on capture loss and ignores unrelated fingers and menus',t=>{
+  const {input,actions}=keyboard(t),events=new Map(),captures=new Set(),buttonEvents=new Map();input.menu=false;
+  const stick={firstElementChild:{style:{}},getBoundingClientRect:()=>({x:0,y:0,width:100,height:100}),
+    addEventListener:(name,fn)=>events.set(name,fn),setPointerCapture:id=>captures.add(id),hasPointerCapture:id=>captures.has(id),releasePointerCapture:id=>captures.delete(id)};
+  const button={dataset:{touch:'jump'},addEventListener:(name,fn)=>buttonEvents.set(name,fn)};
+  document.querySelector=()=>stick;document.querySelectorAll=()=>[button];input.setupTouch();
+  const down={pointerId:1,button:0,clientX:50,clientY:10};events.get('pointerdown')(down);assert.equal(input.sample(.016).forward,1);
+  events.get('pointerdown')({...down,pointerId:2,clientY:90});events.get('pointerup')({pointerId:2});assert.equal(input.sample(.016).forward,1);
+  events.get('lostpointercapture')({pointerId:1});assert.equal(input.sample(.016).forward,0);assert.equal(stick.firstElementChild.style.transform,'');
+  events.get('pointerdown')(down);input.clear();assert.equal(captures.size,0);assert.equal(stick.firstElementChild.style.transform,'');
+  input.menu=true;events.get('pointerdown')(down);buttonEvents.get('click')({preventDefault(){}});assert.equal(captures.size,0);assert.equal(input.edges.size,0);
+  input.menu=false;buttonEvents.get('click')({preventDefault(){}});assert.equal(input.sample(.016).jump,true);assert.deepEqual(actions,[]);
+  assert.equal(buttonEvents.has('pointerdown'),false,'actions activate on click so a canceled press does nothing');
 });
 
 test('expanded chat paints above the HUD and below modal dialogs',()=>{
@@ -314,7 +422,7 @@ test('controller navigation stays in expanded chat and B returns without moving 
 function pointer(t) {
   const windowEvents=new Map(),canvasEvents=new Map(),documentEvents=new Map(),actions=[],looks=[],captures=new Set();
   globals(t,{window:{addEventListener:(name,fn)=>windowEvents.set(name,fn)},document:{addEventListener:(name,fn)=>documentEvents.set(name,fn),querySelector:()=>null},navigator:{getGamepads:()=>[]}});
-  const canvas={addEventListener:(name,fn)=>canvasEvents.set(name,fn),getBoundingClientRect:()=>({left:0,top:0,right:800,bottom:600}),
+  const canvas={addEventListener:(name,fn)=>canvasEvents.set(name,fn),focus(){document.activeElement=this;},getBoundingClientRect:()=>({left:0,top:0,right:800,bottom:600}),
     setPointerCapture:id=>captures.add(id),hasPointerCapture:id=>captures.has(id),releasePointerCapture:id=>captures.delete(id),
     requestPointerLock(){assert.fail('mouse locking is forbidden');}};
   const input=new Input(canvas,(action,event)=>actions.push({action,event}),(x,y)=>looks.push([x,y]));input.active=true;input.menu=false;

@@ -3,6 +3,11 @@
 import { clamp } from './math.js';
 import { Controllers } from './controllers.js';
 
+const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',Digit7:'ability:breach',Digit8:'ability:siphon',Digit9:'ability:execute',Digit0:'ability:nova',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyU:'guild',KeyG:'dungeons',KeyH:'medkit',KeyV:'camera',Enter:'chat',KeyB:'gestures'};
+const navigationKeys=new Set(['Tab','Space','Enter','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End']);
+const textEntry=target=>target?.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName);
+const interactive=target=>/^(BUTTON|A|SUMMARY)$/.test(target?.tagName)||target?.closest?.('button,a[href],summary,[tabindex="0"]');
+
 export class Input {
   constructor(canvas,onAction,onLook) {
     this.canvas=canvas;this.onAction=onAction;this.onLook=onLook;this.keys=new Set();this.edges=new Set();this.active=false;this.menu=true;this.drag=null;this.touchMove=[0,0];this.sensitivity=.0025;
@@ -28,17 +33,19 @@ export class Input {
     window.addEventListener('keydown',e=>{
       if(e.defaultPrevented||e.isComposing)return;
       if(e.code==='Escape'){if(!e.repeat){e.preventDefault();this.onAction('escape');}return;}
-      if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+      if(textEntry(e.target))return;
       // Native Tab, Space and arrow navigation must never cast or cycle targets in menus.
       if(this.menu||!this.active||e.ctrlKey||e.metaKey||e.altKey)return;
-      if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&this.active)e.preventDefault();
+      if(e.code==='Tab'&&e.shiftKey)return;
+      if(e.target!==canvas&&interactive(e.target)&&navigationKeys.has(e.code))return;
+      if(['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
       if(!this.keys.has(e.code))this.edges.add(e.code);this.keys.add(e.code);
       if(e.repeat)return;
-      const bindings={Digit1:'ability:arc',Digit2:'ability:surge',Digit3:'ability:mend',Digit4:'ability:aegis',Digit5:'ability:lance',Digit6:'ability:echo',Digit7:'ability:breach',Digit8:'ability:siphon',Digit9:'ability:execute',Digit0:'ability:nova',KeyE:'interact',Tab:'target',KeyJ:'journal',KeyT:'talents',KeyI:'inventory',KeyM:'map',KeyC:'community',KeyU:'guild',KeyG:'dungeons',KeyH:'medkit',KeyV:'camera',Enter:'chat',KeyB:'gestures'};
       if(e.code==='Enter')e.preventDefault();
-      if(bindings[e.code]&&this.active)this.onAction(bindings[e.code]);
+      if(bindings[e.code])this.onAction(bindings[e.code]);
     });
     window.addEventListener('keyup',e=>this.keys.delete(e.code));
+    document.addEventListener('focusin',e=>{if(textEntry(e.target))this.clear();});
     window.addEventListener('blur',()=>{this.focused=false;this.controllers.suspend();this.clear();});
     window.addEventListener('focus',()=>{this.focused=true;});
     document.addEventListener('visibilitychange',()=>{if(document.hidden){this.controllers.suspend();this.clear();}});
@@ -48,6 +55,7 @@ export class Input {
       if(!this.active||this.menu)return;
       if(this.drag)return;
       if(e.pointerType==='touch'||e.button===0||e.button===2){
+        canvas.focus({preventScroll:true});
         this.drag={id:e.pointerId,type:e.pointerType,button:e.button,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false};
         if(e.pointerType==='touch')canvas.setPointerCapture(e.pointerId);
       }
@@ -78,7 +86,7 @@ export class Input {
   get padIndex(){return this.controllers.index;}
   get controllerStatus(){return this.controllers.status;}
   clearPointer(){const drag=this.drag;this.drag=null;if(drag&&this.canvas.hasPointerCapture?.(drag.id))this.canvas.releasePointerCapture(drag.id);}
-  clear(){this.keys.clear();this.edges.clear();this.touchMove=[0,0];this.clearPointer();this.generation++;this.padTime=0;this.menuDirection='';}
+  clear(){this.keys.clear();this.edges.clear();this.touchMove=[0,0];this.resetTouch?.();this.clearPointer();this.generation++;this.padTime=0;this.menuDirection='';}
   setupTouch(){
     const stick=document.querySelector('#touch-stick');if(!stick)return;
     let touchId=null;
@@ -87,11 +95,13 @@ export class Input {
       const r=stick.getBoundingClientRect(),dx=clamp((e.clientX-r.x-r.width/2)/(r.width*.38),-1,1),dy=clamp((e.clientY-r.y-r.height/2)/(r.height*.38),-1,1);
       this.touchMove=[dx,-dy];stick.firstElementChild.style.transform=`translate(${dx*27}px,${dy*27}px)`;
     };
-    stick.addEventListener('pointerdown',e=>{touchId=e.pointerId;stick.setPointerCapture(touchId);move(e);});
+    stick.addEventListener('pointerdown',e=>{if(!this.active||this.menu||touchId!==null||e.button!==0)return;touchId=e.pointerId;stick.setPointerCapture(touchId);move(e);});
     stick.addEventListener('pointermove',move);
-    const reset=()=>{touchId=null;this.touchMove=[0,0];stick.firstElementChild.style.transform='';};
-    stick.addEventListener('pointerup',reset);stick.addEventListener('pointercancel',reset);
-    document.querySelectorAll('[data-touch]').forEach(b=>b.addEventListener('pointerdown',e=>{
+    this.resetTouch=()=>{const id=touchId;touchId=null;this.touchMove=[0,0];stick.firstElementChild.style.transform='';if(id!==null&&stick.hasPointerCapture(id))stick.releasePointerCapture(id);};
+    const reset=e=>{if(e.pointerId===touchId)this.resetTouch();};
+    for(const event of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(event,reset);
+    document.querySelectorAll('[data-touch]').forEach(b=>b.addEventListener('click',e=>{
+      if(!this.active||this.menu)return;
       e.preventDefault();const a=b.dataset.touch;
       if(a==='jump')this.edges.add('Space');else if(a==='dash')this.edges.add('KeyQ');else this.onAction(a);
     }));

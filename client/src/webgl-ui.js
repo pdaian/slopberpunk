@@ -75,6 +75,8 @@ export class WebGLUI {
     this.attributes=['position','uv','tint'].map(name=>this.gl.getAttribLocation(this.program,name));
     this.viewport=this.gl.getUniformLocation(this.program,'viewport');
     this.allDirty=true;this.clock=0;this.lost=false;
+    this.forcedColors=matchMedia('(forced-colors: active)');
+    this.forcedColors.addEventListener('change',()=>this.updatePresentation());
     this.observer=new MutationObserver(records=>{
       for(const record of records)this.invalidate(record.target);
     });
@@ -93,12 +95,23 @@ export class WebGLUI {
     canvas.addEventListener('webglcontextlost',e=>{
       e.preventDefault();this.lost=true;
       // A readable, keyboard-accessible recovery surface is essential if the GPU fails.
-      document.body.classList.remove('webgl-ui');canvas.hidden=true;
+      this.updatePresentation();
       window.dispatchEvent(new CustomEvent('graphicslost'));
     });
     canvas.addEventListener('webglcontextrestored',()=>location.reload());
     this.bindControls();
-    document.body.classList.add('webgl-ui');
+    this.updatePresentation();
+  }
+  get nativeControls(){return this.lost||Boolean(this.forcedColors?.matches);}
+  updatePresentation(){
+    const select=this.selectOwner;
+    this.closeSelect();select?.focus();
+    document.body.classList.toggle('webgl-ui',!this.nativeControls);
+    for(const node of this.source.querySelectorAll('[data-tooltip]')){
+      if(this.nativeControls)node.setAttribute('title',node.dataset.tooltip);else node.removeAttribute('title');
+    }
+    this.hideTooltip?.();
+    this.canvas.hidden=this.nativeControls;this.allDirty=true;
   }
   texture() {
     const gl=this.gl,t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
@@ -263,7 +276,7 @@ export class WebGLUI {
   }
   order(node) {return node.id==='panel-dialog'?10:node.id==='toast'?20:node.id==='ui-tooltip'?30:node.id==='live-chat'&&node.dataset.expanded==='true'?5:0;}
   render(timestamp=0) {
-    if(this.lost)return;
+    if(this.nativeControls)return;
     // HUD updates run immediately before this pass, before observer microtasks fire.
     for(const record of this.observer?.takeRecords()||[])this.invalidate(record.target);
     const gl=this.gl,w=innerWidth,h=innerHeight,ratio=Math.min(devicePixelRatio||1,2);
@@ -312,23 +325,23 @@ export class WebGLUI {
       gl.drawArrays(gl.TRIANGLES,0,batch.count);
     }
   }
-  closeSelect() {this.selectMenu?.remove();this.selectMenu=null;this.selectOwner?.setAttribute('aria-expanded','false');this.selectOwner=null;}
+  closeSelect() {this.selectMenu?.remove();this.selectMenu=null;this.selectOwner?.removeAttribute('aria-expanded');this.selectOwner=null;}
   openSelect(select) {
-    if(select.disabled)return;
+    if(this.nativeControls||select.disabled)return;
     if(this.selectOwner===select&&this.selectMenu?.isConnected){this.closeSelect();return;}
     this.closeSelect();select.focus();this.selectOwner=select;select.setAttribute('aria-expanded','true');
     const menu=document.createElement('div');menu.className='ui-select';menu.setAttribute('role','listbox');menu.setAttribute('aria-label',select.labels?.[0]?.textContent||'Choose an option');
     const r=select.getBoundingClientRect(),height=Math.min(260,select.options.length*42+8);
     Object.assign(menu.style,{left:Math.max(8,Math.min(r.x,innerWidth-r.width-8))+'px',top:Math.max(8,Math.min(r.bottom+4,innerHeight-height-8))+'px',width:r.width+'px',maxHeight:height+'px'});
     for(const option of select.options) {
-      const b=document.createElement('button');b.type='button';b.textContent=option.textContent;b.disabled=option.disabled;b.setAttribute('role','option');b.setAttribute('aria-selected',String(option.selected));
+      const b=document.createElement('button');b.type='button';b.textContent=option.textContent;b.disabled=option.disabled||Boolean(option.parentElement?.disabled);b.setAttribute('role','option');b.setAttribute('aria-selected',String(option.selected));
       b.onclick=()=>{select.value=option.value;select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}));this.closeSelect();select.focus();};menu.append(b);
     }
     (select.closest('dialog')||this.source).append(menu);this.selectMenu=menu;
-    (menu.querySelector('[aria-selected="true"]')||menu.querySelector('button:not(:disabled)'))?.focus();
+    (menu.querySelector('[aria-selected="true"]:not(:disabled)')||menu.querySelector('button:not(:disabled)'))?.focus();
   }
   scrollWheel(e) {
-    if(this.lost||e.defaultPrevented||!e.cancelable||e.ctrlKey||e.metaKey)return;
+    if(this.nativeControls||e.defaultPrevented||!e.cancelable||e.ctrlKey||e.metaKey)return;
     const dx=e.shiftKey&&!e.deltaX?e.deltaY:e.deltaX,dy=e.shiftKey&&!e.deltaX?0:e.deltaY;
     if(!dx&&!dy)return;
     let node=e.target.nodeType===3?e.target.parentElement:e.target;
@@ -351,6 +364,7 @@ export class WebGLUI {
     this.source.addEventListener('wheel',e=>this.scrollWheel(e),{passive:false});
     // Suppress OS select popovers; these choices use the same WebGL painter as panels.
     this.source.addEventListener('pointerdown',e=>{
+      if(this.nativeControls)return;
       if(this.selectMenu&&!this.selectMenu.contains(e.target)&&e.target!==this.selectOwner)this.closeSelect();
       if(e.target.tagName==='SELECT'){e.preventDefault();this.openSelect(e.target);return;}
       let node=e.target;
@@ -364,10 +378,12 @@ export class WebGLUI {
         }node=node.parentElement;
       }
     },true);
-    this.source.addEventListener('click',e=>{if(e.target.tagName==='SELECT'&&e.detail===0){e.preventDefault();this.openSelect(e.target);}},true);
+    this.source.addEventListener('click',e=>{if(!this.nativeControls&&e.target.tagName==='SELECT'&&e.detail===0){e.preventDefault();this.openSelect(e.target);}},true);
     this.source.addEventListener('keydown',e=>{
+      if(this.nativeControls)return;
       if(this.selectMenu?.isConnected) {
         if(e.key==='Escape'){e.preventDefault();e.stopPropagation();const select=this.selectOwner;this.closeSelect();select?.focus();return;}
+        if(e.key==='Tab'){const select=this.selectOwner;this.closeSelect();select?.focus();return;}
         const options=[...this.selectMenu.querySelectorAll('button:not(:disabled)')],i=options.indexOf(document.activeElement);
         if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)) {
           e.preventDefault();e.stopPropagation();options[e.key==='Home'?0:e.key==='End'?options.length-1:(i+(e.key==='ArrowDown'?1:-1)+options.length)%options.length]?.focus();return;
@@ -375,26 +391,47 @@ export class WebGLUI {
       }
       if(e.target.tagName==='SELECT'&&[' ','Enter','F4'].includes(e.key)){e.preventDefault();this.openSelect(e.target);}
     },true);
+    const invalidForms=new WeakSet();let errorId=0;
     this.source.addEventListener('invalid',e=>{
+      if(this.nativeControls)return;
       e.preventDefault();const form=e.target.form;if(!form)return;
+      if(invalidForms.has(form))return;
+      invalidForms.add(form);queueMicrotask(()=>invalidForms.delete(form));
+      for(const field of form.querySelectorAll('[aria-invalid="true"]')){field.removeAttribute('aria-invalid');field.removeAttribute('aria-errormessage');}
       let error=form.querySelector('.form-error');
       if(!error){error=document.createElement('p');error.className='form-error';error.setAttribute('role','alert');form.append(error);}
-      if(!form.querySelector('[aria-invalid="true"]')){error.textContent=e.target.validationMessage;e.target.focus();}
-      e.target.setAttribute('aria-invalid','true');
+      if(!error.id)error.id=`ui-form-error-${++errorId}`;
+      error.textContent=e.target.validationMessage;
+      e.target.setAttribute('aria-invalid','true');e.target.setAttribute('aria-errormessage',error.id);e.target.focus();
     },true);
-    this.source.addEventListener('input',e=>{e.target.removeAttribute('aria-invalid');});
+    this.source.addEventListener('input',e=>{
+      e.target.removeAttribute('aria-invalid');e.target.removeAttribute('aria-errormessage');
+      const form=e.target.form,error=form?.querySelector('.form-error');
+      if(error&&!form.querySelector('[aria-invalid="true"]'))error.textContent='';
+    });
     // Browser tooltips would be a second visual UI; render ability help in the terminal.
     for(const node of this.source.querySelectorAll('[title]')){node.dataset.tooltip=node.title;node.removeAttribute('title');}
     const tip=document.createElement('div');tip.id='ui-tooltip';tip.hidden=true;tip.setAttribute('role','tooltip');this.source.append(tip);
-    let timer;
-    const hide=()=>{clearTimeout(timer);tip.hidden=true;};
-    this.source.addEventListener('pointerover',e=>{
-      const owner=e.target.closest('[data-tooltip]');if(!owner)return;
-      hide();timer=setTimeout(()=>{
-        if(!owner.isConnected)return;tip.textContent=owner.dataset.tooltip;tip.hidden=false;
-        const r=owner.getBoundingClientRect();tip.style.left=Math.max(10,Math.min(r.x,innerWidth-tip.offsetWidth-10))+'px';tip.style.top=Math.max(10,r.y-tip.offsetHeight-10)+'px';
-      },400);
-    });
-    this.source.addEventListener('pointerout',hide);this.source.addEventListener('pointerdown',hide);
+    let timer,owner;
+    const hide=()=>{
+      clearTimeout(timer);tip.hidden=true;
+      if(owner){const ids=(owner.getAttribute('aria-describedby')||'').split(/\s+/).filter(id=>id&&id!==tip.id);if(ids.length)owner.setAttribute('aria-describedby',ids.join(' '));else owner.removeAttribute('aria-describedby');}
+      owner=null;
+    };
+    this.hideTooltip=hide;
+    const show=(target,delay=0)=>{
+      if(this.nativeControls)return;
+      const control=target.closest('[data-tooltip]');if(!control||control===owner)return;
+      hide();owner=control;timer=setTimeout(()=>{
+        if(!control.isConnected)return hide();tip.textContent=control.dataset.tooltip;tip.hidden=false;
+        const ids=(control.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean);if(!ids.includes(tip.id))ids.push(tip.id);control.setAttribute('aria-describedby',ids.join(' '));
+        const r=control.getBoundingClientRect();tip.style.left=Math.max(10,Math.min(r.x,innerWidth-tip.offsetWidth-10))+'px';tip.style.top=Math.max(10,r.y-tip.offsetHeight-10)+'px';
+      },delay);
+    };
+    const leave=e=>{if(!owner?.contains(e.relatedTarget)&&!tip.contains(e.relatedTarget))hide();};
+    this.source.addEventListener('pointerover',e=>show(e.target,400));
+    this.source.addEventListener('focusin',e=>show(e.target));
+    this.source.addEventListener('pointerout',leave);this.source.addEventListener('focusout',leave);this.source.addEventListener('pointerdown',hide);
+    this.source.addEventListener('keydown',e=>{if(e.key==='Escape'&&!tip.hidden){hide();e.preventDefault();e.stopPropagation();}},true);
   }
 }

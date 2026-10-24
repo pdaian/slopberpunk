@@ -49,6 +49,8 @@ New characters start in the First Steps Courtyard. Walk to the cyan square, try 
 
 Touch controls and standard-mapped gamepads are also supported. Open **HOW TO PLAY** for their bindings and gameplay help. See [compatibility](docs/COMPATIBILITY.md) for browser and controller requirements, or the [Steam Deck guide](docs/STEAM_DECK.md) for setup.
 
+In menus and on interface buttons, use Tab / Shift+Tab to navigate and Enter or Space to activate a control. Tab cycles targets when the game world has focus. Panels restore focus when closed. Browser high-contrast mode uses native interface controls; reduced motion keeps cinematic camera shots still. The combat log can be read without interrupting spoken quest updates.
+
 If your character gets stuck, open **Escape → UNSTUCK** (press Escape again if it first clears your target). This returns you to the Commons, the training courtyard during the tutorial, or your current dungeon's entrance. It preserves progress, health, and energy and can be used every 30 seconds.
 
 Controller mappings are applied automatically, including the native Backbone One layouts on desktop Linux in Chrome and Firefox. **Settings → Camera turn speed** adjusts mouse, touch, and right-stick turning. Settings also shows controller connection or access problems. No right-stick calibration is needed; previously saved calibration settings are ignored. See [compatibility](docs/COMPATIBILITY.md#input-targets) for the supported layouts and verification limits.
