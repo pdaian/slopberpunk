@@ -5,6 +5,7 @@ import { isSpirit } from './death.js';
 import { economyBonuses } from './economy.js';
 import { statCaps, statNames } from './item-catalog.js';
 import { moralBonuses } from './morality.js';
+import { forgeBonuses } from './forge.js';
 import { ridePosition } from './elevators.js';
 export { experienceFor } from './progression.js';
 
@@ -16,6 +17,7 @@ export function stats(character, data) {
   for(const talent of data.talents) s[talent.stat]+=Math.min(character.talents?.[talent.id]||0,talent.maxRank)*talent.amount;
   for(const bonuses of economyBonuses(character,data))for(const [stat,value] of Object.entries(bonuses))s[stat]+=value;
   for(const [stat,value] of Object.entries(moralBonuses(character,data)))s[stat]+=value;
+  for(const [stat,value] of Object.entries(forgeBonuses(character,data.forge)))s[stat]+=value;
   for(const [stat,cap] of Object.entries(statCaps))s[stat]=Math.min(s[stat],cap);
   if(character.resurrectionSickness>0){s.damage*=data.rules.death.sicknessDamageMultiplier;s.speed*=data.rules.death.sicknessSpeedMultiplier;}
   return s;

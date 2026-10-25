@@ -423,10 +423,21 @@ test('authoritative milestones announce newly earned frame parts once',()=>{
   const c={...character(),health:100,death:undefined,faction:'relay',activeQuests:{},completed:data.quests.slice(0,7).map(q=>q.id)},app=application(c);
   const saved=structuredClone(c);saved.completed.push(data.quests[7].id);
   app.onSnapshot({character:saved,serverTime:18000});
-  assert.match(app.node('#toast').textContent,/FRAME PART EARNED · Storm reactor/);
-  assert.equal(app.simulation.character.forge,undefined,'earning a cosmetic does not silently equip it');
+  assert.match(app.node('#toast').textContent,/RARE EARNED · Storm reactor · \+10 PRESTIGE/);
+  assert.equal(app.simulation.character.forge,undefined,'earning a part does not silently equip its look or stats');
   app.node('#toast').textContent='';app.onSnapshot({character:structuredClone(saved),serverTime:18001});
   assert.equal(app.node('#toast').textContent,'','repeated snapshots cannot repeat the award');
+});
+
+test('hunt snapshots announce a find and collection bonus once without replacing a chosen build',()=>{
+  const c={...character(),health:100,death:undefined,forge:{hunts:{'ghost-prism':{attempts:1,found:true},'ghost-lattice':{attempts:2,found:true},'ghost-orbit':{attempts:11,found:false}},attuned:{head:'road-visor'}}},app=application(c);
+  const saved=structuredClone(c);saved.forge.hunts['ghost-orbit']={attempts:12,found:true};
+  app.onSnapshot({character:saved,serverTime:18000});
+  assert.match(app.node('#toast').textContent,/RELIC FOUND · Ghost orbit · \+130 PRESTIGE · Signal Ghost COMPLETE/);
+  assert.match(app.node('#combat-log').innerHTML,/Signal Ghost COMPLETE/);
+  assert.equal(app.simulation.character.forge.attuned.head,'road-visor');
+  app.node('#toast').textContent='';app.onSnapshot({character:structuredClone(saved),serverTime:18001});
+  assert.equal(app.node('#toast').textContent,'');
 });
 
 test('tutorial HUD, journal, selection, and snapshots hand off to the existing story', () => {

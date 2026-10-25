@@ -581,6 +581,8 @@ pub(super) fn loot(p: &mut Player, e: &Enemy, data: &Content, seed: &mut u32) {
             );
         }
     }
+    data.forge
+        .record_hunt(&mut p.c, "patrol", &e.kind, e.level, || lcg(seed));
     p.dirty = true;
 }
 
@@ -1130,6 +1132,10 @@ mod tests {
         let mut seed = 1000;
         damage_enemy(&mut p, &mut enemy, ability, &data, 0.0, &mut seed, [0.0; 3]);
         assert_eq!(p.c.mob_kills["drone"], 1);
+        assert_eq!(
+            serde_json::to_value(&p.c.forge).unwrap()["hunts"]["ghost-prism"]["attempts"],
+            1
+        );
         assert!((1..=3).contains(&count(&p.c, "ceramic")));
         assert_eq!(count(&p.c, "wire-scrap"), 0);
         let before = serde_json::to_value(&p.c).unwrap();

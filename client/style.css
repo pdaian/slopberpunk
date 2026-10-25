@@ -221,6 +221,14 @@ dialog:has(.forge-shell) { width: min(1240px,96vw); max-width: 96vw; }
 .forge-item-top { display: flex; justify-content: space-between; gap: 14px; color: var(--muted); font-size: 11px; }
 .forge-item > strong { display: block; font-size: 18px; margin: 9px 0; }
 .forge-item-description { display: block; color: #b9cbd4; font-size: 13px; line-height: 1.6; }
+.forge-item-stats { display: block; color: #a8edda; font-size: 12px; line-height: 1.7; margin-top: 10px; }
+.forge-bonuses { border-top: 1px solid #405a6e; margin-top: 16px; padding-top: 12px; }
+.forge-bonuses h3 { font-size: 16px; margin: 0 0 10px; }
+.forge-bonuses p { font-size: 12px; line-height: 1.7; }
+.forge-bonuses small { display: block; font-size: 11px; margin-top: 5px; }
+.forge-set-active { color: #a8edda; }
+.forge-sets { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 10px; margin: 18px 0; }
+.forge-sets .small-button { margin-top: 12px; }
 .forge-requirement { display: block; color: #d3ddca; font-size: 11px; margin-top: 10px; line-height: 1.6; }
 .forge-item .forge-meter { display: block; margin-top: 10px; }
 .forge-apply { border-top: 1px solid #405a6e; padding-top: 16px; margin-top: 16px; }

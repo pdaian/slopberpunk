@@ -84,6 +84,9 @@ fn identifier(s: &str) -> bool {
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 impl Catalog {
+    pub(super) fn hunt_source(&self, id: &str, level: u32) -> bool {
+        self.entries.iter().any(|d| d.id == id && d.level >= level)
+    }
     pub(super) fn choice_ids(&self) -> impl Iterator<Item = (&str, Vec<&str>)> {
         self.entries.iter().map(|d| {
             (
@@ -591,6 +594,11 @@ impl Shard {
                         ending: ending.clone(),
                     },
                 );
+                self.content
+                    .forge
+                    .record_hunt(&mut p.c, "expedition", &d.id, d.level, || {
+                        lcg(&mut self.seed)
+                    });
                 let gold = economy::grant_gold(&mut p.c, d.reward.gold);
                 let xp = gain_xp(p, &self.content, d.reward.xp);
                 p.c.revision += 1;
@@ -1304,6 +1312,37 @@ mod tests {
         assert!(s.players[&ids[0]].instance.is_none());
         s.leave_dungeon(&ids[1]);
         assert!(!s.dungeons.runs.contains_key(&key));
+    }
+    #[test]
+    fn each_completing_witness_gets_one_hunt_attempt_and_repeat_votes_cannot_pay_twice() {
+        let mut s = shard();
+        let ids = crew(&mut s, "trial-rain", 3, "witness");
+        let definition = s.content.dungeons.get("trial-rain").unwrap().clone();
+        for _ in &definition.chapters {
+            clear(&mut s, &ids);
+        }
+        for id in &ids {
+            assert!(
+                s.players[id].c.forge.hunts.is_empty(),
+                "boss kills do not award patrol parts"
+            );
+        }
+        let key = s.players[&ids[0]].instance.unwrap();
+        let choice = &definition.decision.choices[0].id;
+        for id in &ids {
+            command(&mut s, id, "vote", json!({"choice":choice}));
+        }
+        assert_eq!(s.dungeons.runs[&key].phase, Phase::Complete);
+        for id in &ids {
+            let before = serde_json::to_value(&s.players[id].c.forge).unwrap();
+            assert_eq!(before["hunts"]["witness-anchors"]["attempts"], 1);
+            assert_eq!(s.players[id].c.forge.hunts.len(), 1);
+            command(&mut s, id, "vote", json!({"choice":choice}));
+            assert_eq!(
+                serde_json::to_value(&s.players[id].c.forge).unwrap(),
+                before
+            );
+        }
     }
     #[test]
     fn disconnects_end_active_runs_and_return_everyone_without_partial_rewards() {

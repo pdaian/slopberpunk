@@ -26,7 +26,7 @@ export function frameParts(catalog, appearance) {
   add('body',[0,.64,0],[.24,.13,.24],'secondary');
   for(const slot of catalog.slots) {
     const item=catalog.items.find(i=>i.id===appearance.parts[slot.id]);
-    const d=item.design, signature={rare:'#71c9f1',epic:'#c19afa',relic:'#efbd7d'}[item.rarity]||'secondary';
+    const d=item.design, signature={'Signal Ghost':'#8df5ef','Iron Witness':'#f3ad6a'}[item.set]||{rare:'#71c9f1',epic:'#c19afa',relic:'#efbd7d'}[item.rarity]||'secondary';
     if(slot.id==='head') {
       add('head',[0,.14,-.015],[.44,.42,.39],'primary',{taper:d==='mask'?.85:1});
       add('head',[0,.09,.2],[.36,.24,.045],'#101b26');
@@ -50,6 +50,13 @@ export function frameParts(catalog, appearance) {
         for(let i=-2;i<=2;i++)add('head',[i*.1,.39+(2-Math.abs(i))*.035,-.03],[.065,.28+(2-Math.abs(i))*.07,.12],signature,{roll:-i*.16,taper:.35});
         for(let i=-1;i<=1;i++)light('head',[i*.115,.15+(i===0?.07:0),.24],[.065,.06,.04]);
         add('head',[0,-.015,.23],[.18,.13,.07],signature,{taper:.5});
+      }else if(d==='prism') {
+        for(const s of [-1,1]) {
+          add('head',[s*.18,.18,.29],[.12,.39,.08],signature,{roll:-s*.3,taper:.25});
+          light('head',[s*.19,.21,.34],[.035,.25,.025],signature,{roll:-s*.3});
+          add('head',[s*.29,.32,-.02],[.045,.44,.08],'primary',{roll:-s*.45});
+        }
+        light('head',[0,.31,.31],[.13,.13,.06],signature,{roll:Math.PI/4});
       }
     }else if(slot.id==='shoulders')for(const s of [-1,1]) {
       const joint=s<0?'leftArm':'rightArm';
@@ -70,6 +77,11 @@ export function frameParts(catalog, appearance) {
         add(joint,[s*.09,.26,0],[.5,.09,.45],signature);
         for(let i=0;i<3;i++)add(joint,[s*(.18+i*.105),.08-i*.07,0],[.09,.3,.48],signature,{roll:-s*.3});
         light(joint,[s*.08,.07,.28],[.13,.16,.035]);
+      }else if(d==='ramparts') {
+        add(joint,[s*.13,.04,0],[.4,.57,.49],'primary',{taper:.8});
+        for(const z of [-.21,.21])add(joint,[s*.2,.19,z],[.37,.17,.12],signature);
+        add(joint,[s*.32,-.03,0],[.1,.6,.57],'secondary');
+        for(let i=0;i<3;i++)light(joint,[s*.13,-.12+i*.12,.27],[.19,.04,.035],signature);
       }
     }else if(slot.id==='core') {
       add('body',[0,.34,.28],[.48,.37,.11],'#15222c');
@@ -82,6 +94,10 @@ export function frameParts(catalog, appearance) {
       else if(d==='sun') {
         ring('body',[0,.34,.39],.16,8,signature,.35,.05);light('body',[0,.34,.4],[.19,.19,.08],'energy',{shape:'round'});
         for(let i=0;i<8;i++){const a=i*Math.PI/4;add('body',[Math.sin(a)*.24,.34+Math.cos(a)*.24,.36],[.045,.14,.04],signature,{roll:-a});}
+      }else if(d==='lattice') {
+        for(const s of [-1,1])for(const y of [-1,1])add('body',[s*.12,.35+y*.13,.4],[.045,.36,.055],signature,{roll:s*y*.75});
+        light('body',[0,.35,.43],[.16,.16,.11],signature,{roll:Math.PI/4});
+        for(const s of [-1,1])light('body',[s*.24,.35,.4],[.045,.14,.035]);
       }
     }else if(slot.id==='arms')for(const s of [-1,1]) {
       const joint=s<0?'leftForearm':'rightForearm';
@@ -93,6 +109,13 @@ export function frameParts(catalog, appearance) {
       else if(d==='hammers') {
         add(joint,[0,-.23,.07],[.43,.18,.4],signature);for(const x of [-.12,0,.12])light(joint,[x,-.08,.23],[.055,.13,.04]);
         add(joint,[s*.23,-.06,.03],[.11,.26,.34],'secondary');
+      }else if(d==='clamps') {
+        for(const x of [-1,1]) {
+          add(joint,[x*.22,-.25,.08],[.09,.5,.16],'secondary',{roll:x*.12});
+          add(joint,[x*.16,-.47,.15],[.18,.09,.2],signature,{roll:-x*.2});
+          light(joint,[x*.18,-.1,.22],[.055,.19,.04],signature);
+        }
+        ring(joint,[0,-.1,.24],.09,6,signature,.4,.035);
       }
     }else if(slot.id==='legs')for(const s of [-1,1]) {
       const side=s<0?'left':'right',joint=side+'Shin';
@@ -113,6 +136,12 @@ export function frameParts(catalog, appearance) {
       }else if(d==='sabatons') {
         for(let i=0;i<4;i++){add(joint,[0,-.01-i*.105,.17],[.34-i*.025,.13,.16],'primary',{taper:.8});add(joint,[0,-.04-i*.105,.26],[.32-i*.025,.025,.035],signature);}
         add(side+'Foot',[0,.035,.12],[.37,.15,.61],signature);add(side+'Foot',[s*.16,.06,-.2],[.14,.12,.3],'primary');
+      }else if(d==='anchors') {
+        for(const x of [-1,1])add(joint,[x*.1,-.07,.22],[.16,.43,.13],'primary',{roll:-x*.15,taper:.5});
+        add(side+'Foot',[s*.22,.07,-.08],[.23,.2,.59],'secondary');
+        add(joint,[s*.23,-.25,-.12],[.08,.51,.1],signature,{roll:s*.2});
+        light(joint,[0,.07,.29],[.14,.08,.035],signature);
+        light(side+'Foot',[s*.25,.09,.23],[.17,.045,.03],signature);
       }
     }else if(slot.id==='back') {
       add('body',[0,.36,-.28],[.24,.57,.18],'#18232e');
@@ -131,6 +160,15 @@ export function frameParts(catalog, appearance) {
         ring('body',[0,.46,-.42],.87,16,signature,.2,.085);
         ring('body',[0,.46,-.45],.77,16,'energy',.8,.025);
         for(let i=0;i<4;i++){const a=i*Math.PI/2;add('body',[Math.sin(a)*1,.46+Math.cos(a)*1,-.42],[.15,.31,.12],'primary',{roll:-a,taper:.25});}
+      }else if(d==='orbit') {
+        ring('body',[0,.5,-.44],.73,4,'secondary',0,.06);
+        for(let i=0;i<4;i++) {
+          const a=i*Math.PI/2,x=Math.sin(a)*.9,y=.5+Math.cos(a)*.9;
+          add('body',[x,y,-.46],[.23,.23,.13],'primary',{roll:Math.PI/4});
+          light('body',[x,y,-.54],[.13,.13,.04],signature,{roll:Math.PI/4});
+          for(const side of [-1,1])add('body',[x+side*.13,y,-.46],[.035,.36,.1],signature,{roll:side*.3});
+        }
+        light('body',[0,.5,-.5],[.1,.43,.04],signature);
       }
     }
   }

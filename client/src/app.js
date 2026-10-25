@@ -160,11 +160,15 @@ function onSnapshot(message){
   const forgeState=c=>JSON.stringify([c.level,c.completed?.length,c.ordersCompleted,c.mobKills,c.dungeonHistory,c.forge]);
   const forgeChanged=forgeState(previousCharacter)!==forgeState(server);
   if(forgeChanged){
-    const before=new Set(collection(previousCharacter,data.forge).earned.map(i=>i.id));
-    const unlocked=collection(server,data.forge).earned.filter(i=>!before.has(i.id));
-    if(unlocked.length)toast(`FRAME PART EARNED · ${unlocked[0].name}${unlocked.length>1?` + ${unlocked.length-1} more`:''} · GEAR → FRAME FORGE`);
+    const before=collection(previousCharacter,data.forge),after=collection(server,data.forge),owned=new Set(before.earned.map(i=>i.id));
+    const unlocked=after.earned.filter(i=>!owned.has(i.id));
+    if(unlocked.length){
+      const completed=after.sets.filter(s=>s.complete&&!before.sets.find(b=>b.name===s.name)?.complete);
+      const message=`${unlocked[0].rarity.toUpperCase()} ${unlocked[0].hunt?'FOUND':'EARNED'} · ${unlocked[0].name}${unlocked.length>1?` + ${unlocked.length-1} more`:''} · +${after.score-before.score} PRESTIGE${completed.length?' · '+completed.map(s=>s.name+' COMPLETE').join(' / '):''}`;
+      toast(message+' · GEAR → FRAME FORGE');addLog(message);audio?.effect('confirm');
+    }
   }
-  const economyState=c=>JSON.stringify([c.items,c.equipment,Object.keys(c.buffs||{}),c.mobKills,c.medkits,c.gold,c.level,c.talents,talentBudget(c,data.rules),c.workOrder,c.ordersCompleted,c.morality]);
+  const economyState=c=>JSON.stringify([c.items,c.equipment,Object.keys(c.buffs||{}),c.mobKills,c.medkits,c.gold,c.level,c.talents,talentBudget(c,data.rules),c.workOrder,c.ordersCompleted,c.morality,c.forge]);
   const economyChanged=['inventory','crafting','talents','orders','shop'].includes(dialogPage)&&economyState(previousCharacter)!==economyState(server);
   const recoveryChanged=isSpirit(previousCharacter)!==isSpirit(server)||(previousCharacter.health>0)!==(server.health>0);
   const previousRide=simulation.elevator,nextRide=message.elevator||null;
@@ -906,7 +910,7 @@ async function boot(){
   validateProgression(data);
   validateStory(data);
   validateMorality(data);
-  validateForge(data.forge);
+  validateForge(data.forge,data);
   for(const npc of data.npcs)Object.assign(npc,npcIdentity(npc.id));
   const models=await fetch('/assets/models.json').then(r=>r.json());world=new World(data.world);validateWorldEvents(data.events,data,world);validateCityLife(data.citylife,data,world);cityLife=new CityLife(world,data.citylife,data);renderer=new Renderer($('#world'),world,models,cityLife);renderer.reducedMotion=reducedMotion;audio=new AudioEngine(data.audio);
   audio.onVoiceStatus=status=>{updateVoiceButton();if(['blocked','unavailable','error'].includes(status))toast(audio.voiceMessage);};

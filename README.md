@@ -27,7 +27,11 @@ New characters start in the First Steps Courtyard. Walk to the cyan square, try 
 - Choose from four factions and four lineages. Their campaigns, neighborhood stories, and basin quests total 203 contracts, with saved choices and reputation.
 - Build around combat abilities, talents, equipment, and crafting.
 - Join six expeditions with fixed crew sizes of 1, 2, 3, 4, 6, or 8 players.
-- Chat, form parties and guilds, trade at the auction house, and customize cosmetic armor in the Frame Forge.
+- Chat, form parties and guilds, trade at the auction house, and collect signature armor in the Frame Forge.
+
+Open **Gear → Frame Forge → Rare Hunts** to pursue six signature parts from named patrol enemies and expeditions. Each has a distinct silhouette, published drop odds, and saved progress toward a guaranteed find. Collection rewards are permanent and take no inventory space. Eighteen milestone parts also reward ordinary progression.
+
+Use **ATTUNE PARTS** to equip six earned parts for combat bonuses: pursuit, support, defense, precision, or close combat, with bonuses for matching sets. **APPLY FRAME** changes your appearance independently, so your favorite look can accompany any earned build. Collection completion grants extra prestige, visible titles, and standing in the nearby showcase, where you can inspect other players’ looks and builds.
 
 ### Controls
 

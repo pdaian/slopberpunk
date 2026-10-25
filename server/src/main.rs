@@ -445,7 +445,7 @@ impl Content {
         Ok(content)
     }
     fn validate(&self) -> io::Result<()> {
-        self.forge.validate()?;
+        self.forge.validate(self)?;
         live_social::validate(&self.map)?;
         if self.map.routes.len() > 128 || self.map.routes.iter().any(|r| !r.valid(self.map.bounds))
         {
@@ -1670,6 +1670,7 @@ impl Stats {
             );
         }
         economy::apply_stats(c, data, &mut s);
+        data.forge.apply_stats(c, &mut s);
         morality::apply_stats(c, data, &mut s);
         s.speed = s.speed.min(1.6);
         s.crit = s.crit.min(60.0);
@@ -2345,10 +2346,10 @@ impl Shard {
         let cell = 80.0;
         let reach = (radius / cell).ceil() as i32;
         let mut delivered_chat = Vec::new();
-        let forge_scores: HashMap<_, _> = self
+        let forge_profiles: HashMap<_, _> = self
             .players
             .values()
-            .map(|p| (p.c.id.as_str(), self.content.forge.score(&p.c)))
+            .map(|p| (p.c.id.as_str(), self.content.forge.public(&p.c)))
             .collect();
         let mut buckets: HashMap<(i32, i32), Vec<&Player>> = HashMap::new();
         for p in self.players.values() {
@@ -2393,7 +2394,7 @@ impl Shard {
                 }
             }
             nearby.sort_unstable_by(|a, b| a.0.total_cmp(&b.0));
-            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"velocity":other.velocity,"elevator":other.elevator,"grounded":other.grounded,"health":other.c.health,"ghost":death::is_spirit(&other.c),"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id),"forge":{"appearance":other.c.forge.appearance,"score":forge_scores.get(other.c.id.as_str())}})).collect();
+            let nearby:Vec<_>=nearby.into_iter().take(self.content.rule("network","maxVisiblePlayers") as usize).map(|(_,other)|json!({"id":other.c.id,"name":other.c.name,"race":other.c.race,"position":other.c.position,"yaw":other.c.yaw+std::f64::consts::PI,"velocity":other.velocity,"elevator":other.elevator,"grounded":other.grounded,"health":other.c.health,"ghost":death::is_spirit(&other.c),"level":other.c.level,"founderHalo":other.c.founder_halo,"guild":badges.get(&other.c.id),"forge":forge_profiles.get(other.c.id.as_str())})).collect();
             let enemies: Vec<_> = self
                 .enemies
                 .iter()
